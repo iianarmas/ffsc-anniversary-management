@@ -52,10 +52,26 @@ export default function PeopleTable({
                   />
                 </td>
                 <td className="px-4 py-3">
-                  <div className="font-medium text-gray-900">
-                    {person.firstName} {person.lastName}
-                  </div>
-                </td>
+                          <div>
+                            <div className="font-medium text-gray-900">
+                              {person.firstName} {person.lastName}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              Age: {person.age}
+                            </div>
+                            {person.registered && person.registeredAt && (
+                              <div className="text-xs text-green-600 mt-1">
+                                ✓ Checked in: {new Date(person.registeredAt).toLocaleString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        </td>
                 <td className="px-4 py-3">
                   <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full border ${ageColors[person.ageBracket]}`}>
                     {person.ageBracket}

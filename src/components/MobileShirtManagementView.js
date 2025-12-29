@@ -278,6 +278,7 @@ export default function MobileShirtManagementView({
                   <h3 className="text-lg font-semibold text-gray-900">
                     {person.firstName} {person.lastName}
                   </h3>
+                  <p className="text-sm text-gray-500 mt-1">Age: {person.age}</p>
                   <div className="flex items-center gap-2 mt-2 text-sm">
                     <span className="px-2 py-1 bg-gray-100 rounded text-gray-700">
                       {person.shirtSize || 'No size'}

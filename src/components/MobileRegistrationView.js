@@ -164,6 +164,17 @@ export default function MobileRegistrationView({
                   <h3 className="text-lg font-semibold text-gray-900">
                     {person.firstName} {person.lastName}
                   </h3>
+                  <p className="text-sm text-gray-500 mt-1">Age: {person.age}</p>
+                  {person.registered && person.registeredAt && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✓ Checked in: {new Date(person.registeredAt).toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  )}
                   <div className="flex flex-wrap gap-2 mt-2">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${ageColors[person.ageBracket]}`}>
                       {person.ageBracket}

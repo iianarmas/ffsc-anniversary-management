@@ -120,9 +120,16 @@ export default function ShirtManagementView({
                 <tbody className="divide-y divide-gray-200">
                   {people.map((person) => (
                     <tr key={person.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium text-gray-900">
-                        {person.firstName} {person.lastName}
-                      </td>
+                      <td className="px-4 py-3">
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {person.firstName} {person.lastName}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Age: {person.age}
+                        </div>
+                      </div>
+                    </td>
                       <td className="px-4 py-3">
                         <select
                           value={person.shirtSize || ''}
