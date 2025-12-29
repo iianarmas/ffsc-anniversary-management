@@ -13,6 +13,7 @@ import {
   toggleShirtPayment as apiToggleShirtPayment,
   toggleShirtGiven as apiToggleShirtGiven
 } from './services/api';
+import { supabase } from './services/supabase';
 
 export default function App() {
   const [people, setPeople] = useState([]);
@@ -30,11 +31,38 @@ export default function App() {
   const [shirtFilterSize, setShirtFilterSize] = useState('All');
   const [currentView, setCurrentView] = useState('registration');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  
 
-  // Load data from Supabase on mount
-  useEffect(() => {
-    loadData();
-  }, []);
+  
+
+// Realtime subscriptions for people, registrations, and shirts
+useEffect(() => {
+  // Load initial data
+  loadData();
+
+  const tables = ['people', 'registrations', 'shirts'];
+
+  const channels = tables.map((table) =>
+    supabase
+      .channel(`public:${table}`) // unique channel name
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table },
+        (payload) => {
+          console.log(`Realtime change detected on ${table}:`, payload);
+          loadData(); // reload all data whenever something changes
+        }
+      )
+      .subscribe()
+  );
+
+  // Cleanup function
+  return () => {
+    channels.forEach((channel) => supabase.removeChannel(channel));
+  };
+}, []);
+
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -177,25 +205,32 @@ export default function App() {
   };
 
   const toggleShirtPayment = async (id) => {
+    setPeople(prev =>
+      prev.map(p => p.id === id ? { ...p, paid: !p.paid } : p)
+    );
     const person = people.find(p => p.id === id);
     if (person) {
       await apiToggleShirtPayment(id, person.paid);
-      await loadData(true);
     }
   };
 
   const toggleShirtGiven = async (id) => {
+    setPeople(prev =>
+      prev.map(p => p.id === id ? { ...p, shirtGiven: !p.shirtGiven } : p)
+    );
     const person = people.find(p => p.id === id);
     if (person) {
       await apiToggleShirtGiven(id, person.shirtGiven);
-      await loadData(true);
     }
   };
 
   const updateShirtSize = async (id, size) => {
+    setPeople(prev =>
+      prev.map(p => p.id === id ? { ...p, shirtSize: size } : p)
+    );
     await apiUpdateShirtSize(id, size);
-    await loadData(true);
   };
+
 
   // Don't show full-screen loading on initial load, only on data updates
 
