@@ -90,6 +90,8 @@ export default function ShirtSearchAndFilters({
             <option value="L">L</option>
             <option value="XL">XL</option>
             <option value="2XL">2XL</option>
+            <option value="None yet">None yet</option>
+
           </select>
         </div>
       </div>

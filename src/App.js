@@ -167,10 +167,15 @@ useEffect(() => {
         (shirtFilterPayment === 'Paid' ? person.paid : !person.paid);
       const matchesDistribution = shirtFilterDistribution === 'All' || 
         (shirtFilterDistribution === 'Given' ? person.shirtGiven : !person.shirtGiven);
-      const matchesSize = shirtFilterSize === 'All' || person.shirtSize === shirtFilterSize;
-      
-      return matchesSearch && matchesAge && matchesLocation && matchesPayment && matchesDistribution && matchesSize;
-    });
+      const matchesSize = 
+        shirtFilterSize === 'All' 
+          ? true 
+          : shirtFilterSize === 'None yet'
+            ? !person.shirtSize || person.shirtSize === 'Select Size'
+            : person.shirtSize === shirtFilterSize;
+            
+            return matchesSearch && matchesAge && matchesLocation && matchesPayment && matchesDistribution && matchesSize;
+          });
 
     // Always sort alphabetically by first name
     filtered.sort((a, b) => {

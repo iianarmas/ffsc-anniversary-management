@@ -33,7 +33,7 @@ export default function MobileShirtManagementView({
     shirtFilterSize
   ].filter(f => f !== 'All').length;
 
-  const shirtSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12', 'TS', 'XS', 'S', 'M', 'L', 'XL', '2XL'];
+  const shirtSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12', 'TS', 'XS', 'S', 'M', 'L', 'XL', '2XL', 'None yet'];
 
   useEffect(() => {
     const handleScroll = () => {
