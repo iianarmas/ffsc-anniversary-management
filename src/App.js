@@ -4,6 +4,7 @@ import RegistrationView from './components/RegistrationView';
 import ShirtManagementView from './components/ShirtManagementView';
 import MobileRegistrationView from './components/MobileRegistrationView';
 import MobileShirtManagementView from './components/MobileShirtManagementView';
+import LoadingOverlay from './components/LoadingOverlay';
 import { 
   fetchAllPeople, 
   checkInPerson, 
@@ -44,8 +45,10 @@ export default function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (showLoadingOverlay = false) => {
+    if (showLoadingOverlay) {
+      setLoading(true);
+    }
     const allPeople = await fetchAllPeople();
     setPeople(allPeople);
     setLoading(false);
@@ -146,7 +149,7 @@ export default function App() {
         await checkInPerson(personId);
       }
     }
-    await loadData();
+    await loadData(true);
     setSelectedPeople([]);
     setLoading(false);
   };
@@ -159,7 +162,7 @@ export default function App() {
         await removeCheckIn(personId);
       }
     }
-    await loadData();
+    await loadData(true);
     setSelectedPeople([]);
     setLoading(false);
   };
@@ -177,7 +180,7 @@ export default function App() {
     const person = people.find(p => p.id === id);
     if (person) {
       await apiToggleShirtPayment(id, person.paid);
-      await loadData();
+      await loadData(true);
     }
   };
 
@@ -185,22 +188,16 @@ export default function App() {
     const person = people.find(p => p.id === id);
     if (person) {
       await apiToggleShirtGiven(id, person.shirtGiven);
-      await loadData();
+      await loadData(true);
     }
   };
 
   const updateShirtSize = async (id, size) => {
     await apiUpdateShirtSize(id, size);
-    await loadData();
+    await loadData(true);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-2xl font-bold text-gray-700">Loading...</div>
-      </div>
-    );
-  }
+  // Don't show full-screen loading on initial load, only on data updates
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
@@ -301,6 +298,9 @@ export default function App() {
             />
           )
         )}
+
+        {/* Loading Overlay */}
+        {loading && <LoadingOverlay />}
       </div>
 
       <style>{`
