@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Header from './components/Header';
+import Sidebar from './components/Sidebar';
 import RegistrationView from './components/RegistrationView';
 import ShirtManagementView from './components/ShirtManagementView';
 import MobileRegistrationView from './components/MobileRegistrationView';
@@ -32,6 +33,7 @@ export default function App() {
   const [shirtFilterSize, setShirtFilterSize] = useState('All');
   const [currentView, setCurrentView] = useState('registration');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   
 
   
@@ -293,16 +295,15 @@ useEffect(() => {
   // Don't show full-screen loading on initial load, only on data updates
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-      <div className="max-w-7xl mx-auto">
-          <div className="no-print">
-          <Header
-            currentView={currentView}
-            setCurrentView={setCurrentView}
-            stats={stats}
-            handleStatCardClick={handleStatCardClick}
-          />
-        </div>
+    <div className="min-h-screen bg-[#fffdf0] flex">
+      <Sidebar 
+        currentView={currentView} 
+        setCurrentView={setCurrentView}
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
+      />
+      <div className={`flex-1 p-6 ml-0 transition-all duration-300 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
+        <div className="max-w-7xl mx-auto">
 
         {currentView === 'registration' && (
           isMobile ? (
@@ -394,6 +395,7 @@ useEffect(() => {
 
         {/* Loading Overlay */}
         {loading && <LoadingOverlay />}
+        </div>
       </div>
 
       <style>{`

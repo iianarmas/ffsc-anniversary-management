@@ -83,9 +83,10 @@ export default function RegistrationView({
 
       {/* Screen content */}
       <div className="no-print">
+        {/* Title and Counter */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">Filters</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Registration Management</h2>
             <div className="bg-blue-50 border-2 border-blue-300 rounded-lg px-6 py-3">
               <span className="text-2xl font-bold text-blue-700">{filteredAndSortedPeople.length}</span>
               <span className="text-sm text-blue-600 ml-2">{filteredAndSortedPeople.length === 1 ? 'Person' : 'People'}</span>
@@ -93,7 +94,7 @@ export default function RegistrationView({
           </div>
 
           {/* Search Bar */}
-          <div className="relative mb-4">
+          <div className="relative mb-6">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
@@ -104,6 +105,25 @@ export default function RegistrationView({
             />
           </div>
 
+          {/* Stat Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="text-xl font-bold text-blue-700">{people.length}</div>
+              <div className="text-sm text-blue-600">Total Pre-registered</div>
+            </div>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="text-xl font-bold text-green-700">{people.filter(p => p.registered).length}</div>
+              <div className="text-sm text-green-600">Checked In</div>
+            </div>
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <div className="text-xl font-bold text-orange-700">{people.filter(p => !p.registered).length}</div>
+              <div className="text-sm text-orange-600">Pending Check-in</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <SearchAndFilters
             filterAge={filterAge}
             setFilterAge={setFilterAge}
@@ -116,7 +136,7 @@ export default function RegistrationView({
         </div>
 
         {/* Sticky Section - Action Buttons */}
-        <div className="sticky top-0 z-10 bg-gradient-to-br from-blue-50 to-indigo-100 pb-6">
+        <div className="sticky top-0 z-10 bg-[#fffdf0] pb-6">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <ActionButtons
               handleSelectAll={handleSelectAll}

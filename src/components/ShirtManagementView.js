@@ -38,8 +38,8 @@ export default function ShirtManagementView({
   };
 
   return (
-    <>
-        {/* Non-sticky Title, Counter, Stats, and Search */}
+      <>
+        {/* Title, Counter, Search, and Stats - Non-sticky */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800">Anniversary Shirt Management</h2>
@@ -82,7 +82,7 @@ export default function ShirtManagementView({
         </div>
 
         {/* Sticky Section - Filters Only */}
-        <div className="sticky top-0 z-10 bg-gradient-to-br from-blue-50 to-indigo-100 pb-6">
+        <div className="sticky top-0 z-10 bg-[#fffdf0] pb-6">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <ShirtSearchAndFilters
               filterAge={shirtFilterAge}
