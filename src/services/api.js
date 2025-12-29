@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 
 // Helper function to convert numeric age to age bracket
-const getAgeBracket = (age) => {
+export const getAgeBracket = (age) => {
   if (!age) return 'Adult'; // Default for null ages
   const numAge = parseInt(age);
   if (numAge >= 0 && numAge <= 3) return 'Toddler';
@@ -10,6 +10,7 @@ const getAgeBracket = (age) => {
   if (numAge >= 21) return 'Adult';
   return 'Adult';
 };
+
 
 // Fetch all people with their shirt and registration info
 export const fetchAllPeople = async () => {

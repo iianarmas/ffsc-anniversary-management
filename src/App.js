@@ -11,7 +11,8 @@ import {
   removeCheckIn,
   updateShirtSize as apiUpdateShirtSize,
   toggleShirtPayment as apiToggleShirtPayment,
-  toggleShirtGiven as apiToggleShirtGiven
+  toggleShirtGiven as apiToggleShirtGiven,
+  getAgeBracket
 } from './services/api';
 import { supabase } from './services/supabase';
 
@@ -37,30 +38,82 @@ export default function App() {
 
 // Realtime subscriptions for people, registrations, and shirts
 useEffect(() => {
-  // Load initial data
   loadData();
 
-  const tables = ['people', 'registrations', 'shirts'];
+  const updatePersonInState = (payload, table) => {
+    const personId = table === 'people' 
+      ? payload.new?.id || payload.old?.id
+      : payload.new?.person_id || payload.old?.person_id;
+    if (!personId) return;
 
-  const channels = tables.map((table) =>
-    supabase
-      .channel(`public:${table}`) // unique channel name
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table },
-        (payload) => {
-          console.log(`Realtime change detected on ${table}:`, payload);
-          loadData(); // reload all data whenever something changes
-        }
-      )
-      .subscribe()
-  );
+    setPeople(prev => {
+      const index = prev.findIndex(p => p.id === personId);
+      const existingPerson = index > -1 ? prev[index] : {};
 
-  // Cleanup function
+      if (payload.eventType === 'DELETE') {
+        // Remove deleted person
+        return prev.filter(p => p.id !== personId);
+      }
+
+      let updatedFields = {};
+      if (table === 'people') {
+        updatedFields = {
+          id: personId,
+          firstName: payload.new?.first_name,
+          lastName: payload.new?.last_name,
+          age: payload.new?.age,
+          ageBracket: payload.new ? getAgeBracket(payload.new.age) : 'Adult',
+          location: payload.new?.location === 'GUEST' ? 'Guest' : payload.new?.location,
+          contactNumber: payload.new?.contact_number,
+        };
+      } else if (table === 'shirts') {
+        updatedFields = {
+          shirtSize: payload.new?.shirt_size || '',
+          paid: payload.new?.paid || false,
+          shirtGiven: payload.new?.shirt_given || false,
+        };
+      } else if (table === 'registrations') {
+        updatedFields = {
+          registered: payload.new?.registered || false,
+          registeredAt: payload.new?.registered_at || null,
+        };
+      }
+
+      const updatedPerson = { ...existingPerson, ...updatedFields };
+
+      if (index > -1) {
+        const newState = [...prev];
+        newState[index] = updatedPerson;
+        return newState;
+      } else {
+        return table === 'people' ? [...prev, updatedPerson] : prev;
+      }
+    });
+  };
+
+  const peopleSub = supabase
+    .channel('table-listen-people')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'people' }, (payload) => updatePersonInState(payload, 'people'))
+    .subscribe();
+
+  const shirtsSub = supabase
+    .channel('table-listen-shirts')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'shirts' }, (payload) => updatePersonInState(payload, 'shirts'))
+    .subscribe();
+
+  const registrationsSub = supabase
+    .channel('table-listen-registrations')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'registrations' }, (payload) => updatePersonInState(payload, 'registrations'))
+    .subscribe();
+
   return () => {
-    channels.forEach((channel) => supabase.removeChannel(channel));
+    supabase.removeChannel(peopleSub);
+    supabase.removeChannel(shirtsSub);
+    supabase.removeChannel(registrationsSub);
   };
 }, []);
+
+
 
 
 
