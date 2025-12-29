@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Search, Filter, X, ChevronRight, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Filter, X, ChevronRight, Check, ChevronUp } from 'lucide-react';
 
 export default function MobileRegistrationView({
   searchTerm,
@@ -19,6 +19,8 @@ export default function MobileRegistrationView({
   people
 }) {
   const [showFilters, setShowFilters] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
 
   const ageColors = {
     Toddler: 'bg-pink-100 text-pink-800',
@@ -35,6 +37,20 @@ export default function MobileRegistrationView({
   };
 
   const activeFiltersCount = [filterAge, filterLocation, filterStatus].filter(f => f !== 'All').length;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
 
   return (
     <div className="pb-20">
@@ -244,6 +260,17 @@ export default function MobileRegistrationView({
           </div>
         )}
       </div>
+      {showBackToTop && selectedPeople.length === 0 && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-24 right-4 p-3 bg-blue-500 text-white rounded-full shadow-lg z-50"
+        >
+          <ChevronUp />
+        </button>
+      )}
+
+
+
     </div>
   );
 }

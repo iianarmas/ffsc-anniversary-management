@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Search, Filter, X, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Filter, X, ChevronRight, ChevronUp } from 'lucide-react';
 
 export default function MobileShirtManagementView({
   people,
@@ -23,6 +23,7 @@ export default function MobileShirtManagementView({
 }) {
   const [showFilters, setShowFilters] = useState(false);
   const [editingPerson, setEditingPerson] = useState(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   const activeFiltersCount = [
     shirtFilterAge,
@@ -33,6 +34,20 @@ export default function MobileShirtManagementView({
   ].filter(f => f !== 'All').length;
 
   const shirtSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12', 'TS', 'XS', 'S', 'M', 'L', 'XL', '2XL'];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
 
   return (
     <div className="pb-6">
@@ -301,6 +316,15 @@ export default function MobileShirtManagementView({
           ))
         )}
       </div>
+      {showBackToTop && !editingPerson && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-4 right-4 p-3 bg-blue-500 text-white rounded-full shadow-lg z-50"
+        >
+          <ChevronUp />
+        </button>
+      )}
+
     </div>
   );
 }
