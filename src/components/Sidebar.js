@@ -15,7 +15,7 @@ export default function Sidebar({ currentView, setCurrentView, isCollapsed, setI
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 bg-[#001740] text-white p-3 rounded-lg shadow-lg"
+        className="md:hidden fixed top-4 left-4 z-50 bg-[#001740] text-white p-3 rounded-lg"
       >
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
