@@ -5,6 +5,7 @@ import RegistrationView from './components/RegistrationView';
 import ShirtManagementView from './components/ShirtManagementView';
 import MobileRegistrationView from './components/MobileRegistrationView';
 import MobileShirtManagementView from './components/MobileShirtManagementView';
+import Dashboard from './components/Dashboard';
 import LoadingOverlay from './components/LoadingOverlay';
 import { 
   fetchAllPeople, 
@@ -295,15 +296,19 @@ useEffect(() => {
   // Don't show full-screen loading on initial load, only on data updates
 
   return (
-    <div className="min-h-screen bg-[#fffdf0] flex">
+    <div className="min-h-screen bg-white flex">
       <Sidebar 
         currentView={currentView} 
         setCurrentView={setCurrentView}
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
       />
-      <div className={`flex-1 p-6 ml-0 transition-all duration-300 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
-        <div className="max-w-7xl mx-auto">
+      <div className={`flex-1 px-6 pt-16 ml-0 transition-all duration-300 ${isCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+        <div className="w-full">
+
+        {currentView === 'dashboard' && (
+          <Dashboard people={people} stats={stats} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        )}
 
         {currentView === 'registration' && (
           isMobile ? (

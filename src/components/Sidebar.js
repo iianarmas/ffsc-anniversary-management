@@ -5,6 +5,7 @@ export default function Sidebar({ currentView, setCurrentView, isCollapsed, setI
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'registration', label: 'Registration', icon: Users },
     { id: 'shirts', label: 'Shirt Management', icon: Shirt },
   ];
@@ -21,31 +22,11 @@ export default function Sidebar({ currentView, setCurrentView, isCollapsed, setI
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 h-full bg-[#001740] text-white transform transition-all duration-300 ease-in-out z-40 ${
+        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#edf1fa] text-white transform transition-all duration-300 ease-in-out z-20 ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0 ${isCollapsed ? 'w-20' : 'w-64'}`}
+        } md:translate-x-0 ${isCollapsed ? 'w-16' : 'w-64'}`}
       >
-        {/* Logo/Brand */}
-        <div className="p-6 border-b border-[#0f2a71] relative">
-          {!isCollapsed ? (
-            <div className="flex items-center gap-3">
-              <img 
-                src="/ffsc_logo.png" 
-                alt="FFSC Logo" 
-                className="w-12 h-12 object-contain"
-              />
-              <div>
-                <h1 className="text-xl font-bold text-[#f4d642]">FFSC Anniversary</h1>
-                <p className="text-gray-400 text-sm mt-1">Management System</p>
-              </div>
-            </div>
-          ) : (
-            <img 
-              src="/ffsc_logo.png" 
-              alt="FFSC Logo" 
-              className="w-10 h-10 object-contain mx-auto"
-            />
-          )}
+
           
           {/* Collapse Button - Desktop Only */}
           <button
@@ -54,10 +35,10 @@ export default function Sidebar({ currentView, setCurrentView, isCollapsed, setI
           >
             {isCollapsed ? <ChevronRight size={16} /> : <ChevronRight size={16} className="rotate-180" />}
           </button>
-        </div>
+        
 
         {/* Navigation */}
-        <nav className="p-4">
+        <nav className={`${isCollapsed ? 'p-2' : 'p-4'}`}>
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
@@ -70,13 +51,13 @@ export default function Sidebar({ currentView, setCurrentView, isCollapsed, setI
                   setIsMobileMenuOpen(false);
                 }}
                 title={isCollapsed ? item.label : ''}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-all duration-200 ${
+                className={`w-full flex items-center gap-3 rounded-lg mb-2 transition-all duration-200 ${
                   isActive
-                    ? 'bg-[#f4d642] text-[#001740] font-semibold shadow-lg'
-                    : 'text-gray-300 hover:bg-[#0f2a71] hover:text-white'
-                } ${isCollapsed ? 'justify-center' : ''}`}
+                    ? 'bg-[#e2e8f8] text-[#0f204e]'
+                    : 'text-gray-500 hover:bg-[#e2e8f8]'
+                } ${isCollapsed ? 'justify-center px-1 py-3' : 'px-4 py-3'}`}
               >
-                <Icon size={20} />
+                <Icon size={18} />
                 {!isCollapsed && <span>{item.label}</span>}
               </button>
             );
@@ -85,7 +66,7 @@ export default function Sidebar({ currentView, setCurrentView, isCollapsed, setI
 
         {/* Footer */}
         {!isCollapsed && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#0f2a71]">
+          <div className="absolute bottom-0 left-0 right-0 p-4">
             <div className="text-xs text-gray-400 text-center">
               © 2026 FFSC
             </div>

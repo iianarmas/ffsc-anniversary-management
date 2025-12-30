@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import ShirtSearchAndFilters from './ShirtSearchAndFilters';
-import { ChevronUp, Search } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronUp, Search, Filter, DollarSign, Package, Clock, Users } from 'lucide-react';
+import Header from './Header';
+import StatsBar from './StatsBar';
+import ShirtActionButtons from './ShirtActionButtons';
+import Pagination from './Pagination';
 
 export default function ShirtManagementView({ 
   people, 
@@ -22,6 +25,18 @@ export default function ShirtManagementView({
   setShirtFilterSize,
   onResetFilters
 }) {
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+
+  // Pagination measurement for fixed pagination layout
+  const paginationRef = useRef(null);
+  const [paginationHeight, setPaginationHeight] = useState(0);
+
+  // Action bar ref & measured height (so table header top can match)
+  const actionBarRef = useRef(null);
+  const [actionBarHeight, setActionBarHeight] = useState(60);
+
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
@@ -37,99 +52,398 @@ export default function ShirtManagementView({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  return (
-      <>
-        {/* Title, Counter, Search, and Stats - Non-sticky */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Anniversary Shirt Management</h2>
-            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg px-6 py-3">
-              <span className="text-2xl font-bold text-blue-700">{people.length}</span>
-              <span className="text-sm text-blue-600 ml-2">{people.length === 1 ? 'Person' : 'People'}</span>
-            </div>
-          </div>
+  const [openFilter, setOpenFilter] = useState(null);
+  const filterRefs = useRef({});
 
-          {/* Search Bar */}
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search by name..."
-              value={shirtSearchTerm}
-              onChange={(e) => setShirtSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openFilter && filterRefs.current[openFilter] && !filterRefs.current[openFilter].contains(event.target)) {
+        setOpenFilter(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openFilter]);
+
+  const FilterDropdown = ({ column, options, value, onChange }) => (
+    <div className="relative" ref={el => filterRefs.current[column] = el}>
+      <Filter 
+        size={14} 
+        className={`cursor-pointer transition ${value !== 'All' ? 'text-[#f4d642]' : 'text-gray-400 hover:text-gray-600'}`}
+        onClick={() => setOpenFilter(openFilter === column ? null : column)}
+      />
+      {openFilter === column && (
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+          <div className="py-1">
+            {options.map(option => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  onChange(option.value);
+                  setOpenFilter(null);
+                }}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
+                  value === option.value ? 'bg-[#fffdf0] text-[#001740] font-semibold' : 'text-gray-700'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = people.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
+  // Table container ref and pagination behavior
+  const tableContainerRef = useRef(null);
+  const [useFixedPagination, setUseFixedPagination] = useState(false);
+
+  useEffect(() => {
+    const check = () => {
+      const el = tableContainerRef.current;
+      if (!el) return setUseFixedPagination(false);
+      setUseFixedPagination(el.scrollHeight > el.clientHeight);
+    };
+
+    const t = setTimeout(check, 0);
+    window.addEventListener('resize', check);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('resize', check);
+    };
+  }, [people.length, itemsPerPage, currentPage]);
+
+  // Observe pagination height changes (so scroller can subtract exact height)
+  useEffect(() => {
+    const el = paginationRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      const h = Math.ceil(el.getBoundingClientRect().height || 0);
+      setPaginationHeight(h);
+    };
+
+    measure();
+
+    let ro;
+    if (window.ResizeObserver) {
+      ro = new ResizeObserver(() => {
+        measure();
+        // re-check overflow after pagination size change
+        setTimeout(() => {
+          const t = tableContainerRef.current;
+          if (t) setUseFixedPagination(t.scrollHeight > t.clientHeight);
+        }, 0);
+      });
+      ro.observe(el);
+    } else {
+      const handler = () => {
+        measure();
+        setTimeout(() => {
+          const t = tableContainerRef.current;
+          if (t) setUseFixedPagination(t.scrollHeight > t.clientHeight);
+        }, 0);
+      };
+      window.addEventListener('resize', handler);
+      return () => window.removeEventListener('resize', handler);
+    }
+
+    return () => ro && ro.disconnect();
+  }, [useFixedPagination]);
+
+  // Measure action bar height so table headers can align exactly below it
+  useEffect(() => {
+    const el = actionBarRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      const h = Math.ceil(el.getBoundingClientRect().height || 0);
+      setActionBarHeight(h);
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.debug('ShirtManagement actionBarHeight', h);
+      }
+    };
+
+    measure();
+
+    let ro;
+    if (window.ResizeObserver) {
+      ro = new ResizeObserver(() => {
+        measure();
+        // re-check overflow after action bar size change
+        setTimeout(() => {
+          const t = tableContainerRef.current;
+          if (t) setUseFixedPagination(t.scrollHeight > t.clientHeight);
+        }, 0);
+      });
+      ro.observe(el);
+    } else {
+      const handler = () => {
+        measure();
+        setTimeout(() => {
+          const t = tableContainerRef.current;
+          if (t) setUseFixedPagination(t.scrollHeight > t.clientHeight);
+        }, 0);
+      };
+      window.addEventListener('resize', handler);
+      return () => window.removeEventListener('resize', handler);
+    }
+
+    return () => ro && ro.disconnect();
+  }, []);
+
+  return (
+    <>
+      {/* Print-only content */}
+      <div className="print-content hidden">
+        <div className="p-8">
+          <h1 className="text-3xl font-bold mb-2">FFSC Anniversary Management</h1>
+          <h2 className="text-xl font-semibold mb-1">Shirt Management View</h2>
+          
+          {/* Active Filters */}
+          <div className="mb-4 text-sm text-gray-600">
+            <strong>Active Filters:</strong>
+            {shirtSearchTerm && ` Search: "${shirtSearchTerm}"`}
+            {shirtFilterAge !== 'All' && ` | Age: ${shirtFilterAge}`}
+            {shirtFilterLocation !== 'All' && ` | Location: ${shirtFilterLocation}`}
+            {shirtFilterSize !== 'All' && ` | Size: ${shirtFilterSize}`}
+            {shirtFilterPayment !== 'All' && ` | Payment: ${shirtFilterPayment}`}
+            {shirtFilterDistribution !== 'All' && ` | Distribution: ${shirtFilterDistribution}`}
+            {!shirtSearchTerm && shirtFilterAge === 'All' && shirtFilterLocation === 'All' && shirtFilterSize === 'All' && shirtFilterPayment === 'All' && shirtFilterDistribution === 'All' && ' None'}
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="text-xl font-bold text-blue-700">{stats.paid}</div>
-              <div className="text-sm text-blue-600">Paid</div>
-            </div>
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="text-xl font-bold text-red-700">{stats.unpaid}</div>
-              <div className="text-sm text-red-600">Unpaid</div>
-            </div>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="text-xl font-bold text-green-700">{stats.shirtsGiven}</div>
-              <div className="text-sm text-green-600">Shirts Given</div>
-            </div>
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <div className="text-xl font-bold text-orange-700">{stats.shirtsPending}</div>
-              <div className="text-sm text-orange-600">Pending Distribution</div>
+          <p className="mb-6 text-sm">Total: {people.length} {people.length === 1 ? 'person' : 'people'}</p>
+          
+          <table className="w-full border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Age</th>
+                <th className="border border-gray-300 px-4 py-2 text-left font-normal">Age Bracket</th>
+                <th className="border border-gray-300 px-4 py-2 text-left font-normal">Location</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Shirt Size</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Payment</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Distribution</th>
+              </tr>
+            </thead>
+            <tbody>
+              {people.map((person) => (
+                <tr key={person.id}>
+                  <td className="border border-gray-300 px-4 py-2">{person.firstName} {person.lastName}</td>
+                  <td className="border border-gray-300 px-4 py-2">{person.age}</td>
+                  <td className="border border-gray-300 px-4 py-2">{person.ageBracket}</td>
+                  <td className="border border-gray-300 px-4 py-2">{person.location}</td>
+                  <td className="border border-gray-300 px-4 py-2">{person.shirtSize || '—'}</td>
+                  <td className="border border-gray-300 px-4 py-2">{person.paid ? 'Paid' : 'Unpaid'}</td>
+                  <td className="border border-gray-300 px-4 py-2">{person.shirtGiven ? 'Given' : 'Pending'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Screen content */}
+      <div className="no-print">
+        {/* Header */}
+        <Header
+          viewTitle="Anniversary Shirt Management"
+          searchTerm={shirtSearchTerm}
+          setSearchTerm={setShirtSearchTerm}
+          searchPlaceholder="Search by name..."
+        />
+
+        <div className="p-4 bg-white">
+          <div className="sticky top-16 z-20 py-2 border-b border-gray-100 mb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Anniversary Shirt Management</h2>
+                <p className="text-sm text-gray-600 mt-1">Track shirt payments, sizes, and distribution status</p>
+              </div>
+              <div className="text-sm text-gray-500 flex items-baseline gap-2">
+                <Users size={18} className="text-gray-400" />
+                <span className="font-semibold text-gray-900 text-lg">{people.length}</span>
+                <span className="text-gray-500">{people.length === 1 ? 'person' : 'people'}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Sticky Section - Filters Only */}
-        <div className="sticky top-0 z-10 bg-[#fffdf0] pb-6">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <ShirtSearchAndFilters
-              filterAge={shirtFilterAge}
-              setFilterAge={setShirtFilterAge}
-              filterLocation={shirtFilterLocation}
-              setFilterLocation={setShirtFilterLocation}
-              filterPayment={shirtFilterPayment}
-              setFilterPayment={setShirtFilterPayment}
-              filterDistribution={shirtFilterDistribution}
-              setFilterDistribution={setShirtFilterDistribution}
-              filterShirtSize={shirtFilterSize}
-              setFilterShirtSize={setShirtFilterSize}
-              onResetFilters={onResetFilters}
-            />
-          </div>
-        </div>
 
-        {/* Table Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mt-6">
-          {people.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              No people found matching your search criteria
+
+        {/* Table Section (fixed area) — scrollable content inside */}
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div
+            className="relative overflow-y-auto"
+            ref={tableContainerRef}
+            style={{ maxHeight: 'calc(100vh - 12.7rem)' }}
+          >
+            <div ref={actionBarRef} className="sticky top-0 z-30 bg-white">
+              <ShirtActionButtons
+                hasActiveFilters={
+                  shirtFilterAge !== 'All' || 
+                  shirtFilterLocation !== 'All' || 
+                  shirtFilterPayment !== 'All' || 
+                  shirtFilterDistribution !== 'All' || 
+                  shirtFilterSize !== 'All'
+                }
+                onResetFilters={onResetFilters}
+                stats={[
+                  { Icon: DollarSign, label: 'Paid', value: stats.paid },
+                  { Icon: DollarSign, label: 'Unpaid', value: stats.unpaid },
+                  { Icon: Package, label: 'Given', value: stats.shirtsGiven },
+                  { Icon: Clock, label: 'Pending', value: stats.shirtsPending }
+                ]}
+              />
             </div>
-          ) : (
+
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Shirt Size</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Payment Status</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Shirt Given</th>
-                  </tr>
+              {people.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  No people found matching your search criteria
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead className="bg-white border">
+                    <tr>
+                      <th className="px-4 py-1 border-r text-left text-sm font-semibold text-gray-700">
+
+                        <div className="flex items-center">
+                          <span>Name</span>
+                        </div>
+                      </th>
+                      <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700 sticky z-10">
+                        <div className="flex items-center">
+                          <span>Age</span>
+                        </div>
+                      </th>
+                      <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700 sticky z-10">
+                        <div className="flex items-center justify-between">
+                          <span>Age Bracket</span>
+                          <FilterDropdown 
+                            column="ageBracket"
+                            options={[
+                              { value: 'All', label: 'All Ages' },
+                              { value: 'Toddler', label: 'Toddlers' },
+                              { value: 'Kid', label: 'Kids' },
+                              { value: 'Youth', label: 'Youths' },
+                              { value: 'Adult', label: 'Adults' }
+                            ]}
+                            value={shirtFilterAge}
+                            onChange={setShirtFilterAge}
+                          />
+                        </div>
+                      </th>
+                      <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                        <div className="flex items-center justify-between">
+                          <span>Location</span>
+                          <FilterDropdown 
+                            column="location"
+                            options={[
+                              { value: 'All', label: 'All Locations' },
+                              { value: 'Main', label: 'Main' },
+                              { value: 'Cobol', label: 'Cobol' },
+                              { value: 'Malacañang', label: 'Malacañang' },
+                              { value: 'Guest', label: 'Guest' }
+                            ]}
+                            value={shirtFilterLocation}
+                            onChange={setShirtFilterLocation}
+                          />
+                        </div>
+                      </th>
+                      <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                        <div className="flex items-center justify-between">
+                          <span>Shirt Size</span>
+                          <FilterDropdown 
+                            column="shirtSize"
+                            options={[
+                              { value: 'All', label: 'All Sizes' },
+                              { value: '#4 (XS) 1-2', label: '#4 (XS) 1-2' },
+                              { value: '#6 (S) 3-4', label: '#6 (S) 3-4' },
+                              { value: '#8 (M) 5-6', label: '#8 (M) 5-6' },
+                              { value: '#10 (L) 7-8', label: '#10 (L) 7-8' },
+                              { value: '#12 (XL) 9-10', label: '#12 (XL) 9-10' },
+                              { value: '#14 (2XL) 11-12', label: '#14 (2XL) 11-12' },
+                              { value: 'TS', label: 'TS' },
+                              { value: 'XS', label: 'XS' },
+                              { value: 'S', label: 'S' },
+                              { value: 'M', label: 'M' },
+                              { value: 'L', label: 'L' },
+                              { value: 'XL', label: 'XL' },
+                              { value: '2XL', label: '2XL' },
+                              { value: 'None yet', label: 'None yet' }
+                            ]}
+                            value={shirtFilterSize}
+                            onChange={setShirtFilterSize}
+                          />
+                        </div>
+                      </th>
+                      <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                        <div className="flex items-center justify-between">
+                          <span>Payment Status</span>
+                          <FilterDropdown 
+                            column="payment"
+                            options={[
+                              { value: 'All', label: 'All Payment' },
+                              { value: 'Paid', label: 'Paid' },
+                              { value: 'Unpaid', label: 'Unpaid' }
+                            ]}
+                            value={shirtFilterPayment}
+                            onChange={setShirtFilterPayment}
+                          />
+                        </div>
+                      </th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
+                        <div className="flex items-center justify-between">
+                          <span>Distribution Status</span>
+                          <FilterDropdown 
+                            column="distribution"
+                            options={[
+                              { value: 'All', label: 'All Distribution' },
+                              { value: 'Given', label: 'Given' },
+                              { value: 'Pending', label: 'Pending' }
+                            ]}
+                            value={shirtFilterDistribution}
+                            onChange={setShirtFilterDistribution}
+                          />
+                        </div>
+                      </th>
+                    </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {people.map((person) => (
-                    <tr key={person.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                      <div>
+                <tbody>
+                  {currentItems.map((person, index) => (
+                    <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''}`}>
+                      <td className="px-4 py-3 text-left">
                         <div className="font-medium text-gray-900">
                           {person.firstName} {person.lastName}
                         </div>
-                        <div className="text-sm text-gray-500">
-                          Age: {person.age}
-                        </div>
-                      </div>
-                    </td>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-sm text-gray-700">{person.age}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-sm text-gray-700">{person.ageBracket}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-sm text-gray-700">{person.location}</div>
+                      </td>
                       <td className="px-4 py-3">
                         <select
                           value={person.shirtSize || ''}
@@ -169,31 +483,66 @@ export default function ShirtManagementView({
                           onClick={() => toggleShirtGiven(person.id)}
                           className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
                             person.shirtGiven
-                              ? 'bg-green-100 text-green-800 border border-green-300 hover:bg-green-200'
-                              : 'bg-yellow-100 text-yellow-800 border border-yellow-300 hover:bg-yellow-200'
+                              ? 'bg-green-600 text-white hover:bg-green-700'
+                              : 'bg-yellow-500 text-white hover:bg-yellow-400'
                           }`}
                         >
                           {person.shirtGiven ? 'Given' : 'Pending'}
                         </button>
                       </td>
+                      <td className="px-4 py-3"></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            )}
+          </div>
+          </div>
+        </div>
+
+
+          {/* Inline pagination when table doesn't overflow */}
+          {!useFixedPagination && (
+            <div className="mt-4 px-4">
+              <Pagination
+                totalItems={people.length}
+                itemsPerPage={itemsPerPage}
+                currentPage={currentPage}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
+              />
             </div>
           )}
-        </div>
+
+          {/* Fixed pagination when table overflows */}
+          {useFixedPagination && (
+            <div ref={paginationRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200">
+              <Pagination
+                totalItems={people.length}
+                itemsPerPage={itemsPerPage}
+                currentPage={currentPage}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
+              />
+            </div>
+          )}
+
 
         {/* Back to Top Button */}
         {showBackToTop && (
           <button
             onClick={scrollToTop}
-            className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all duration-300 z-50"
+            className="fixed bottom-20 right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all duration-300 z-50"
             aria-label="Back to top"
           >
             <ChevronUp size={24} />
           </button>
         )}
+        
+        {/* Bottom padding for pagination visibility (only when pagination is inline) */}
+        </div>
+        {!useFixedPagination && <div className="h-16"></div>}
+      </div>
     </>
   );
 }
