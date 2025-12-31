@@ -13,6 +13,10 @@ export default function ActionButtons({
   onResetFilters,
   stats = []
 }) {
+
+  // Debug logging
+  console.log('ActionButtons - selectedPeople:', selectedPeople, 'length:', selectedPeople.length);
+
   return (
     <div className="bg-white px-4 py-3 flex items-center justify-between min-h-[60px]">
       <div className="flex items-center gap-4">
@@ -59,6 +63,7 @@ export default function ActionButtons({
         )}
       </div>
 
+
       {/* Right side buttons */}
       <div className="flex items-center gap-2">
         {selectedPeople.length > 0 && (
@@ -68,14 +73,14 @@ export default function ActionButtons({
               className="flex items-center gap-2 px-4 py-2 border border-[#0f2a71] hover:border-[#1c3b8d] text-slate-600 hover:text-[#1c3b8d] rounded-lg font-medium transition text-sm"
             >
               <UserPlus size={16} />
-              Add to Registered
+              Register
             </button>
             <button
               onClick={handleBulkRemove}
               className="flex items-center gap-2 px-4 py-2 border border-[#0f2a71] hover:border-[#1c3b8d] text-slate-600 hover:text-[#1c3b8d] rounded-lg font-medium transition text-sm"
             >
               <UserMinus size={16} />
-              Remove from Registered
+              Remove
             </button>
           </>
         )}
@@ -86,7 +91,7 @@ export default function ActionButtons({
             className="flex items-center gap-2 px-4 py-2 bg-[#0f204e] hover:bg-[#1c3b8d] text-white rounded-lg font-medium transition text-sm"
           >
             <RotateCcw size={16} />
-            Reset Filters
+            Reset
           </button>
         )}
 
@@ -95,7 +100,7 @@ export default function ActionButtons({
           className="flex items-center gap-2 px-4 py-2 bg-[#0f2a71] hover:bg-[#1c3b8d] text-white rounded-lg font-medium transition text-sm"
         >
           <Printer size={16} />
-          Print List
+          Print
         </button>
       </div>
     </div>

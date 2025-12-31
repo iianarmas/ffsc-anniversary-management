@@ -232,10 +232,10 @@ useEffect(() => {
 
               <div className="overflow-x-auto">
                 <PeopleTable
-                  filteredAndSortedPeople={currentItems}
+                  filteredAndSortedPeople={filteredAndSortedPeople}
+                  pagePeople={currentItems}
                   selectedPeople={selectedPeople}
                   handleSelectPerson={handleSelectPerson}
-                  handleSelectAll={handleSelectAll}
                   filterAge={filterAge}
                   setFilterAge={setFilterAge}
                   filterLocation={filterLocation}

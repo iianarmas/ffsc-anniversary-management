@@ -222,11 +222,7 @@ useEffect(() => {
   };
 
   const handleSelectAll = () => {
-    if (selectedPeople.length === filteredAndSortedPeople.length) {
-      setSelectedPeople([]);
-    } else {
-      setSelectedPeople(filteredAndSortedPeople.map(p => p.id));
-    }
+    setSelectedPeople(filteredAndSortedPeople.map(p => p.id));
   };
 
   const handleBulkRegister = async () => {

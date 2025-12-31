@@ -5,9 +5,9 @@ import { Filter } from 'lucide-react';
 
 export default function PeopleTable({ 
   filteredAndSortedPeople, 
+  pagePeople,
   selectedPeople, 
   handleSelectPerson, 
-  handleSelectAll,
   filterAge,
   setFilterAge,
   filterLocation,
@@ -23,6 +23,7 @@ export default function PeopleTable({
   }
   const [openFilter, setOpenFilter] = useState(null);
   const filterRefs = useRef({});
+  const selectAllCheckboxRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -34,6 +35,19 @@ export default function PeopleTable({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openFilter]);
+
+  // Control the select-all checkbox appearance
+  useEffect(() => {
+    if (selectAllCheckboxRef.current) {
+      // Check if any or all VISIBLE items on current page are selected
+      const visibleIds = pagePeople.map(p => p.id);
+      const selectedVisibleIds = selectedPeople.filter(id => visibleIds.includes(id));
+      const allVisibleSelected = selectedVisibleIds.length === pagePeople.length && pagePeople.length > 0;
+      const anyVisibleSelected = selectedVisibleIds.length > 0;
+      selectAllCheckboxRef.current.indeterminate = false;
+      selectAllCheckboxRef.current.checked = anyVisibleSelected;
+    }
+  }, [selectedPeople, pagePeople]);
 
   const FilterDropdown = ({ column, options, value, onChange }) => (
     <div className="relative" ref={el => filterRefs.current[column] = el}>
@@ -73,18 +87,31 @@ export default function PeopleTable({
             <tr>
               <th className="px-2 py-1 text-left border w-12 text-center">
                 <input
+                  ref={selectAllCheckboxRef}
                   type="checkbox"
-                  checked={selectedPeople.length === filteredAndSortedPeople.length && filteredAndSortedPeople.length > 0}
-                  onChange={() => {
-                    if (selectedPeople.length === filteredAndSortedPeople.length) {
-                      // If all selected, deselect all
-                      filteredAndSortedPeople.forEach(person => handleSelectPerson(person.id));
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    // Check if all visible items on current page are selected
+                    const visibleIds = pagePeople.map(p => p.id);
+                    const selectedVisibleIds = selectedPeople.filter(id => visibleIds.includes(id));
+                    const allVisibleSelected = selectedVisibleIds.length === pagePeople.length;
+                    if (allVisibleSelected) {
+                      // Deselect all visible items on this page
+                      const idsToDeselect = pagePeople
+                        .filter(person => selectedPeople.includes(person.id))
+                        .map(person => person.id);
+                      idsToDeselect.forEach(id => handleSelectPerson(id));
                     } else {
-                      // Otherwise, select all
-                      handleSelectAll();
+                      // Select all visible items on this page
+                      pagePeople.forEach(person => {
+                        if (!selectedPeople.includes(person.id)) {
+                          handleSelectPerson(person.id);
+                        }
+                      });
                     }
                   }}
-                  className="w-4 h-4 text-blue-600 rounded"
+                  className="w-4 h-4 rounded accent-[#0f2a71] cursor-pointer"
+                  style={{ accentColor: '#0f2a71' }}
                 />
               </th>
               <th className="px-4 py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
@@ -154,14 +181,15 @@ export default function PeopleTable({
             </tr>
           </thead>
           <tbody>
-            {filteredAndSortedPeople.map((person, index) => (
+            {pagePeople.map((person, index) => (
               <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''}`}>
                 <td className="px-3 py-3 border-r border-l text-center w-30">
                   <input
                     type="checkbox"
                     checked={selectedPeople.includes(person.id)}
                     onChange={() => handleSelectPerson(person.id)}
-                    className="w-4 h-4 text-blue-600 rounded"
+                    className="w-4 h-4 rounded accent-[#0f2a71] cursor-pointer"
+                    style={{ accentColor: '#0f2a71' }}
                   />
                 </td>
                 <td className="px-4 py-3 text-left border-r">
