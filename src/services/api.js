@@ -179,3 +179,54 @@ export const toggleShirtGiven = async (personId, currentGiven) => {
     return false;
   }
 };
+
+// Create new person with shirt and registration
+export const createPerson = async (personData) => {
+  try {
+    // 1. Insert person
+    const { data: person, error: personError } = await supabase
+      .from('people')
+      .insert({
+        first_name: personData.firstName,
+        last_name: personData.lastName,
+        age: personData.age || null,
+        gender: personData.gender || null,
+        location: personData.location,
+        contact_number: personData.contactNumber || null
+      })
+      .select()
+      .single();
+
+    if (personError) throw personError;
+
+    // 2. Insert shirt record if shirt size provided
+    if (personData.shirtSize) {
+      const { error: shirtError } = await supabase
+        .from('shirts')
+        .insert({
+          person_id: person.id,
+          shirt_size: personData.shirtSize,
+          paid: personData.paid || false,
+          shirt_given: personData.shirtGiven || false
+        });
+
+      if (shirtError) throw shirtError;
+    }
+
+    // 3. Insert initial registration record (not checked in yet)
+    const { error: regError } = await supabase
+      .from('registrations')
+      .insert({
+        person_id: person.id,
+        registered: false,
+        registered_at: null
+      });
+
+    if (regError) throw regError;
+
+    return { success: true, person };
+  } catch (error) {
+    console.error('Error creating person:', error);
+    return { success: false, error };
+  }
+};
