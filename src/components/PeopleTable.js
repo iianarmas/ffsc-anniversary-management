@@ -143,6 +143,16 @@ export default function PeopleTable({
                 </div>
               </th>
               <th className="px-4 py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
+                <div className="flex items-center">
+                  <span>Gender</span>
+                </div>
+              </th>
+              <th className="px-4 py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
+                <div className="flex items-center">
+                  <span>Contact Number</span>
+                </div>
+              </th>
+              <th className="px-4 py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
                 <div className="flex items-center justify-between">
                   <span>Location</span>
                   <FilterDropdown 
@@ -210,6 +220,12 @@ export default function PeopleTable({
                   </td>
                   <td className="px-4 py-3 text-left border-r">
                     <div className="text-sm text-gray-700">{person.ageBracket}</div>
+                  </td>
+                  <td className="px-4 py-3 text-left border-r">
+                    <div className="text-sm text-gray-700">{person.gender}</div>
+                  </td>
+                  <td className="px-4 py-3 text-left border-r">
+                    <div className="text-sm text-gray-700">{person.contactNumber}</div>
                   </td>
                   <td className="px-4 py-3 text-left border-r">
                     <div className="text-sm text-gray-700">{person.location}</div>

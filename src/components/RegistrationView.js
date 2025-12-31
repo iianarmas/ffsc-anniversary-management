@@ -170,6 +170,8 @@ useEffect(() => {
                   <td className="border border-gray-300 px-4 py-2">{person.firstName} {person.lastName}</td>
                   <td className="border border-gray-300 px-4 py-2">{person.age}</td>
                   <td className="border border-gray-300 px-4 py-2">{person.ageBracket}</td>
+                  <td className="border border-gray-300 px-4 py-2">{person.gender}</td>
+                  <td className="border border-gray-300 px-4 py-2">{person.contactNumber}</td>
                   <td className="border border-gray-300 px-4 py-2">{person.location}</td>
                   <td className="border border-gray-300 px-4 py-2">{person.registered ? 'Checked In' : 'Pending'}</td>
                   <td className="border border-gray-300 px-4 py-2">
@@ -234,7 +236,7 @@ useEffect(() => {
                   handleBulkRemove={handleBulkRemove}
                   handlePrint={handlePrint}
                   handleDeselectAll={() => selectedPeople.forEach(id => handleSelectPerson(id))}
-                  hasActiveFilters={filterAge !== 'All' || filterLocation !== 'All' || filterStatus !== 'All'}
+                  hasActiveFilters={filterAge !== 'All' || filterLocation !== 'All' || filterStatus !== 'All' || searchTerm.trim() !== ''}
                   onResetFilters={onResetFilters}
                   stats={[
                     { Icon: Users, label: 'Total', value: people.length },
