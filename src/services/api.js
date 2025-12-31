@@ -31,6 +31,7 @@ export const fetchAllPeople = async () => {
       firstName: person.first_name,
       lastName: person.last_name,
       age: person.age,
+      gender: person.gender, // Add gender field
       ageBracket: getAgeBracket(person.age),
       location: person.location === 'GUEST' ? 'Guest' : person.location,
       contactNumber: person.contact_number,

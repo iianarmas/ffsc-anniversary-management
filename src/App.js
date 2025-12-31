@@ -64,6 +64,7 @@ useEffect(() => {
           firstName: payload.new?.first_name,
           lastName: payload.new?.last_name,
           age: payload.new?.age,
+          gender: payload.new?.gender, // Add gender field
           ageBracket: payload.new ? getAgeBracket(payload.new.age) : 'Adult',
           location: payload.new?.location === 'GUEST' ? 'Guest' : payload.new?.location,
           contactNumber: payload.new?.contact_number,
