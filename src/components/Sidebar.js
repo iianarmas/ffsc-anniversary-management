@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Users, Shirt, Menu, X, BarChart3, ChevronRight } from 'lucide-react';
 
-export default function Sidebar({ currentView, setCurrentView, isCollapsed, setIsCollapsed }) {
+export default function Sidebar({ currentView, setCurrentView }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
@@ -20,25 +20,14 @@ export default function Sidebar({ currentView, setCurrentView, isCollapsed, setI
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
-      {/* Sidebar */}
+      {/* Sidebar - Always Collapsed on Desktop */}
       <div
         className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#edf1fa] text-white transform transition-all duration-300 ease-in-out z-20 ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0 ${isCollapsed ? 'w-16' : 'w-64'}`}
+        } md:translate-x-0 w-16`}
       >
-
-          
-          {/* Collapse Button - Desktop Only */}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden md:block absolute -right-3 top-8 bg-[#f4d642] text-[#001740] rounded-full p-1 shadow-lg hover:bg-[#f4c400] transition-colors"
-          >
-            {isCollapsed ? <ChevronRight size={16} /> : <ChevronRight size={16} className="rotate-180" />}
-          </button>
-        
-
         {/* Navigation */}
-        <nav className={`${isCollapsed ? 'p-2' : 'p-4'}`}>
+        <nav className="p-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
@@ -50,28 +39,18 @@ export default function Sidebar({ currentView, setCurrentView, isCollapsed, setI
                   setCurrentView(item.id);
                   setIsMobileMenuOpen(false);
                 }}
-                title={isCollapsed ? item.label : ''}
-                className={`w-full flex items-center gap-3 rounded-lg mb-2 transition-all duration-200 ${
+                title={item.label}
+                className={`w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 ${
                   isActive
                     ? 'bg-[#e2e8f8] text-[#0f204e]'
                     : 'text-gray-500 hover:bg-[#e2e8f8]'
-                } ${isCollapsed ? 'justify-center px-1 py-3' : 'px-4 py-3'}`}
+                }`}
               >
                 <Icon size={18} />
-                {!isCollapsed && <span>{item.label}</span>}
               </button>
             );
           })}
         </nav>
-
-        {/* Footer */}
-        {!isCollapsed && (
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <div className="text-xs text-gray-400 text-center">
-              © 2026 FFSC
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Overlay for mobile */}

@@ -34,7 +34,6 @@ export default function App() {
   const [shirtFilterSize, setShirtFilterSize] = useState('All');
   const [currentView, setCurrentView] = useState('registration');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   
 
   
@@ -300,10 +299,8 @@ useEffect(() => {
       <Sidebar 
         currentView={currentView} 
         setCurrentView={setCurrentView}
-        isCollapsed={isCollapsed}
-        setIsCollapsed={setIsCollapsed}
       />
-      <div className={`flex-1 px-6 pt-16 ml-0 transition-all duration-300 ${isCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+      <div className="flex-1 px-6 pt-16 ml-0 md:ml-16 transition-all duration-300">
         <div className="w-full">
 
         {currentView === 'dashboard' && (
