@@ -4,6 +4,7 @@ import Header from './Header';
 import StatsBar from './StatsBar';
 import ShirtActionButtons from './ShirtActionButtons';
 import Pagination from './Pagination';
+import AccountSidebar from './AccountSidebar';
 
 export default function ShirtManagementView({ 
   people, 
@@ -36,6 +37,21 @@ export default function ShirtManagementView({
   // Action bar ref & measured height (so table header top can match)
   const actionBarRef = useRef(null);
   const [actionBarHeight, setActionBarHeight] = useState(60);
+
+
+  // Sidebar state for account view
+  const [selectedPerson, setSelectedPerson] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleOpenPerson = (person) => {
+    setSelectedPerson(person);
+    setSidebarOpen(true);
+  };
+
+  const handleCloseSidebar = () => {
+    setSidebarOpen(false);
+    setTimeout(() => setSelectedPerson(null), 300);
+  };
 
   const [showBackToTop, setShowBackToTop] = useState(false);
 
@@ -315,187 +331,194 @@ export default function ShirtManagementView({
             </div>
 
             <div className="overflow-x-auto">
-              {people.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  No people found matching your search criteria
-                </div>
-              ) : (
-                <table className="w-full">
-                  <thead className="bg-white border">
-                    <tr>
-                      <th className="px-4 py-1 border-r text-left text-sm font-semibold text-gray-700">
-
-                        <div className="flex items-center">
-                          <span>Name</span>
-                        </div>
-                      </th>
-                      <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700 sticky z-10">
-                        <div className="flex items-center">
-                          <span>Age</span>
-                        </div>
-                      </th>
-                      <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700 sticky z-10">
-                        <div className="flex items-center justify-between">
-                          <span>Age Bracket</span>
-                          <FilterDropdown 
-                            column="ageBracket"
-                            options={[
-                              { value: 'All', label: 'All Ages' },
-                              { value: 'Toddler', label: 'Toddlers' },
-                              { value: 'Kid', label: 'Kids' },
-                              { value: 'Youth', label: 'Youths' },
-                              { value: 'Adult', label: 'Adults' }
-                            ]}
-                            value={shirtFilterAge}
-                            onChange={setShirtFilterAge}
-                          />
-                        </div>
-                      </th>
-                      <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
-                        <div className="flex items-center justify-between">
-                          <span>Location</span>
-                          <FilterDropdown 
-                            column="location"
-                            options={[
-                              { value: 'All', label: 'All Locations' },
-                              { value: 'Main', label: 'Main' },
-                              { value: 'Cobol', label: 'Cobol' },
-                              { value: 'Malacañang', label: 'Malacañang' },
-                              { value: 'Guest', label: 'Guest' }
-                            ]}
-                            value={shirtFilterLocation}
-                            onChange={setShirtFilterLocation}
-                          />
-                        </div>
-                      </th>
-                      <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
-                        <div className="flex items-center justify-between">
-                          <span>Shirt Size</span>
-                          <FilterDropdown 
-                            column="shirtSize"
-                            options={[
-                              { value: 'All', label: 'All Sizes' },
-                              { value: '#4 (XS) 1-2', label: '#4 (XS) 1-2' },
-                              { value: '#6 (S) 3-4', label: '#6 (S) 3-4' },
-                              { value: '#8 (M) 5-6', label: '#8 (M) 5-6' },
-                              { value: '#10 (L) 7-8', label: '#10 (L) 7-8' },
-                              { value: '#12 (XL) 9-10', label: '#12 (XL) 9-10' },
-                              { value: '#14 (2XL) 11-12', label: '#14 (2XL) 11-12' },
-                              { value: 'TS', label: 'TS' },
-                              { value: 'XS', label: 'XS' },
-                              { value: 'S', label: 'S' },
-                              { value: 'M', label: 'M' },
-                              { value: 'L', label: 'L' },
-                              { value: 'XL', label: 'XL' },
-                              { value: '2XL', label: '2XL' },
-                              { value: 'None yet', label: 'None yet' }
-                            ]}
-                            value={shirtFilterSize}
-                            onChange={setShirtFilterSize}
-                          />
-                        </div>
-                      </th>
-                      <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
-                        <div className="flex items-center justify-between">
-                          <span>Payment Status</span>
-                          <FilterDropdown 
-                            column="payment"
-                            options={[
-                              { value: 'All', label: 'All Payment' },
-                              { value: 'Paid', label: 'Paid' },
-                              { value: 'Unpaid', label: 'Unpaid' }
-                            ]}
-                            value={shirtFilterPayment}
-                            onChange={setShirtFilterPayment}
-                          />
-                        </div>
-                      </th>
-                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-                        <div className="flex items-center justify-between">
-                          <span>Distribution Status</span>
-                          <FilterDropdown 
-                            column="distribution"
-                            options={[
-                              { value: 'All', label: 'All Distribution' },
-                              { value: 'Given', label: 'Given' },
-                              { value: 'Pending', label: 'Pending' }
-                            ]}
-                            value={shirtFilterDistribution}
-                            onChange={setShirtFilterDistribution}
-                          />
-                        </div>
-                      </th>
-                    </tr>
+              <table className="w-full">
+                <thead className="bg-white border">
+                  <tr>
+                    <th className="px-4 py-1 border-r text-left text-sm font-semibold text-gray-700">
+                      <div className="flex items-center">
+                        <span>Name</span>
+                      </div>
+                    </th>
+                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700 sticky z-10">
+                      <div className="flex items-center">
+                        <span>Age</span>
+                      </div>
+                    </th>
+                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700 sticky z-10">
+                      <div className="flex items-center justify-between">
+                        <span>Age Bracket</span>
+                        <FilterDropdown 
+                          column="ageBracket"
+                          options={[
+                            { value: 'All', label: 'All Ages' },
+                            { value: 'Toddler', label: 'Toddlers' },
+                            { value: 'Kid', label: 'Kids' },
+                            { value: 'Youth', label: 'Youths' },
+                            { value: 'Adult', label: 'Adults' }
+                          ]}
+                          value={shirtFilterAge}
+                          onChange={setShirtFilterAge}
+                        />
+                      </div>
+                    </th>
+                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                      <div className="flex items-center justify-between">
+                        <span>Location</span>
+                        <FilterDropdown 
+                          column="location"
+                          options={[
+                            { value: 'All', label: 'All Locations' },
+                            { value: 'Main', label: 'Main' },
+                            { value: 'Cobol', label: 'Cobol' },
+                            { value: 'Malacañang', label: 'Malacañang' },
+                            { value: 'Guest', label: 'Guest' }
+                          ]}
+                          value={shirtFilterLocation}
+                          onChange={setShirtFilterLocation}
+                        />
+                      </div>
+                    </th>
+                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                      <div className="flex items-center justify-between">
+                        <span>Shirt Size</span>
+                        <FilterDropdown 
+                          column="shirtSize"
+                          options={[
+                            { value: 'All', label: 'All Sizes' },
+                            { value: '#4 (XS) 1-2', label: '#4 (XS) 1-2' },
+                            { value: '#6 (S) 3-4', label: '#6 (S) 3-4' },
+                            { value: '#8 (M) 5-6', label: '#8 (M) 5-6' },
+                            { value: '#10 (L) 7-8', label: '#10 (L) 7-8' },
+                            { value: '#12 (XL) 9-10', label: '#12 (XL) 9-10' },
+                            { value: '#14 (2XL) 11-12', label: '#14 (2XL) 11-12' },
+                            { value: 'TS', label: 'TS' },
+                            { value: 'XS', label: 'XS' },
+                            { value: 'S', label: 'S' },
+                            { value: 'M', label: 'M' },
+                            { value: 'L', label: 'L' },
+                            { value: 'XL', label: 'XL' },
+                            { value: '2XL', label: '2XL' },
+                            { value: 'None yet', label: 'None yet' }
+                          ]}
+                          value={shirtFilterSize}
+                          onChange={setShirtFilterSize}
+                        />
+                      </div>
+                    </th>
+                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                      <div className="flex items-center justify-between">
+                        <span>Payment Status</span>
+                        <FilterDropdown 
+                          column="payment"
+                          options={[
+                            { value: 'All', label: 'All Payment' },
+                            { value: 'Paid', label: 'Paid' },
+                            { value: 'Unpaid', label: 'Unpaid' }
+                          ]}
+                          value={shirtFilterPayment}
+                          onChange={setShirtFilterPayment}
+                        />
+                      </div>
+                    </th>
+                    <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
+                      <div className="flex items-center justify-between">
+                        <span>Distribution Status</span>
+                        <FilterDropdown 
+                          column="distribution"
+                          options={[
+                            { value: 'All', label: 'All Distribution' },
+                            { value: 'Given', label: 'Given' },
+                            { value: 'Pending', label: 'Pending' }
+                          ]}
+                          value={shirtFilterDistribution}
+                          onChange={setShirtFilterDistribution}
+                        />
+                      </div>
+                    </th>
+                  </tr>
                 </thead>
                 <tbody>
-                  {currentItems.map((person, index) => (
-                    <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''}`}>
-                      <td className="px-4 py-3 text-left">
-                        <div className="font-medium text-gray-900">
-                          {person.firstName} {person.lastName}
-                        </div>
+                  {currentItems.length > 0 ? (
+                    currentItems.map((person, index) => (
+                      <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''}`}>
+                        <td className="px-4 py-3 text-left">
+                          <div className="font-medium text-gray-900">
+                            <button
+                              onClick={() => handleOpenPerson(person)}
+                              className="text-left w-full text-sm text-[#001740] hover:text-blue-700 transition font-medium focus:outline-none"
+                              aria-label={`Open ${person.firstName} ${person.lastName} details`}
+                            >
+                              {person.firstName} {person.lastName}
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-sm text-gray-700">{person.age}</div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-sm text-gray-700">{person.ageBracket}</div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-sm text-gray-700">{person.location}</div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <select
+                            value={person.shirtSize || ''}
+                            onChange={(e) => updateShirtSize(person.id, e.target.value)}
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select Size</option>
+                            <option value="#4 (XS) 1-2">#4 (XS) 1-2</option>
+                            <option value="#6 (S) 3-4">#6 (S) 3-4</option>
+                            <option value="#8 (M) 5-6">#8 (M) 5-6</option>
+                            <option value="#10 (L) 7-8">#10 (L) 7-8</option>
+                            <option value="#12 (XL) 9-10">#12 (XL) 9-10</option>
+                            <option value="#14 (2XL) 11-12">#14 (2XL) 11-12</option>
+                            <option value="TS">TS</option>
+                            <option value="XS">XS</option>
+                            <option value="S">S</option>
+                            <option value="M">M</option>
+                            <option value="L">L</option>
+                            <option value="XL">XL</option>
+                            <option value="2XL">2XL</option>
+                          </select>
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => toggleShirtPayment(person.id)}
+                            className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
+                              person.paid
+                                ? 'bg-green-100 text-green-800 border border-green-300 hover:bg-green-200'
+                                : 'bg-red-100 text-red-800 border border-red-300 hover:bg-red-200'
+                            }`}
+                          >
+                            {person.paid ? 'Paid' : 'Unpaid'}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => toggleShirtGiven(person.id)}
+                            className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
+                              person.shirtGiven
+                                ? 'bg-green-600 text-white hover:bg-green-700'
+                                : 'bg-yellow-500 text-white hover:bg-yellow-400'
+                            }`}
+                          >
+                            {person.shirtGiven ? 'Given' : 'Pending'}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3"></td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={8} className="text-center py-12 text-gray-500">
+                        No people found matching your search criteria
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="text-sm text-gray-700">{person.age}</div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="text-sm text-gray-700">{person.ageBracket}</div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="text-sm text-gray-700">{person.location}</div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <select
-                          value={person.shirtSize || ''}
-                          onChange={(e) => updateShirtSize(person.id, e.target.value)}
-                          className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">Select Size</option>
-                          <option value="#4 (XS) 1-2">#4 (XS) 1-2</option>
-                          <option value="#6 (S) 3-4">#6 (S) 3-4</option>
-                          <option value="#8 (M) 5-6">#8 (M) 5-6</option>
-                          <option value="#10 (L) 7-8">#10 (L) 7-8</option>
-                          <option value="#12 (XL) 9-10">#12 (XL) 9-10</option>
-                          <option value="#14 (2XL) 11-12">#14 (2XL) 11-12</option>
-                          <option value="TS">TS</option>
-                          <option value="XS">XS</option>
-                          <option value="S">S</option>
-                          <option value="M">M</option>
-                          <option value="L">L</option>
-                          <option value="XL">XL</option>
-                          <option value="2XL">2XL</option>
-                        </select>
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => toggleShirtPayment(person.id)}
-                          className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
-                            person.paid
-                              ? 'bg-green-100 text-green-800 border border-green-300 hover:bg-green-200'
-                              : 'bg-red-100 text-red-800 border border-red-300 hover:bg-red-200'
-                          }`}
-                        >
-                          {person.paid ? 'Paid' : 'Unpaid'}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => toggleShirtGiven(person.id)}
-                          className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
-                            person.shirtGiven
-                              ? 'bg-green-600 text-white hover:bg-green-700'
-                              : 'bg-yellow-500 text-white hover:bg-yellow-400'
-                          }`}
-                        >
-                          {person.shirtGiven ? 'Given' : 'Pending'}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3"></td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
-            )}
           </div>
           </div>
         </div>
@@ -543,6 +566,9 @@ export default function ShirtManagementView({
         </div>
         {!useFixedPagination && <div className="h-16"></div>}
       </div>
+
+      {/* Account details sidebar */}
+      <AccountSidebar person={selectedPerson} open={sidebarOpen} onClose={handleCloseSidebar} />
     </>
   );
 }

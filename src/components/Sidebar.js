@@ -28,26 +28,29 @@ export default function Sidebar({ currentView, setCurrentView }) {
       >
         {/* Navigation */}
         <nav className="p-2">
-          {menuItems.map((item) => {
+          {menuItems.map((item, idx) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
-            
             return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setCurrentView(item.id);
-                  setIsMobileMenuOpen(false);
-                }}
-                title={item.label}
-                className={`w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 ${
-                  isActive
-                    ? 'bg-[#e2e8f8] text-[#0f204e]'
-                    : 'text-gray-500 hover:bg-[#e2e8f8]'
-                }`}
-              >
-                <Icon size={18} />
-              </button>
+              <React.Fragment key={item.id}>
+                <button
+                  onClick={() => {
+                    setCurrentView(item.id);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  title={item.label}
+                  className={`w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 ${
+                    isActive
+                      ? 'bg-[#e2e8f8] text-[#0f204e]'
+                      : 'text-gray-500 hover:bg-[#e2e8f8]'
+                  }`}
+                >
+                  <Icon size={18} />
+                </button>
+                {idx === 0 && (
+                  <div className="border-b border-dashed border-gray-300 mx-2 my-2" />
+                )}
+              </React.Fragment>
             );
           })}
         </nav>

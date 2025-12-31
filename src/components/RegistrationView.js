@@ -5,6 +5,7 @@ import { ChevronUp, Search, Users, CheckCircle, Clock } from 'lucide-react';
 import Header from './Header';
 import StatsBar from './StatsBar';
 import Pagination from './Pagination';
+import AccountSidebar from './AccountSidebar';
 
 export default function RegistrationView({ 
   searchTerm,
@@ -30,6 +31,19 @@ export default function RegistrationView({
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleOpenPerson = (person) => {
+    setSelectedPerson(person);
+    setSidebarOpen(true);
+  };
+
+  const handleCloseSidebar = () => {
+    setSidebarOpen(false);
+    // clear selected person after animation completes
+    setTimeout(() => setSelectedPerson(null), 300);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -242,6 +256,7 @@ useEffect(() => {
                   setFilterLocation={setFilterLocation}
                   filterStatus={filterStatus}
                   setFilterStatus={setFilterStatus}
+                  onOpenPerson={handleOpenPerson}
                   stickyTop={actionBarHeight}
                 />
               </div>
@@ -288,6 +303,10 @@ useEffect(() => {
           {/* Bottom padding for pagination visibility */}
           {!useFixedPagination && <div className="h-16"></div>}
         </div>
+
+        {/* Account details sidebar */}
+        <AccountSidebar person={selectedPerson} open={sidebarOpen} onClose={handleCloseSidebar} />
+
       </div>
     </>
   );

@@ -14,6 +14,7 @@ export default function PeopleTable({
   setFilterLocation,
   filterStatus,
   setFilterStatus,
+  onOpenPerson = () => {},
   stickyTop = 60
 }) {
   // debug: show stickyTop in dev console
@@ -181,68 +182,76 @@ export default function PeopleTable({
             </tr>
           </thead>
           <tbody>
-            {pagePeople.map((person, index) => (
-              <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''}`}>
-                <td className="px-3 py-3 border-r border-l text-center w-30">
-                  <input
-                    type="checkbox"
-                    checked={selectedPeople.includes(person.id)}
-                    onChange={() => handleSelectPerson(person.id)}
-                    className="w-4 h-4 rounded accent-[#0f2a71] cursor-pointer"
-                    style={{ accentColor: '#0f2a71' }}
-                  />
-                </td>
-                <td className="px-4 py-3 text-left border-r">
-                  <div className="font-medium text-gray-900">
-                    {person.firstName} {person.lastName}
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-left border-r">
-                  <div className="text-sm text-gray-700">{person.age}</div>
-                </td>
-                <td className="px-4 py-3 text-left border-r">
-                  <div className="text-sm text-gray-700">{person.ageBracket}</div>
-                </td>
-                <td className="px-4 py-3 text-left border-r">
-                  <div className="text-sm text-gray-700">{person.location}</div>
-                </td>
-                <td className="px-4 py-3 text-left border-r">
-                  {person.registered ? (
-                    <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-green-700 text-white">
-                      Checked In
-                    </span>
-                  ) : (
-                    <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-yellow-500 text-white">
-                      Pending
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-left border-r">
-                  {person.registered && person.registeredAt ? (
-                    <div className="text-xs text-gray-600">
-                      {new Date(person.registeredAt).toLocaleString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+            {pagePeople.length > 0 ? (
+              pagePeople.map((person, index) => (
+                <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''}`}>
+                  <td className="px-3 py-3 border-r border-l text-center w-30">
+                    <input
+                      type="checkbox"
+                      checked={selectedPeople.includes(person.id)}
+                      onChange={() => handleSelectPerson(person.id)}
+                      className="w-4 h-4 rounded accent-[#0f2a71] cursor-pointer"
+                      style={{ accentColor: '#0f2a71' }}
+                    />
+                  </td>
+                  <td className="px-4 py-3 text-left border-r">
+                    <div className="font-medium text-gray-900">
+                      <button
+                        onClick={() => onOpenPerson(person)}
+                        className="text-left w-full text-sm text-[#001740] hover:text-blue-700 transition font-medium focus:outline-none"
+                        aria-label={`Open ${person.firstName} ${person.lastName} details`}
+                      >
+                        {person.firstName} {person.lastName}
+                      </button>
                     </div>
-                  ) : (
-                    <span className="text-xs text-gray-400">—</span>
-                  )}
+                  </td>
+                  <td className="px-4 py-3 text-left border-r">
+                    <div className="text-sm text-gray-700">{person.age}</div>
+                  </td>
+                  <td className="px-4 py-3 text-left border-r">
+                    <div className="text-sm text-gray-700">{person.ageBracket}</div>
+                  </td>
+                  <td className="px-4 py-3 text-left border-r">
+                    <div className="text-sm text-gray-700">{person.location}</div>
+                  </td>
+                  <td className="px-4 py-3 text-left border-r">
+                    {person.registered ? (
+                      <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-green-700 text-white">
+                        Checked In
+                      </span>
+                    ) : (
+                      <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-yellow-500 text-white">
+                        Pending
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-left border-r">
+                    {person.registered && person.registeredAt ? (
+                      <div className="text-xs text-gray-600">
+                        {new Date(person.registeredAt).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-400">—</span>
+                    )}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={7} className="text-center py-12 text-gray-500">
+                  No people found matching your search criteria
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
-      
-      {filteredAndSortedPeople.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          No people found matching your search criteria
-        </div>
-      )}
     </>
   );
 }
