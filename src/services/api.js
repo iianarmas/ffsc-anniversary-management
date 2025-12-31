@@ -180,6 +180,72 @@ export const toggleShirtGiven = async (personId, currentGiven) => {
   }
 };
 
+// Notes functions
+export async function fetchNotesForPerson(personId) {
+  const { data, error } = await supabase
+    .from('notes')
+    .select('*')
+    .eq('person_id', personId)
+    .order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Error fetching notes:', error);
+    return [];
+  }
+  return data;
+}
+
+export async function createNote(personId, noteText, createdBy = 'Admin') {
+  const { data, error } = await supabase
+    .from('notes')
+    .insert([
+      {
+        person_id: personId,
+        note_text: noteText,
+        created_by: createdBy
+      }
+    ])
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Error creating note:', error);
+    throw error;
+  }
+  return data;
+}
+
+export async function updateNote(noteId, noteText, updatedBy = 'Admin') {
+  const { data, error } = await supabase
+    .from('notes')
+    .update({
+      note_text: noteText,
+      updated_at: new Date().toISOString(),
+      updated_by: updatedBy
+    })
+    .eq('id', noteId)
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Error updating note:', error);
+    throw error;
+  }
+  return data;
+}
+
+export async function deleteNote(noteId) {
+  const { error } = await supabase
+    .from('notes')
+    .delete()
+    .eq('id', noteId);
+  
+  if (error) {
+    console.error('Error deleting note:', error);
+    throw error;
+  }
+}
+
 // Create new person with shirt and registration
 export const createPerson = async (personData) => {
   try {
@@ -230,3 +296,16 @@ export const createPerson = async (personData) => {
     return { success: false, error };
   }
 };
+
+// Delete person and all related data
+export async function deletePerson(personId) {
+  const { error } = await supabase
+    .from('people')
+    .delete()
+    .eq('id', personId);
+  
+  if (error) {
+    console.error('Error deleting person:', error);
+    throw error;
+  }
+}
