@@ -97,6 +97,11 @@ export default function AccountSidebar({ person, open, onClose }) {
                   </div>
 
                   <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Gender</div>
+                    <div className="text-sm text-gray-900 font-medium">{person?.gender || '—'}</div>
+                  </div>
+
+                  <div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Location</div>
                     <div className="text-sm text-gray-900 font-medium">{person?.location || '—'}</div>
                   </div>
