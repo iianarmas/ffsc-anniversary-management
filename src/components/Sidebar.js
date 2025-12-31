@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Users, Shirt, Menu, X, BarChart3, ChevronRight } from 'lucide-react';
+import { Users, Shirt, Menu, X, BarChart3, ChevronRight, Plus } from 'lucide-react';
 
-export default function Sidebar({ currentView, setCurrentView }) {
+export default function Sidebar({ currentView, setCurrentView, onAddPersonClick }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
@@ -54,6 +54,17 @@ export default function Sidebar({ currentView, setCurrentView }) {
             );
           })}
         </nav>
+
+        {/* Add Person Button */}
+        <div className="absolute bottom-4 w-full px-2">
+          <button
+            onClick={onAddPersonClick}
+            title="Add Person"
+            className="w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 text-gray-500 hover:bg-[#e2e8f8]"
+          >
+            <Plus size={18} />
+          </button>
+        </div>
       </div>
 
       {/* Overlay for mobile */}

@@ -6,6 +6,7 @@ import ShirtManagementView from './components/ShirtManagementView';
 import MobileRegistrationView from './components/MobileRegistrationView';
 import MobileShirtManagementView from './components/MobileShirtManagementView';
 import Dashboard from './components/Dashboard';
+import AddPersonSidebar from './components/AddPersonSidebar';
 import LoadingOverlay from './components/LoadingOverlay';
 import { 
   fetchAllPeople, 
@@ -14,7 +15,8 @@ import {
   updateShirtSize as apiUpdateShirtSize,
   toggleShirtPayment as apiToggleShirtPayment,
   toggleShirtGiven as apiToggleShirtGiven,
-  getAgeBracket
+  getAgeBracket,
+  createPerson
 } from './services/api';
 import { supabase } from './services/supabase';
 
@@ -34,6 +36,7 @@ export default function App() {
   const [shirtFilterSize, setShirtFilterSize] = useState('All');
   const [currentView, setCurrentView] = useState('registration');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
   
 
   
@@ -288,6 +291,11 @@ useEffect(() => {
     await apiUpdateShirtSize(id, size);
   };
 
+  const handleAddPerson = async (formData) => {
+    await createPerson(formData);
+    await loadData(true);
+  };
+
 
   // Don't show full-screen loading on initial load, only on data updates
 
@@ -296,6 +304,7 @@ useEffect(() => {
       <Sidebar 
         currentView={currentView} 
         setCurrentView={setCurrentView}
+        onAddPersonClick={() => setIsAddPersonOpen(true)}
       />
       <div className="flex-1 px-6 pt-16 ml-0 md:ml-16 transition-all duration-300">
         <div className="w-full">
@@ -391,6 +400,13 @@ useEffect(() => {
             />
           )
         )}
+
+        {/* Add Person Sidebar */}
+        <AddPersonSidebar
+          isOpen={isAddPersonOpen}
+          onClose={() => setIsAddPersonOpen(false)}
+          onPersonAdded={handleAddPerson}
+        />
 
         {/* Loading Overlay */}
         {loading && <LoadingOverlay />}
