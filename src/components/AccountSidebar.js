@@ -142,7 +142,7 @@ export default function AccountSidebar({ person, open, onClose }) {
 
             <div className="pt-4 border-t border-gray-100">
               <h4 className="text-sm font-semibold text-gray-900">Notes & Actions</h4>
-              <p className="mt-2 text-sm text-gray-600">You can add internal notes or actions here later — e.g., payment follow-ups, distribution notes, or manual updates.</p>
+              <p className="mt-2 text-sm text-gray-600">**Note functionality will be implemented soon.</p>
 
               <div className="mt-4 flex gap-3">
                 <button className="px-4 py-2 bg-[#001740] text-white text-sm rounded hover:bg-[#0b1f48]">Edit</button>
