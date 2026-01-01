@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Filter } from 'lucide-react';
+import { Filter, StickyNote } from 'lucide-react';
 
 
 
@@ -15,6 +15,8 @@ export default function PeopleTable({
   filterStatus,
   setFilterStatus,
   onOpenPerson = () => {},
+  onOpenNotes = () => {},
+  peopleWithNotes = [],
   stickyTop = 60
 }) {
   // debug: show stickyTop in dev console
@@ -205,14 +207,29 @@ export default function PeopleTable({
                     />
                   </td>
                   <td className="px-4 py-3 text-left border-r">
-                    <div className="font-medium text-gray-900">
+                    <div className="font-medium text-gray-900 flex items-center gap-2">
                       <button
                         onClick={() => onOpenPerson(person)}
-                        className="text-left w-full text-sm text-[#001740] hover:text-blue-700 transition font-medium focus:outline-none"
+                        className="text-left text-sm text-[#001740] hover:text-blue-700 transition font-medium focus:outline-none"
                         aria-label={`Open ${person.firstName} ${person.lastName} details`}
                       >
                         {person.firstName} {person.lastName}
                       </button>
+                      {peopleWithNotes.includes(person.id) && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenNotes(person);
+                          }}
+                          className="p-1 hover:bg-blue-50 rounded transition group relative"
+                          aria-label="View notes"
+                        >
+                          <StickyNote size={14} className="text-gray-400 hover:text-[#0f2a71] transition" />
+                          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none">
+                            Has notes
+                          </span>
+                        </button>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-left border-r">

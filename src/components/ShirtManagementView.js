@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronUp, Search, Filter, DollarSign, Package, Clock, Users } from 'lucide-react';
+import { ChevronUp, Search, Filter, DollarSign, Package, Clock, Users, StickyNote } from 'lucide-react';
 import Header from './Header';
 import StatsBar from './StatsBar';
 import ShirtActionButtons from './ShirtActionButtons';
 import Pagination from './Pagination';
 import AccountSidebar from './AccountSidebar';
+import NotesDialog from './NotesDialog';
+import { fetchNotesForPerson } from '../services/api';
 
 export default function ShirtManagementView({ 
   people, 
@@ -42,6 +44,11 @@ export default function ShirtManagementView({
   // Sidebar state for account view
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // Notes dialog state
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
+  const [notesDialogPerson, setNotesDialogPerson] = useState(null);
+  const [peopleWithNotes, setPeopleWithNotes] = useState([]);
 
   const handleOpenPerson = (person) => {
     setSelectedPerson(person);
@@ -52,6 +59,37 @@ export default function ShirtManagementView({
     setSidebarOpen(false);
     setTimeout(() => setSelectedPerson(null), 300);
   };
+
+  const handleOpenNotes = (person) => {
+    setNotesDialogPerson(person);
+    setNotesDialogOpen(true);
+  };
+
+  const handleCloseNotes = () => {
+    setNotesDialogOpen(false);
+    setTimeout(() => setNotesDialogPerson(null), 300);
+  };
+
+  // Load people with notes
+  useEffect(() => {
+    const loadPeopleWithNotes = async () => {
+      const peopleIds = people.map(p => p.id);
+      const withNotes = [];
+      
+      for (const id of peopleIds) {
+        const notes = await fetchNotesForPerson(id);
+        if (notes.length > 0) {
+          withNotes.push(id);
+        }
+      }
+      
+      setPeopleWithNotes(withNotes);
+    };
+    
+    if (people.length > 0) {
+      loadPeopleWithNotes();
+    }
+  }, [people]);
 
   const [showBackToTop, setShowBackToTop] = useState(false);
 
@@ -442,14 +480,29 @@ export default function ShirtManagementView({
                     currentItems.map((person, index) => (
                       <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''}`}>
                         <td className="px-4 py-3 text-left">
-                          <div className="font-medium text-gray-900">
+                          <div className="font-medium text-gray-900 flex items-center gap-2">
                             <button
                               onClick={() => handleOpenPerson(person)}
-                              className="text-left w-full text-sm text-[#001740] hover:text-blue-700 transition font-medium focus:outline-none"
+                              className="text-left text-sm text-[#001740] hover:text-blue-700 transition font-medium focus:outline-none"
                               aria-label={`Open ${person.firstName} ${person.lastName} details`}
                             >
                               {person.firstName} {person.lastName}
                             </button>
+                            {peopleWithNotes.includes(person.id) && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenNotes(person);
+                                }}
+                                className="p-1 hover:bg-blue-50 rounded transition group relative"
+                                aria-label="View notes"
+                              >
+                                <StickyNote size={14} className="text-gray-400 hover:text-[#0f2a71] transition" />
+                                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
+                                  Has notes
+                                </span>
+                              </button>
+                            )}
                           </div>
                         </td>
                         <td className="px-4 py-3">
@@ -569,6 +622,13 @@ export default function ShirtManagementView({
 
       {/* Account details sidebar */}
       <AccountSidebar person={selectedPerson} open={sidebarOpen} onClose={handleCloseSidebar} />
+      
+      {/* Notes Dialog */}
+      <NotesDialog 
+        person={notesDialogPerson} 
+        isOpen={notesDialogOpen} 
+        onClose={handleCloseNotes} 
+      />
     </>
   );
 }

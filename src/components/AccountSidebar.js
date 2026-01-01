@@ -188,7 +188,8 @@ export default function AccountSidebar({ person, open, onClose }) {
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto" style={{ height: 'calc(100vh - 80px)' }}>
+        <div className="overflow-y-auto" style={{ height: 'calc(100vh - 80px)' }}>
+          <div className="p-6 pb-24">
           <div className="flex flex-col gap-6">
             <div className="flex gap-6 items-start">
               <div className="flex-1">
@@ -309,7 +310,7 @@ export default function AccountSidebar({ person, open, onClose }) {
               </div>
 
               {/* Notes List */}
-              <div className="space-y-3 max-h-64 overflow-y-auto">
+              <div className="space-y-3">
                 {isLoadingNotes ? (
                   <p className="text-sm text-gray-500 text-center py-4">Loading notes...</p>
                 ) : notes.length === 0 ? (
@@ -382,6 +383,7 @@ export default function AccountSidebar({ person, open, onClose }) {
               </div>
             </div>
 
+          </div>
           </div>
         </div>
       </aside>

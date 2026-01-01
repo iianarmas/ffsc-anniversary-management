@@ -6,6 +6,8 @@ import Header from './Header';
 import StatsBar from './StatsBar';
 import Pagination from './Pagination';
 import AccountSidebar from './AccountSidebar';
+import NotesDialog from './NotesDialog';
+import { fetchNotesForPerson } from '../services/api';
 
 export default function RegistrationView({ 
   searchTerm,
@@ -33,6 +35,11 @@ export default function RegistrationView({
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // Notes dialog state
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
+  const [notesDialogPerson, setNotesDialogPerson] = useState(null);
+  const [peopleWithNotes, setPeopleWithNotes] = useState([]);
 
   const handleOpenPerson = (person) => {
     setSelectedPerson(person);
@@ -44,6 +51,37 @@ export default function RegistrationView({
     // clear selected person after animation completes
     setTimeout(() => setSelectedPerson(null), 300);
   };
+
+  const handleOpenNotes = (person) => {
+    setNotesDialogPerson(person);
+    setNotesDialogOpen(true);
+  };
+
+  const handleCloseNotes = () => {
+    setNotesDialogOpen(false);
+    setTimeout(() => setNotesDialogPerson(null), 300);
+  };
+
+  // Load people with notes
+  useEffect(() => {
+    const loadPeopleWithNotes = async () => {
+      const peopleIds = filteredAndSortedPeople.map(p => p.id);
+      const withNotes = [];
+      
+      for (const id of peopleIds) {
+        const notes = await fetchNotesForPerson(id);
+        if (notes.length > 0) {
+          withNotes.push(id);
+        }
+      }
+      
+      setPeopleWithNotes(withNotes);
+    };
+    
+    if (filteredAndSortedPeople.length > 0) {
+      loadPeopleWithNotes();
+    }
+  }, [filteredAndSortedPeople]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -259,6 +297,8 @@ useEffect(() => {
                   filterStatus={filterStatus}
                   setFilterStatus={setFilterStatus}
                   onOpenPerson={handleOpenPerson}
+                  onOpenNotes={handleOpenNotes}
+                  peopleWithNotes={peopleWithNotes}
                   stickyTop={actionBarHeight}
                 />
               </div>
@@ -308,6 +348,13 @@ useEffect(() => {
 
         {/* Account details sidebar */}
         <AccountSidebar person={selectedPerson} open={sidebarOpen} onClose={handleCloseSidebar} />
+        
+        {/* Notes Dialog */}
+        <NotesDialog 
+          person={notesDialogPerson} 
+          isOpen={notesDialogOpen} 
+          onClose={handleCloseNotes} 
+        />
 
       </div>
     </>
