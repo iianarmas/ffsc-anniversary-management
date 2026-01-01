@@ -350,7 +350,7 @@ export default function TasksView({ onTaskUpdate }) {
     const isOverdue = taskDate < today;
     if (isOverdue) return 'bg-red-50';
     const isToday = taskDate.getTime() === today.getTime();
-    if (isToday) return 'bg-yellow-50';
+    if (isToday) return '';
     return '';
   };
 
