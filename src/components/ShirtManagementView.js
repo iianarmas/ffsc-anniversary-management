@@ -107,11 +107,22 @@ export default function ShirtManagementView({
 
   const [openFilter, setOpenFilter] = useState(null);
   const filterRefs = useRef({});
+  const dropdownRefs = useRef({});
+  
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (openFilter && filterRefs.current[openFilter] && !filterRefs.current[openFilter].contains(event.target)) {
-        setOpenFilter(null);
+      if (openFilter) {
+        const filterButton = filterRefs.current[openFilter];
+        const dropdown = dropdownRefs.current[openFilter];
+        
+        // Check if click is inside the filter button OR the dropdown
+        const clickedInsideButton = filterButton && filterButton.contains(event.target);
+        const clickedInsideDropdown = dropdown && dropdown.contains(event.target);
+        
+        if (!clickedInsideButton && !clickedInsideDropdown) {
+          setOpenFilter(null);
+        }
       }
     };
 
@@ -150,6 +161,7 @@ export default function ShirtManagementView({
         />
         {openFilter === column && createPortal(
           <div 
+            ref={el => dropdownRefs.current[column] = el}
             className="fixed w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
             style={{
               top: `${dropdownPosition.top}px`,

@@ -47,11 +47,21 @@ export default function PeopleTable({
   const [openFilter, setOpenFilter] = useState(null);
   const filterRefs = useRef({});
   const selectAllCheckboxRef = useRef(null);
+  const dropdownRefs = useRef({});
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (openFilter && filterRefs.current[openFilter] && !filterRefs.current[openFilter].contains(event.target)) {
-        setOpenFilter(null);
+      if (openFilter) {
+        const filterButton = filterRefs.current[openFilter];
+        const dropdown = dropdownRefs.current[openFilter];
+        
+        // Check if click is inside the filter button OR the dropdown
+        const clickedInsideButton = filterButton && filterButton.contains(event.target);
+        const clickedInsideDropdown = dropdown && dropdown.contains(event.target);
+        
+        if (!clickedInsideButton && !clickedInsideDropdown) {
+          setOpenFilter(null);
+        }
       }
     };
 
@@ -103,11 +113,14 @@ export default function PeopleTable({
         />
         {openFilter === column && createPortal(
           <div 
-            className="fixed w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+            ref={el => dropdownRefs.current[column] = el}
+            className="fixed w-48 bg-white rounded-lg shadow-lg border border-gray-200"
             style={{
               top: `${dropdownPosition.top}px`,
-              left: `${dropdownPosition.left}px`
+              left: `${dropdownPosition.left}px`,
+              zIndex: 99999
             }}
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="py-1">
               {options.map(option => (
