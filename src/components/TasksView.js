@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronUp, Filter, Square, Circle, CalendarDays, Hash, Users, CheckCircle2, Clock, AlertTriangle, RotateCw } from 'lucide-react';
+import { ChevronUp, Filter, Square, Circle, CalendarDays, Hash, Users, CheckCircle2, Clock, AlertTriangle, RotateCw, ClipboardList } from 'lucide-react';
 import Header from './Header';
 import Pagination from './Pagination';
 import AccountSidebar from './AccountSidebar';
@@ -445,7 +445,7 @@ export default function TasksView({ onTaskUpdate }) {
               <p className="text-sm text-gray-600 mt-1">Track and manage tasks across all attendees</p>
             </div>
             <div className="text-sm text-gray-500 flex items-baseline gap-2">
-              <Square size={18} className="text-gray-400" />
+              <ClipboardList size={18} className="text-gray-400" />
               <span className="font-semibold text-gray-900 text-lg">{filteredAndSortedTasks.length}</span>
               <span className="text-gray-500">{filteredAndSortedTasks.length === 1 ? 'task' : 'tasks'}</span>
             </div>
@@ -463,7 +463,7 @@ export default function TasksView({ onTaskUpdate }) {
                   {/* Stats */}
                   <div className="flex items-center gap-4 text-sm text-gray-600 mr-2">
                     <div className="flex items-center gap-2 whitespace-nowrap">
-                      <Square size={14} className="text-gray-400" />
+                      <ClipboardList size={14} className="text-gray-400" />
                       <span className="font-semibold text-gray-900">{stats.total}</span>
                       <span className="text-gray-500">Total</span>
                       <span className="text-gray-300">|</span>

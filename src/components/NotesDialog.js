@@ -89,6 +89,9 @@ export default function NotesDialog({ person, isOpen, onClose }) {
     try {
       await deleteNote(noteId);
       await loadNotes();
+      
+      // Notify other components that a task was updated/deleted
+      window.dispatchEvent(new Event('taskUpdated'));
     } catch (error) {
       console.error('Failed to delete note:', error);
     }
