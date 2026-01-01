@@ -57,8 +57,8 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
 
   const getPriorityColor = (priority) => {
     switch (priority?.toLowerCase()) {
-      case 'high': return 'text-red-600';
-      case 'medium': return 'text-yellow-600';
+      case 'high':return 'text-red-600';
+      case 'medium': return 'text-orange-600';
       case 'low': return 'text-green-600';
       default: return 'text-gray-600';
     }
@@ -66,10 +66,13 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
 
   const getPriorityDot = (priority) => {
     switch (priority?.toLowerCase()) {
-      case 'high': return '🔴';
-      case 'medium': return '🟡';
-      case 'low': return '🟢';
-      default: return '⚪';
+      case 'high':
+        return <span className={`h-2 w-2 bg-red-500 rounded-full inline-block`} />;
+      case 'medium':
+        return <span className={`h-2 w-2 bg-orange-500 rounded-full inline-block`} />;
+      case 'low':
+        return <span className={`h-2 w-2 bg-green-500 rounded-full inline-block`} />;
+      default: return <span className={`h-2 w-2 bg-gray-200 rounded-full inline-block`} />;
     }
   };
 
@@ -87,7 +90,7 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center gap-2">
           <CheckSquare size={18} className="text-[#0f2a71]" />
-          <h3 className="font-semibold text-gray-900">Task Reminders</h3>
+          <h3 className="font-semibold text-[#0f2a71]">Task Reminders</h3>
           {totalCount > 0 && (
             <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-semibold rounded-full">
               {totalCount}
@@ -173,19 +176,18 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
 
             {/* Due Today Tasks */}
             {todayTasks.length > 0 && (
-              <div className="bg-yellow-50 border-b border-yellow-100">
-                <div className="px-4 py-2 flex items-center gap-2 bg-yellow-100">
-                  <span className="text-base">📅</span>
-                  <h4 className="font-semibold text-yellow-900 text-sm">
+              <div className="bg-white border-b border-gray-100">
+                <div className="px-4 py-2 flex items-center gap-2 bg-white">
+                  <h4 className="font-semibold text-gray-700 text-sm">
                     Due Today ({todayTasks.length})
                   </h4>
                 </div>
-                <div className="divide-y divide-yellow-100">
+                <div className="divide-y divide-gray-100">
                   {todayTasks.map((task) => (
                     <div
                       key={task.id}
                       onClick={() => onTaskClick(task.personId, task.person_id)}
-                      className="px-4 py-3 hover:bg-yellow-100 cursor-pointer transition"
+                      className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition"
                     >
                       <div className="flex items-start gap-3">
                         <input
@@ -206,11 +208,11 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
                               {getPriorityDot(task.priority)} {task.priority}
                             </span>
                             <span>•</span>
-                            <span className="text-yellow-700 font-medium">Due today</span>
+                            <span className="text-sky-700 font-medium">Due today</span>
                           </div>
                           {task.category && (
                             <div className="mt-1">
-                              <span className="inline-block px-2 py-0.5 bg-white text-xs font-medium text-gray-700 rounded border border-yellow-200">
+                              <span className="inline-block px-2 py-0.5 bg-white text-xs font-medium text-white rounded bg-[#36759c]">
                                 {task.category}
                               </span>
                             </div>

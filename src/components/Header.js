@@ -48,7 +48,7 @@ export default function Header({
             />
             <div className="min-w-0 flex items-center gap-4">
               <div>
-                <h1 className="text-sm font-semibold text-[#001740]">FFSC Anniversary</h1>
+                <h1 style={{ fontFamily: 'Moderniz, sans-serif' }} className="text-sm text-[#001740]">FFSC20</h1>
               </div>
 
               {/* Move search next to the title on larger screens */}

@@ -269,7 +269,7 @@ useEffect(() => {
                   maxHeight: `calc(100vh - 12.7rem)`
                 }}
               >
-              <div ref={actionBarRef} className="sticky top-0 z-30 bg-white">
+              <div ref={actionBarRef} className="sticky top-0 z-20 bg-white">
                 <ActionButtons
                   handleSelectAll={handleSelectAll}
                   selectedPeople={selectedPeople}

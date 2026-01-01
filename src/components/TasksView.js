@@ -252,19 +252,19 @@ export default function TasksView({ onTaskUpdate }) {
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'High': return 'bg-red-100 text-red-800 border-red-300';
-      case 'Medium': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'Low': return 'bg-green-100 text-green-800 border-green-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'High': return 'bg-red-600 text-white';
+      case 'Medium': return 'bg-orange-500 text-white';
+      case 'Low': return 'bg-green-600 text-white';
+      default: return 'bg-gray-500 text-gray-white';
     }
   };
 
   const getPriorityIcon = (priority) => {
     switch (priority) {
-      case 'High': return '🔴';
-      case 'Medium': return '🟡';
-      case 'Low': return '🟢';
-      default: return '⚪';
+      case 'High': return <span className={'h-2 w-2 bg-white rounded-full inline-block'}/>;
+      case 'Medium': return <span className={'h-2 w-2 bg-white rounded-full inline-block'}/>;
+      case 'Low': return <span className={'h-2 w-2 bg-white rounded-full inline-block'}/>;
+      default: return <span className={'h-2 w-2 bg-white rounded-full inline-block'}/>;
     }
   };
 
@@ -338,7 +338,7 @@ export default function TasksView({ onTaskUpdate }) {
           <div className="relative overflow-y-auto" style={{ maxHeight: 'calc(100vh - 12.7rem)' }}>
             
             {/* Action Bar */}
-            <div className="sticky top-0 z-30 bg-white">
+            <div className="sticky top-0 z-20 bg-white">
               <div className="bg-white px-4 py-3 flex items-center justify-between min-h-[60px] border-b border-gray-200">
                 <div className="flex items-center gap-4">
                   {/* Stats */}
@@ -578,8 +578,8 @@ export default function TasksView({ onTaskUpdate }) {
                             onClick={() => handleToggleComplete(task.id, task.status)}
                             className={`px-3 py-1 rounded-full text-xs font-semibold transition ${
                               task.status === 'complete'
-                                ? 'bg-green-100 text-green-800 border border-green-300 hover:bg-green-200'
-                                : 'bg-yellow-100 text-yellow-800 border border-yellow-300 hover:bg-yellow-200'
+                                ? 'bg-green-600 text-white hover:bg-green-500'
+                                : 'bg-yellow-500 text-white hover:bg-yellow-400'
                             }`}
                           >
                             {task.status === 'complete' ? '✓ Complete' : 'Incomplete'}

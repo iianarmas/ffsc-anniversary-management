@@ -353,7 +353,7 @@ export default function ShirtManagementView({
             ref={tableContainerRef}
             style={{ maxHeight: 'calc(100vh - 12.7rem)' }}
           >
-            <div ref={actionBarRef} className="sticky top-0 z-30 bg-white">
+            <div ref={actionBarRef} className="sticky top-0 z-20 bg-white">
               <ShirtActionButtons
                 hasActiveFilters={
                   shirtFilterAge !== 'All' || 
@@ -600,8 +600,8 @@ export default function ShirtManagementView({
                             onClick={() => toggleShirtPayment(person.id)}
                             className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
                               person.paid
-                                ? 'bg-green-100 text-green-800 border border-green-300 hover:bg-green-200'
-                                : 'bg-red-100 text-red-800 border border-red-300 hover:bg-red-200'
+                                ? 'bg-green-600 text-white hover:bg-green-500'
+                                : 'bg-red-600 text-white hover:bg-red-500'
                             }`}
                           >
                             {person.paid ? 'Paid' : 'Unpaid'}

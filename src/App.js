@@ -25,6 +25,8 @@ import {
 } from './services/api';
 import { supabase } from './services/supabase';
 
+import './assets/fonts/fonts.css';
+
 export default function App() {
   const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(true);
