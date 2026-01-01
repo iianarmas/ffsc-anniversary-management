@@ -41,7 +41,10 @@ export default function App() {
   const [shirtFilterPayment, setShirtFilterPayment] = useState('All');
   const [shirtFilterDistribution, setShirtFilterDistribution] = useState('All');
   const [shirtFilterSize, setShirtFilterSize] = useState('All');
-  const [currentView, setCurrentView] = useState('registration');
+  const [currentView, setCurrentView] = useState(() => {
+    // Try to get saved view from localStorage, default to 'registration'
+    return localStorage.getItem('currentView') || 'registration';
+  });
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
   const [taskStats, setTaskStats] = useState({
@@ -356,7 +359,10 @@ useEffect(() => {
     <div className="min-h-screen bg-white flex">
       <Sidebar 
         currentView={currentView} 
-        setCurrentView={setCurrentView}
+        setCurrentView={(view) => {
+          setCurrentView(view);
+          localStorage.setItem('currentView', view);
+        }}
         onAddPersonClick={() => setIsAddPersonOpen(true)}
         taskStats={taskStats}
       />
