@@ -1,13 +1,40 @@
-import React from 'react';
-import { Search, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, User, Bell } from 'lucide-react';
+import TaskNotificationDropdown from './TaskNotificationDropdown';
+import { fetchOverdueTasks, fetchTasksDueToday } from '../services/api';
 
 export default function Header({ 
   viewTitle, 
   searchTerm, 
   setSearchTerm, 
   searchPlaceholder = "Search by name...",
-  showSearch = true
+  showSearch = true,
+  onOpenPersonNotes
 }) {
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  useEffect(() => {
+    loadNotificationCount();
+    const interval = setInterval(loadNotificationCount, 60000); // Refresh every 60 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadNotificationCount = async () => {
+    const [overdue, today] = await Promise.all([
+      fetchOverdueTasks(),
+      fetchTasksDueToday()
+    ]);
+    setNotificationCount(overdue.length + today.length);
+  };
+
+  const handleTaskClick = (personId) => {
+    setShowNotifications(false);
+    if (onOpenPersonNotes) {
+      onOpenPersonNotes(personId);
+    }
+  };
+
   return (
     <div className="fixed top-0 left-0 right-0 z-30 bg-[#f9fafa] border-b border-gray-200 shadow-sm">
       <div className="px-6 py-3">
@@ -42,8 +69,29 @@ export default function Header({
             </div>
           </div>
 
-          {/* Right: User Info */}
+          {/* Right: Bell Icon + User Info */}
           <div className="flex items-center gap-3 flex-shrink-0">
+            {/* Bell Icon with Notification Badge */}
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition relative"
+                aria-label="Task notifications"
+              >
+                <Bell size={20} className="text-gray-700" />
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {notificationCount > 9 ? '9+' : notificationCount}
+                  </span>
+                )}
+              </button>
+              
+              <TaskNotificationDropdown
+                isOpen={showNotifications}
+                onClose={() => setShowNotifications(false)}
+                onTaskClick={handleTaskClick}
+              />
+            </div>
             <div className="text-right hidden md:block">
               <p className="text-sm font-medium text-[#001740]">Admin User</p>
               <p className="text-xs text-gray-500">Administrator</p>

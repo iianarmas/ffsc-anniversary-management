@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronUp, Search, Filter, DollarSign, Package, Clock, Users, StickyNote } from 'lucide-react';
+import { ChevronUp, Search, Filter, DollarSign, Package, Clock, Users, StickyNote, CheckSquare, CheckCircle } from 'lucide-react';
 import Header from './Header';
 import StatsBar from './StatsBar';
 import ShirtActionButtons from './ShirtActionButtons';
 import Pagination from './Pagination';
 import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
-import { fetchNotesForPerson } from '../services/api';
+import { getAllPeopleTaskInfo } from '../services/api';
 
 export default function ShirtManagementView({ 
   people, 
@@ -49,6 +49,7 @@ export default function ShirtManagementView({
   const [notesDialogOpen, setNotesDialogOpen] = useState(false);
   const [notesDialogPerson, setNotesDialogPerson] = useState(null);
   const [peopleWithNotes, setPeopleWithNotes] = useState([]);
+  const [peopleTaskInfo, setPeopleTaskInfo] = useState({}); // NEW: Task info for all people
 
   const handleOpenPerson = (person) => {
     setSelectedPerson(person);
@@ -70,24 +71,21 @@ export default function ShirtManagementView({
     setTimeout(() => setNotesDialogPerson(null), 300);
   };
 
-  // Load people with notes
+  // Load people with notes and tasks
   useEffect(() => {
-    const loadPeopleWithNotes = async () => {
-      const peopleIds = people.map(p => p.id);
-      const withNotes = [];
+    const loadPeopleTaskInfo = async () => {
+      const taskInfo = await getAllPeopleTaskInfo();
+      setPeopleTaskInfo(taskInfo);
       
-      for (const id of peopleIds) {
-        const notes = await fetchNotesForPerson(id);
-        if (notes.length > 0) {
-          withNotes.push(id);
-        }
-      }
-      
+      // Also maintain backward compatibility with peopleWithNotes
+      const withNotes = Object.keys(taskInfo).filter(
+        id => taskInfo[id].hasNotes || taskInfo[id].hasTasks
+      );
       setPeopleWithNotes(withNotes);
     };
     
     if (people.length > 0) {
-      loadPeopleWithNotes();
+      loadPeopleTaskInfo();
     }
   }, [people]);
 
@@ -323,6 +321,12 @@ export default function ShirtManagementView({
           searchTerm={shirtSearchTerm}
           setSearchTerm={setShirtSearchTerm}
           searchPlaceholder="Search by name..."
+          onOpenPersonNotes={(personId) => {
+            const person = people.find(p => p.id === personId);
+            if (person) {
+              handleOpenNotes(person);
+            }
+          }}
         />
 
         <div className="p-4 bg-white">
@@ -488,21 +492,76 @@ export default function ShirtManagementView({
                             >
                               {person.firstName} {person.lastName}
                             </button>
-                            {peopleWithNotes.includes(person.id) && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenNotes(person);
-                                }}
-                                className="p-1 hover:bg-blue-50 rounded transition group relative"
-                                aria-label="View notes"
-                              >
-                                <StickyNote size={14} className="text-gray-400 hover:text-[#0f2a71] transition" />
-                                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
-                                  Has notes
-                                </span>
-                              </button>
-                            )}
+                            {/* Notes/Task Indicators */}
+                            {(() => {
+                              const taskInfo = peopleTaskInfo[person.id];
+                              
+                              // Show task indicator if person has incomplete tasks
+                              if (taskInfo?.incompleteTasksCount > 0) {
+                                const priorityColor = 
+                                  taskInfo.highestPriority === 'High' ? 'text-red-600' :
+                                  taskInfo.highestPriority === 'Medium' ? 'text-yellow-600' :
+                                  'text-green-600';
+                                
+                                return (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleOpenNotes(person);
+                                    }}
+                                    className="p-1 hover:bg-blue-50 rounded transition group relative"
+                                    aria-label="View tasks"
+                                  >
+                                    <CheckSquare size={14} className={`${priorityColor} hover:opacity-80 transition`} />
+                                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
+                                      {taskInfo.incompleteTasksCount} incomplete task{taskInfo.incompleteTasksCount > 1 ? 's' : ''} ({taskInfo.highestPriority} priority)
+                                      {taskInfo.notesCount > 0 && `, ${taskInfo.notesCount} note${taskInfo.notesCount > 1 ? 's' : ''}`}
+                                    </span>
+                                  </button>
+                                );
+                              }
+                              
+                              // Show completed task indicator if person has only completed tasks
+                              if (taskInfo?.hasOnlyCompletedTasks) {
+                                return (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleOpenNotes(person);
+                                    }}
+                                    className="p-1 hover:bg-blue-50 rounded transition group relative"
+                                    aria-label="View completed tasks"
+                                  >
+                                    <CheckCircle size={14} className="text-gray-400 hover:text-gray-600 transition" />
+                                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
+                                      {taskInfo.completedTasksCount} completed task{taskInfo.completedTasksCount > 1 ? 's' : ''}
+                                      {taskInfo.notesCount > 0 && `, ${taskInfo.notesCount} note${taskInfo.notesCount > 1 ? 's' : ''}`}
+                                    </span>
+                                  </button>
+                                );
+                              }
+                              
+                              // Show note indicator if person has only notes (no tasks)
+                              if (taskInfo?.hasNotes) {
+                                return (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleOpenNotes(person);
+                                    }}
+                                    className="p-1 hover:bg-blue-50 rounded transition group relative"
+                                    aria-label="View notes"
+                                  >
+                                    <StickyNote size={14} className="text-gray-400 hover:text-[#0f2a71] transition" />
+                                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
+                                      {taskInfo.notesCount} note{taskInfo.notesCount > 1 ? 's' : ''}
+                                    </span>
+                                  </button>
+                                );
+                              }
+                              
+                              return null;
+                            })()}
                           </div>
                         </td>
                         <td className="px-4 py-3">

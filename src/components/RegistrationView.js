@@ -7,7 +7,7 @@ import StatsBar from './StatsBar';
 import Pagination from './Pagination';
 import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
-import { fetchNotesForPerson } from '../services/api';
+import { getAllPeopleTaskInfo } from '../services/api';
 
 export default function RegistrationView({ 
   searchTerm,
@@ -40,6 +40,7 @@ export default function RegistrationView({
   const [notesDialogOpen, setNotesDialogOpen] = useState(false);
   const [notesDialogPerson, setNotesDialogPerson] = useState(null);
   const [peopleWithNotes, setPeopleWithNotes] = useState([]);
+  const [peopleTaskInfo, setPeopleTaskInfo] = useState({}); // NEW: Task info for all people
 
   const handleOpenPerson = (person) => {
     setSelectedPerson(person);
@@ -62,24 +63,21 @@ export default function RegistrationView({
     setTimeout(() => setNotesDialogPerson(null), 300);
   };
 
-  // Load people with notes
+  // Load people with notes and tasks
   useEffect(() => {
-    const loadPeopleWithNotes = async () => {
-      const peopleIds = filteredAndSortedPeople.map(p => p.id);
-      const withNotes = [];
+    const loadPeopleTaskInfo = async () => {
+      const taskInfo = await getAllPeopleTaskInfo();
+      setPeopleTaskInfo(taskInfo);
       
-      for (const id of peopleIds) {
-        const notes = await fetchNotesForPerson(id);
-        if (notes.length > 0) {
-          withNotes.push(id);
-        }
-      }
-      
+      // Also maintain backward compatibility with peopleWithNotes
+      const withNotes = Object.keys(taskInfo).filter(
+        id => taskInfo[id].hasNotes || taskInfo[id].hasTasks
+      );
       setPeopleWithNotes(withNotes);
     };
     
     if (filteredAndSortedPeople.length > 0) {
-      loadPeopleWithNotes();
+      loadPeopleTaskInfo();
     }
   }, [filteredAndSortedPeople]);
 
@@ -239,6 +237,12 @@ useEffect(() => {
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           searchPlaceholder="Search by name..."
+          onOpenPersonNotes={(personId) => {
+            const person = people.find(p => p.id === personId);
+            if (person) {
+              handleOpenNotes(person);
+            }
+          }}
         />
 
         <div className="p-4">
@@ -299,6 +303,7 @@ useEffect(() => {
                   onOpenPerson={handleOpenPerson}
                   onOpenNotes={handleOpenNotes}
                   peopleWithNotes={peopleWithNotes}
+                  peopleTaskInfo={peopleTaskInfo}
                   stickyTop={actionBarHeight}
                 />
               </div>

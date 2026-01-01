@@ -195,16 +195,28 @@ export async function fetchNotesForPerson(personId) {
   return data;
 }
 
-export async function createNote(personId, noteText, createdBy = 'Admin') {
+export async function createNote(personId, noteText, createdBy = 'Admin', isTask = false, taskData = {}) {
+  const insertData = {
+    person_id: personId,
+    note_text: noteText,
+    created_by: createdBy,
+    is_task: isTask
+  };
+
+  // Add task-specific fields if it's a task
+  if (isTask) {
+    if (taskData.dueDate) insertData.due_date = taskData.dueDate;
+    if (taskData.priority) insertData.priority = taskData.priority;
+    if (taskData.category) insertData.category = taskData.category;
+    if (taskData.assignedTo) insertData.assigned_to = taskData.assignedTo;
+    if (taskData.recurrence) insertData.recurrence = taskData.recurrence || 'none';
+    if (taskData.recurrenceEndDate) insertData.recurrence_end_date = taskData.recurrenceEndDate;
+    insertData.status = 'incomplete';
+  }
+
   const { data, error } = await supabase
     .from('notes')
-    .insert([
-      {
-        person_id: personId,
-        note_text: noteText,
-        created_by: createdBy
-      }
-    ])
+    .insert([insertData])
     .select()
     .single();
   
@@ -215,14 +227,25 @@ export async function createNote(personId, noteText, createdBy = 'Admin') {
   return data;
 }
 
-export async function updateNote(noteId, noteText, updatedBy = 'Admin') {
+export async function updateNote(noteId, noteText, updatedBy = 'Admin', taskData = {}) {
+  const updateData = {
+    note_text: noteText,
+    updated_at: new Date().toISOString(),
+    updated_by: updatedBy
+  };
+
+  // Update task-specific fields if provided
+  if (taskData.dueDate !== undefined) updateData.due_date = taskData.dueDate;
+  if (taskData.priority !== undefined) updateData.priority = taskData.priority;
+  if (taskData.category !== undefined) updateData.category = taskData.category;
+  if (taskData.assignedTo !== undefined) updateData.assigned_to = taskData.assignedTo;
+  if (taskData.recurrence !== undefined) updateData.recurrence = taskData.recurrence;
+  if (taskData.recurrenceEndDate !== undefined) updateData.recurrence_end_date = taskData.recurrenceEndDate;
+  if (taskData.status !== undefined) updateData.status = taskData.status;
+
   const { data, error } = await supabase
     .from('notes')
-    .update({
-      note_text: noteText,
-      updated_at: new Date().toISOString(),
-      updated_by: updatedBy
-    })
+    .update(updateData)
     .eq('id', noteId)
     .select()
     .single();
@@ -243,6 +266,399 @@ export async function deleteNote(noteId) {
   if (error) {
     console.error('Error deleting note:', error);
     throw error;
+  }
+}
+
+
+// Toggle task completion status
+export async function toggleTaskComplete(taskId, currentStatus) {
+  try {
+    const newStatus = currentStatus === 'complete' ? 'incomplete' : 'complete';
+    const updateData = {
+      status: newStatus,
+      completed_at: newStatus === 'complete' ? new Date().toISOString() : null
+    };
+
+    const { data, error } = await supabase
+      .from('notes')
+      .update(updateData)
+      .eq('id', taskId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Handle recurring tasks
+    if (newStatus === 'complete' && data.recurrence && data.recurrence !== 'none') {
+      await handleRecurringTask(data);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error toggling task completion:', error);
+    throw error;
+  }
+}
+
+// Handle recurring task logic
+async function handleRecurringTask(completedTask) {
+  // Check if we should create a new instance
+  const now = new Date();
+  const recurrenceEndDate = completedTask.recurrence_end_date ? new Date(completedTask.recurrence_end_date) : null;
+
+  if (recurrenceEndDate && now > recurrenceEndDate) {
+    return; // Don't create new instance if past end date
+  }
+
+  // Calculate next due date
+  const currentDueDate = new Date(completedTask.due_date);
+  let nextDueDate = new Date(currentDueDate);
+
+  switch (completedTask.recurrence) {
+    case 'daily':
+      nextDueDate.setDate(nextDueDate.getDate() + 1);
+      break;
+    case 'weekly':
+      nextDueDate.setDate(nextDueDate.getDate() + 7);
+      break;
+    case 'monthly':
+      nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+      break;
+    default:
+      return;
+  }
+
+  // Don't create if next due date is past recurrence end date
+  if (recurrenceEndDate && nextDueDate > recurrenceEndDate) {
+    return;
+  }
+
+  // Create new task instance
+  const { error } = await supabase
+    .from('notes')
+    .insert([{
+      person_id: completedTask.person_id,
+      note_text: completedTask.note_text,
+      created_by: completedTask.created_by,
+      is_task: true,
+      due_date: nextDueDate.toISOString(),
+      priority: completedTask.priority,
+      category: completedTask.category,
+      assigned_to: completedTask.assigned_to,
+      recurrence: completedTask.recurrence,
+      recurrence_end_date: completedTask.recurrence_end_date,
+      status: 'incomplete'
+    }]);
+
+  if (error) {
+    console.error('Error creating recurring task instance:', error);
+  }
+}
+
+// Fetch all tasks with person information
+export async function fetchAllTasks(filters = {}) {
+  try {
+    let query = supabase
+      .from('notes')
+      .select(`
+        *,
+        people (
+          id,
+          first_name,
+          last_name,
+          location
+        )
+      `)
+      .eq('is_task', true)
+      .order('due_date', { ascending: true });
+
+    // Apply filters
+    if (filters.status && filters.status !== 'All') {
+      if (filters.status === 'overdue') {
+        query = query.lt('due_date', new Date().toISOString()).eq('status', 'incomplete');
+      } else {
+        query = query.eq('status', filters.status);
+      }
+    }
+
+    if (filters.priority && filters.priority !== 'All') {
+      query = query.eq('priority', filters.priority);
+    }
+
+    if (filters.category && filters.category !== 'All') {
+      query = query.eq('category', filters.category);
+    }
+
+    if (filters.assignedTo && filters.assignedTo !== 'All') {
+      query = query.eq('assigned_to', filters.assignedTo);
+    }
+
+    if (filters.dueDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      switch (filters.dueDate) {
+        case 'today':
+          query = query.gte('due_date', today.toISOString()).lt('due_date', tomorrow.toISOString());
+          break;
+        case 'week':
+          const nextWeek = new Date(today);
+          nextWeek.setDate(nextWeek.getDate() + 7);
+          query = query.gte('due_date', today.toISOString()).lte('due_date', nextWeek.toISOString());
+          break;
+        case 'month':
+          const nextMonth = new Date(today);
+          nextMonth.setMonth(nextMonth.getMonth() + 1);
+          query = query.gte('due_date', today.toISOString()).lte('due_date', nextMonth.toISOString());
+          break;
+        case 'overdue':
+          query = query.lt('due_date', today.toISOString()).eq('status', 'incomplete');
+          break;
+      }
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    return [];
+  }
+}
+
+// Fetch tasks due today
+export async function fetchTasksDueToday() {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const { data, error } = await supabase
+      .from('notes')
+      .select(`
+        *,
+        people (
+          id,
+          first_name,
+          last_name
+        )
+      `)
+      .eq('is_task', true)
+      .eq('status', 'incomplete')
+      .gte('due_date', today.toISOString())
+      .lt('due_date', tomorrow.toISOString())
+      .order('priority', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching tasks due today:', error);
+    return [];
+  }
+}
+
+// Fetch overdue tasks
+export async function fetchOverdueTasks() {
+  try {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const { data, error } = await supabase
+      .from('notes')
+      .select(`
+        *,
+        people (
+          id,
+          first_name,
+          last_name
+        )
+      `)
+      .eq('is_task', true)
+      .eq('status', 'incomplete')
+      .lt('due_date', now.toISOString())
+      .order('due_date', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching overdue tasks:', error);
+    return [];
+  }
+}
+
+// Get task statistics
+export async function getTaskStats() {
+  try {
+    const { data: allTasks, error } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('is_task', true);
+
+    if (error) throw error;
+
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const stats = {
+      total: allTasks.length,
+      complete: allTasks.filter(t => t.status === 'complete').length,
+      incomplete: allTasks.filter(t => t.status === 'incomplete').length,
+      overdue: allTasks.filter(t => t.status === 'incomplete' && new Date(t.due_date) < now).length,
+      dueToday: allTasks.filter(t => {
+        const dueDate = new Date(t.due_date);
+        return t.status === 'incomplete' && dueDate >= now && dueDate < tomorrow;
+      }).length,
+      byCategory: {},
+      byPriority: {
+        High: 0,
+        Medium: 0,
+        Low: 0
+      }
+    };
+
+    // Count by category
+    allTasks.forEach(task => {
+      if (task.category) {
+        stats.byCategory[task.category] = (stats.byCategory[task.category] || 0) + 1;
+      }
+      if (task.priority && task.status === 'incomplete') {
+        stats.byPriority[task.priority]++;
+      }
+    });
+
+    return stats;
+  } catch (error) {
+    console.error('Error getting task stats:', error);
+    return {
+      total: 0,
+      complete: 0,
+      incomplete: 0,
+      overdue: 0,
+      dueToday: 0,
+      byCategory: {},
+      byPriority: { High: 0, Medium: 0, Low: 0 }
+    };
+  }
+}
+
+// Get task/note info for a person
+export async function getPersonTaskInfo(personId) {
+  try {
+    const { data: notes, error } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('person_id', personId);
+
+    if (error) throw error;
+
+    const tasks = notes.filter(n => n.is_task);
+    const regularNotes = notes.filter(n => !n.is_task);
+    const incompleteTasks = tasks.filter(t => t.status === 'incomplete');
+    const completedTasks = tasks.filter(t => t.status === 'complete');
+
+    // Get highest priority among incomplete tasks
+    let highestPriority = null;
+    if (incompleteTasks.length > 0) {
+      if (incompleteTasks.some(t => t.priority === 'High')) highestPriority = 'High';
+      else if (incompleteTasks.some(t => t.priority === 'Medium')) highestPriority = 'Medium';
+      else highestPriority = 'Low';
+    }
+
+    return {
+      hasNotes: regularNotes.length > 0,
+      notesCount: regularNotes.length,
+      hasTasks: tasks.length > 0,
+      tasksCount: tasks.length,
+      incompleteTasksCount: incompleteTasks.length,
+      completedTasksCount: completedTasks.length,
+      highestPriority,
+      hasOnlyCompletedTasks: completedTasks.length > 0 && incompleteTasks.length === 0
+    };
+  } catch (error) {
+    console.error('Error fetching person task info:', error);
+    return {
+      hasNotes: false,
+      notesCount: 0,
+      hasTasks: false,
+      tasksCount: 0,
+      incompleteTasksCount: 0,
+      completedTasksCount: 0,
+      highestPriority: null,
+      hasOnlyCompletedTasks: false
+    };
+  }
+}
+
+// Get task info for all people (bulk operation)
+export async function getAllPeopleTaskInfo() {
+  try {
+    const { data: allNotes, error } = await supabase
+      .from('notes')
+      .select('*');
+
+    if (error) throw error;
+
+    // Group notes by person_id
+    const personTaskInfo = {};
+    
+    allNotes.forEach(note => {
+      const personId = note.person_id;
+      if (!personTaskInfo[personId]) {
+        personTaskInfo[personId] = {
+          notes: [],
+          tasks: [],
+          incompleteTasks: [],
+          completedTasks: []
+        };
+      }
+
+      if (note.is_task) {
+        personTaskInfo[personId].tasks.push(note);
+        if (note.status === 'incomplete') {
+          personTaskInfo[personId].incompleteTasks.push(note);
+        } else {
+          personTaskInfo[personId].completedTasks.push(note);
+        }
+      } else {
+        personTaskInfo[personId].notes.push(note);
+      }
+    });
+
+    // Transform into the format we need
+    const result = {};
+    Object.keys(personTaskInfo).forEach(personId => {
+      const info = personTaskInfo[personId];
+      const incompleteTasks = info.incompleteTasks;
+      
+      let highestPriority = null;
+      if (incompleteTasks.length > 0) {
+        if (incompleteTasks.some(t => t.priority === 'High')) highestPriority = 'High';
+        else if (incompleteTasks.some(t => t.priority === 'Medium')) highestPriority = 'Medium';
+        else highestPriority = 'Low';
+      }
+
+      result[personId] = {
+        hasNotes: info.notes.length > 0,
+        notesCount: info.notes.length,
+        hasTasks: info.tasks.length > 0,
+        tasksCount: info.tasks.length,
+        incompleteTasksCount: info.incompleteTasks.length,
+        completedTasksCount: info.completedTasks.length,
+        highestPriority,
+        hasOnlyCompletedTasks: info.completedTasks.length > 0 && info.incompleteTasks.length === 0
+      };
+    });
+
+    return result;
+  } catch (error) {
+    console.error('Error fetching all people task info:', error);
+    return {};
   }
 }
 

@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Filter, StickyNote } from 'lucide-react';
-
-
+import { Filter, StickyNote, CheckSquare, CheckCircle } from 'lucide-react';
 
 export default function PeopleTable({ 
   filteredAndSortedPeople, 
@@ -17,6 +15,7 @@ export default function PeopleTable({
   onOpenPerson = () => {},
   onOpenNotes = () => {},
   peopleWithNotes = [],
+  peopleTaskInfo = {}, // NEW: Task info for each person
   stickyTop = 60
 }) {
   // debug: show stickyTop in dev console
@@ -215,21 +214,76 @@ export default function PeopleTable({
                       >
                         {person.firstName} {person.lastName}
                       </button>
-                      {peopleWithNotes.includes(person.id) && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onOpenNotes(person);
-                          }}
-                          className="p-1 hover:bg-blue-50 rounded transition group relative"
-                          aria-label="View notes"
-                        >
-                          <StickyNote size={14} className="text-gray-400 hover:text-[#0f2a71] transition" />
-                          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none">
-                            Has notes
-                          </span>
-                        </button>
-                      )}
+                      {/* Notes/Task Indicators */}
+                      {(() => {
+                        const taskInfo = peopleTaskInfo[person.id];
+                        
+                        // Show task indicator if person has incomplete tasks
+                        if (taskInfo?.incompleteTasksCount > 0) {
+                          const priorityColor = 
+                            taskInfo.highestPriority === 'High' ? 'text-red-600' :
+                            taskInfo.highestPriority === 'Medium' ? 'text-yellow-600' :
+                            'text-green-600';
+                          
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenNotes(person);
+                              }}
+                              className="p-1 hover:bg-blue-50 rounded transition group relative"
+                              aria-label="View tasks"
+                            >
+                              <CheckSquare size={14} className={`${priorityColor} hover:opacity-80 transition`} />
+                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-10">
+                                {taskInfo.incompleteTasksCount} incomplete task{taskInfo.incompleteTasksCount > 1 ? 's' : ''} ({taskInfo.highestPriority} priority)
+                                {taskInfo.notesCount > 0 && `, ${taskInfo.notesCount} note${taskInfo.notesCount > 1 ? 's' : ''}`}
+                              </span>
+                            </button>
+                          );
+                        }
+                        
+                        // Show completed task indicator if person has only completed tasks
+                        if (taskInfo?.hasOnlyCompletedTasks) {
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenNotes(person);
+                              }}
+                              className="p-1 hover:bg-blue-50 rounded transition group relative"
+                              aria-label="View completed tasks"
+                            >
+                              <CheckCircle size={14} className="text-gray-400 hover:text-gray-600 transition" />
+                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-10">
+                                {taskInfo.completedTasksCount} completed task{taskInfo.completedTasksCount > 1 ? 's' : ''}
+                                {taskInfo.notesCount > 0 && `, ${taskInfo.notesCount} note${taskInfo.notesCount > 1 ? 's' : ''}`}
+                              </span>
+                            </button>
+                          );
+                        }
+                        
+                        // Show note indicator if person has only notes (no tasks)
+                        if (taskInfo?.hasNotes) {
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenNotes(person);
+                              }}
+                              className="p-1 hover:bg-blue-50 rounded transition group relative"
+                              aria-label="View notes"
+                            >
+                              <StickyNote size={14} className="text-gray-400 hover:text-[#0f2a71] transition" />
+                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-10">
+                                {taskInfo.notesCount} note{taskInfo.notesCount > 1 ? 's' : ''}
+                              </span>
+                            </button>
+                          );
+                        }
+                        
+                        return null;
+                      })()}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-left border-r">

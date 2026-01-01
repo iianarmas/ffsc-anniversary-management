@@ -132,6 +132,16 @@ useEffect(() => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Listen for navigation events from bell notifications
+  useEffect(() => {
+    const handleNavigateToTasks = () => {
+      setCurrentView('tasks');
+    };
+
+    window.addEventListener('navigate-to-tasks', handleNavigateToTasks);
+    return () => window.removeEventListener('navigate-to-tasks', handleNavigateToTasks);
+  }, []);
+
   const loadData = async (showLoadingOverlay = false) => {
     if (showLoadingOverlay) {
       setLoading(true);
