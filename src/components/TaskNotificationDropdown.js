@@ -58,7 +58,7 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
   const getPriorityColor = (priority) => {
     switch (priority?.toLowerCase()) {
       case 'high':return 'text-red-600';
-      case 'medium': return 'text-orange-600';
+      case 'medium': return 'text-orange-500';
       case 'low': return 'text-green-600';
       default: return 'text-gray-600';
     }
@@ -212,7 +212,7 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
                           </div>
                           {task.category && (
                             <div className="mt-1">
-                              <span className="inline-block px-2 py-0.5 bg-white text-xs font-medium text-white rounded bg-[#36759c]">
+                              <span className="inline-block px-2 py-0.5 bg-gray-700 text-xs font-medium text-white rounded bg-[#36759c]">
                                 {task.category}
                               </span>
                             </div>
