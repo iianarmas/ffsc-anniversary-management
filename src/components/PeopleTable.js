@@ -1,6 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Filter, StickyNote, CheckSquare, CheckCircle } from 'lucide-react';
 
+const formatContactNumber = (number) => {
+  if (!number) return '—';
+  // Remove any non-digit characters
+  const cleaned = String(number).replace(/\D/g, '');
+  
+  // If it starts with 9 and is 10 digits, add 0 in front
+  let formatted = cleaned;
+  if (cleaned.length === 10 && cleaned.startsWith('9')) {
+    formatted = '0' + cleaned;
+  }
+  
+  // Format as (09xx) xxx-xxxx
+  if (formatted.length === 11) {
+    return `(${formatted.substring(0, 4)}) ${formatted.substring(4, 7)}-${formatted.substring(7)}`;
+  }
+  
+  // Return original if format doesn't match
+  return number;
+};
+
 export default function PeopleTable({ 
   filteredAndSortedPeople, 
   pagePeople,
@@ -296,7 +316,7 @@ export default function PeopleTable({
                     <div className="text-sm text-gray-700">{person.gender}</div>
                   </td>
                   <td className="px-4 py-3 text-left border-r">
-                    <div className="text-sm text-gray-700">{person.contactNumber}</div>
+                    <div className="text-sm text-gray-700">{formatContactNumber(person.contactNumber)}</div>
                   </td>
                   <td className="px-4 py-3 text-left border-r">
                     <div className="text-sm text-gray-700">{person.location}</div>
