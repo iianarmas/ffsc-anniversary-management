@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Users, Shirt, Menu, X, BarChart3, ChevronRight, Plus, CheckSquare } from 'lucide-react';
 
-export default function Sidebar({ currentView, setCurrentView, onAddPersonClick }) {
+export default function Sidebar({ currentView, setCurrentView, onAddPersonClick, taskStats }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'registration', label: 'Registration', icon: Users },
     { id: 'shirts', label: 'Shirt Management', icon: Shirt },
-    { id: 'tasks', label: 'Tasks', icon: CheckSquare },
+    { id: 'tasks', label: 'Tasks', icon: CheckSquare, badge: taskStats?.incomplete || 0 },
   ];
 
   return (
@@ -40,13 +40,18 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick 
                     setIsMobileMenuOpen(false);
                   }}
                   title={item.label}
-                  className={`w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 ${
+                  className={`w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 relative ${
                     isActive
                       ? 'bg-[#e2e8f8] text-[#0f204e]'
                       : 'text-gray-500 hover:bg-[#e2e8f8]'
                   }`}
                 >
                   <Icon size={18} />
+                  {item.badge > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
                 </button>
                 {idx === 0 && (
                   <div className="border-b border-dashed border-gray-300 mx-2 my-2" />

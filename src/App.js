@@ -19,7 +19,9 @@ import {
   toggleShirtPayment as apiToggleShirtPayment,
   toggleShirtGiven as apiToggleShirtGiven,
   getAgeBracket,
-  createPerson
+  createPerson,
+  getTaskStats,
+  getAllPeopleTaskInfo
 } from './services/api';
 import { supabase } from './services/supabase';
 
@@ -40,6 +42,16 @@ export default function App() {
   const [currentView, setCurrentView] = useState('registration');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
+  const [taskStats, setTaskStats] = useState({
+    total: 0,
+    incomplete: 0,
+    complete: 0,
+    overdue: 0,
+    dueToday: 0,
+    byCategory: {},
+    byPriority: { High: 0, Medium: 0, Low: 0 }
+  });
+  const [peopleTaskInfo, setPeopleTaskInfo] = useState({});
   
 
   
@@ -47,6 +59,8 @@ export default function App() {
 // Realtime subscriptions for people, registrations, and shirts
 useEffect(() => {
   loadData();
+  loadTaskStats();
+  loadPeopleTaskInfo();
 
   const updatePersonInState = (payload, table) => {
     const personId = table === 'people' 
@@ -115,10 +129,24 @@ useEffect(() => {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'registrations' }, (payload) => updatePersonInState(payload, 'registrations'))
     .subscribe();
 
+  const tasksSub = supabase
+    .channel('table-listen-tasks')
+    .on('postgres_changes', { 
+      event: '*', 
+      schema: 'public', 
+      table: 'notes'
+    }, (payload) => {
+      // Reload task stats and people task info when tasks change
+      loadTaskStats();
+      loadPeopleTaskInfo();
+    })
+    .subscribe();
+
   return () => {
     supabase.removeChannel(peopleSub);
     supabase.removeChannel(shirtsSub);
     supabase.removeChannel(registrationsSub);
+    supabase.removeChannel(tasksSub);
   };
 }, []);
 
@@ -152,6 +180,16 @@ useEffect(() => {
     const allPeople = await fetchAllPeople();
     setPeople(allPeople);
     setLoading(false);
+  };
+
+  const loadTaskStats = async () => {
+    const stats = await getTaskStats();
+    setTaskStats(stats);
+  };
+
+  const loadPeopleTaskInfo = async () => {
+    const taskInfo = await getAllPeopleTaskInfo();
+    setPeopleTaskInfo(taskInfo);
   };
 
   const filteredAndSortedPeople = useMemo(() => {
@@ -318,6 +356,7 @@ useEffect(() => {
         currentView={currentView} 
         setCurrentView={setCurrentView}
         onAddPersonClick={() => setIsAddPersonOpen(true)}
+        taskStats={taskStats}
       />
       <div className="flex-1 px-6 pt-16 ml-0 md:ml-16 transition-all duration-300">
         <div className="w-full">
@@ -344,6 +383,7 @@ useEffect(() => {
               selectedPeople={selectedPeople}
               handleSelectPerson={handleSelectPerson}
               people={people}
+              peopleTaskInfo={peopleTaskInfo}
             />
           ) : (
             <RegistrationView
@@ -364,6 +404,7 @@ useEffect(() => {
               handlePrint={handlePrint}
               handleSelectPerson={handleSelectPerson}
               people={people}
+              peopleTaskInfo={peopleTaskInfo}
             />
           )
         )}
@@ -389,6 +430,7 @@ useEffect(() => {
               shirtFilterSize={shirtFilterSize}
               setShirtFilterSize={setShirtFilterSize}
               onResetFilters={handleResetShirtFilters}
+              peopleTaskInfo={peopleTaskInfo}
             />
           ) : (
             <ShirtManagementView
@@ -410,15 +452,16 @@ useEffect(() => {
               shirtFilterSize={shirtFilterSize}
               setShirtFilterSize={setShirtFilterSize}
               onResetFilters={handleResetShirtFilters}
+              peopleTaskInfo={peopleTaskInfo}
             />
           )
         )}
 
         {currentView === 'tasks' && (
           isMobile ? (
-            <MobileTasksView />
+            <MobileTasksView onTaskUpdate={() => { loadTaskStats(); loadPeopleTaskInfo(); }} />
           ) : (
-            <TasksView />
+            <TasksView onTaskUpdate={() => { loadTaskStats(); loadPeopleTaskInfo(); }} />
           )
         )}
 

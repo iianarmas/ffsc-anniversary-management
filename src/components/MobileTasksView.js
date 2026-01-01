@@ -4,7 +4,7 @@ import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
 import { fetchAllTasks, toggleTaskComplete } from '../services/api';
 
-export default function MobileTasksView() {
+export default function MobileTasksView({ onTaskUpdate }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,6 +40,9 @@ export default function MobileTasksView() {
     const allTasks = await fetchAllTasks();
     setTasks(allTasks);
     setLoading(false);
+    if (onTaskUpdate) {
+      onTaskUpdate();
+    }
   };
 
   const scrollToTop = () => {

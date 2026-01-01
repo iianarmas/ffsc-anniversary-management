@@ -6,7 +6,7 @@ import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
 import { fetchAllTasks, toggleTaskComplete } from '../services/api';
 
-export default function TasksView() {
+export default function TasksView({ onTaskUpdate }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,6 +43,9 @@ export default function TasksView() {
     const allTasks = await fetchAllTasks();
     setTasks(allTasks);
     setLoading(false);
+    if (onTaskUpdate) {
+      onTaskUpdate();
+    }
   };
 
   // Scroll detection
