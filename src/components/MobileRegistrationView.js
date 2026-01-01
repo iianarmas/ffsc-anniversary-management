@@ -1,6 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, X, ChevronRight, Check, ChevronUp } from 'lucide-react';
 
+const formatPhilippineTime = (utcTimestamp) => {
+  if (!utcTimestamp) return '—';
+  
+  // Ensure the timestamp has a timezone indicator
+  let timestamp = utcTimestamp;
+  if (!timestamp.endsWith('Z') && !timestamp.includes('+') && !timestamp.includes('T00:00:00')) {
+    timestamp = timestamp + 'Z'; // Add UTC indicator if missing
+  }
+  
+  const date = new Date(timestamp);
+  
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Manila',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+  
+  return formatter.format(date);
+};
+
 export default function MobileRegistrationView({
   searchTerm,
   setSearchTerm,
@@ -183,12 +206,7 @@ export default function MobileRegistrationView({
                   <p className="text-sm text-gray-500 mt-1">Age: {person.age}</p>
                   {person.registered && person.registeredAt && (
                     <p className="text-xs text-green-600 mt-1">
-                      ✓ Checked in: {new Date(person.registeredAt).toLocaleString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                      ✓ Checked in: {formatPhilippineTime(person.registeredAt)}
                     </p>
                   )}
                   <div className="flex flex-wrap gap-2 mt-2">

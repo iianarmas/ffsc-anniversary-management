@@ -2,6 +2,30 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Filter, StickyNote, CheckSquare, CheckCircle } from 'lucide-react';
 
+const formatPhilippineTime = (utcTimestamp) => {
+  if (!utcTimestamp) return '—';
+  
+  // Ensure the timestamp has a timezone indicator
+  let timestamp = utcTimestamp;
+  if (!timestamp.endsWith('Z') && !timestamp.includes('+') && !timestamp.includes('T00:00:00')) {
+    timestamp = timestamp + 'Z'; // Add UTC indicator if missing
+  }
+  
+  const date = new Date(timestamp);
+  
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Manila',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+  
+  return formatter.format(date);
+};
+
 const formatContactNumber = (number) => {
   if (!number) return '—';
   // Remove any non-digit characters
@@ -379,13 +403,7 @@ export default function PeopleTable({
                   <td className="px-4 py-3 text-left border-r">
                     {person.registered && person.registeredAt ? (
                       <div className="text-xs text-gray-600">
-                        {new Date(person.registeredAt).toLocaleString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        {formatPhilippineTime(person.registeredAt)}
                       </div>
                     ) : (
                       <span className="text-xs text-gray-400">—</span>

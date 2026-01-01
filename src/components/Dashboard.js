@@ -6,74 +6,160 @@ import AgeBracketChart from './charts/AgeBracketChart';
 import HourlyTrendChart from './charts/HourlyTrendChart';
 import ShirtDistributionChart from './charts/ShirtDistributionChart';
 import RegistrationSummary from './charts/RegistrationSummary';
+import GenderAttendanceChart from './charts/GenderAttendanceChart';
+import LocationBreakdownChart from './charts/LocationBreakdownChart';
 
 export default function Dashboard({ people = [], stats = {} }) {
+  
+  // Limit to first 230 people
+  const limitedPeople = useMemo(() => people.slice(0, 230), [people]);
   
   // Calculate age bracket distribution
   const ageBracketData = useMemo(() => {
     const brackets = { Adult: 0, Youth: 0, Kid: 0, Toddler: 0 };
-    people.forEach(p => {
+    limitedPeople.forEach(p => {
       if (brackets.hasOwnProperty(p.ageBracket)) {
         brackets[p.ageBracket]++;
       }
     });
     return Object.entries(brackets).map(([name, value]) => ({ name, value }));
-  }, [people]);
+  }, [limitedPeople]);
 
-  // Generate hourly trend data for today
+
+  // Calculate gender attendance distribution
+  const genderAttendanceData = useMemo(() => {
+    const genders = {};
+    
+    limitedPeople.forEach(p => {
+      const gender = p.gender || 'Not Specified';
+      if (!genders[gender]) {
+        genders[gender] = { gender, registered: 0, preRegistered: 0, total: 0 };
+      }
+      
+      genders[gender].total++;
+      if (p.registered) {
+        genders[gender].registered++;
+      } else {
+        genders[gender].preRegistered++;
+      }
+    });
+    
+    return Object.values(genders);
+  }, [limitedPeople]);
+
+  // Calculate location breakdown
+  const locationBreakdownData = useMemo(() => {
+    const locations = {};
+    
+    limitedPeople.forEach(p => {
+      const location = p.location || 'Unknown';
+      if (!locations[location]) {
+        locations[location] = { location, total: 0, registered: 0, preRegistered: 0 };
+      }
+      
+      locations[location].total++;
+      if (p.registered) {
+        locations[location].registered++;
+      } else {
+        locations[location].preRegistered++;
+      }
+    });
+    
+    return Object.values(locations);
+  }, [limitedPeople]);
+
+  // Generate hourly trend data for today (Philippine Time)
   const hourlyTrendData = useMemo(() => {
     const data = [];
-    const now = new Date();
-    const currentHour = now.getHours();
     
-    // Generate data for 8 AM to 10 PM (or current hour if later)
-    const startHour = 8;
-    const endHour = Math.max(22, currentHour);
+    // Helper function to extract Philippine time components
+    const getPhilippineTime = (date) => {
+      // Ensure the timestamp has a timezone indicator
+      let timestamp = date;
+      if (typeof timestamp === 'string' && !timestamp.endsWith('Z') && !timestamp.includes('+') && !timestamp.includes('T00:00:00')) {
+        timestamp = timestamp + 'Z'; // Add UTC indicator if missing
+      }
+      
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        hour12: false
+      });
+      
+      const parts = formatter.formatToParts(new Date(timestamp));
+      const getValue = (type) => parseInt(parts.find(p => p.type === type)?.value || 0);
+      
+      return {
+        year: getValue('year'),
+        month: getValue('month'),
+        day: getValue('day'),
+        hour: getValue('hour')
+      };
+    };
     
-    for (let hour = startHour; hour <= endHour; hour++) {
-      const hourStr = hour === 12 ? '12 pm' : hour > 12 ? `${hour - 12} pm` : `${hour} am`;
+    const nowPH = getPhilippineTime(new Date());
+    
+    // Get all registrations for today in Philippine time
+    const todayRegistrations = people.filter(p => {
+      if (!p.registeredAt || !p.registered) return false;
       
-      // Filter people registered at this hour today
-      const hourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, 0, 0);
-      const hourEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, 59, 59);
+      const regPH = getPhilippineTime(p.registeredAt);
       
-      const checkedInThisHour = people.filter(p => {
-        if (!p.registeredAt || !p.registered) return false;
-        const regDate = new Date(p.registeredAt);
-        return regDate >= hourStart && regDate <= hourEnd;
-      }).length;
+      return regPH.day === nowPH.day && 
+             regPH.month === nowPH.month && 
+             regPH.year === nowPH.year;
+    });
+    
+    // Find the range of hours we need to show
+    // Show hours before and after current time for a balanced view
+    const hoursBeforeCurrent = 6; // Show 6 hours before
+    const hoursAfterCurrent = 6; // Show 6 hours after
+    
+    let earliestHour = Math.max(0, nowPH.hour - hoursBeforeCurrent); // Don't go below 0 (midnight)
+    let latestHour = Math.min(23, nowPH.hour + hoursAfterCurrent); // Don't go above 23 (11 PM)
+    
+    // Extend range if there are registrations outside the default range
+    if (todayRegistrations.length > 0) {
+      const hours = todayRegistrations.map(p => getPhilippineTime(p.registeredAt).hour);
+      earliestHour = Math.min(earliestHour, Math.min(...hours));
+      latestHour = Math.max(latestHour, Math.max(...hours));
+    }
+    
+    // Generate data for each hour
+    for (let hour = earliestHour; hour <= latestHour; hour++) {
+      const hourStr = hour === 0 ? '12 am' : 
+                      hour === 12 ? '12 pm' : 
+                      hour > 12 ? `${hour - 12} pm` : 
+                      `${hour} am`;
       
-      const totalThisHour = people.filter(p => {
-        if (!p.registeredAt) return false;
-        const regDate = new Date(p.registeredAt);
-        return regDate >= hourStart && regDate <= hourEnd;
+      const checkedInThisHour = todayRegistrations.filter(p => {
+        return getPhilippineTime(p.registeredAt).hour === hour;
       }).length;
       
       data.push({
         time: hourStr,
         checkedIn: checkedInThisHour,
-        total: totalThisHour
+        total: checkedInThisHour
       });
     }
     
     return data;
-  }, [people]);
+  }, [limitedPeople]);
 
-  // Calculate shirt distribution by size
+  // Calculate shirt distribution by size - use actual sizes from database
   const shirtDistributionData = useMemo(() => {
-    const sizes = ['M', 'L', 'XL', 'SL', 'XL', 'TS', 'X', '2XL', 'TS', '2XL', 'TS'];
     const sizeData = {};
     
-    // Initialize all sizes
-    sizes.forEach(size => {
-      if (!sizeData[size]) {
-        sizeData[size] = { size, pending: 0, given: 0, unpaid: 0, paid: 0 };
-      }
-    });
-    
-    // Count people by size and status
-    people.forEach(p => {
-      if (p.shirtSize && sizeData[p.shirtSize]) {
+    // Count people by size and status - dynamically find all sizes
+    limitedPeople.forEach(p => {
+      if (p.shirtSize && p.shirtSize !== 'Select Size' && p.shirtSize !== '') {
+        if (!sizeData[p.shirtSize]) {
+          sizeData[p.shirtSize] = { size: p.shirtSize, pending: 0, given: 0, unpaid: 0, paid: 0 };
+        }
+        
         if (p.shirtGiven) {
           sizeData[p.shirtSize].given++;
         } else {
@@ -88,8 +174,23 @@ export default function Dashboard({ people = [], stats = {} }) {
       }
     });
     
-    return Object.values(sizeData);
-  }, [people]);
+    // Sort sizes in a logical order (S, M, L, XL, 2XL, 3XL, etc.)
+    const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'];
+    const sortedData = Object.values(sizeData).sort((a, b) => {
+      const indexA = sizeOrder.indexOf(a.size);
+      const indexB = sizeOrder.indexOf(b.size);
+      
+      // If both sizes are in the standard order, use that order
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      // If only one is in standard order, put it first
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      // Otherwise sort alphabetically
+      return a.size.localeCompare(b.size);
+    });
+    
+    return sortedData;
+  }, [limitedPeople]);
 
   const handlePrint = () => {
     window.print();
@@ -147,10 +248,10 @@ export default function Dashboard({ people = [], stats = {} }) {
         </div>
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           
           {/* Registration Trend */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-base font-semibold text-[#001740]">Registration Trend</h3>
@@ -185,10 +286,10 @@ export default function Dashboard({ people = [], stats = {} }) {
         </div>
 
         {/* Bottom Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Shirt Distribution Breakdown */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-base font-semibold text-[#001740]">Shirt Distribution Breakdown</h3>
@@ -219,6 +320,46 @@ export default function Dashboard({ people = [], stats = {} }) {
               </button>
             </div>
             <RegistrationSummary stats={stats} />
+          </div>
+        </div>
+
+        {/* Third Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          
+          {/* Gender Attendance Breakdown */}
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-base font-semibold text-[#001740]">Gender & Attendance</h3>
+                <p className="text-xs text-gray-500 mt-1">RSVP vs actual attendance</p>
+              </div>
+              <button className="text-gray-400 hover:text-gray-600">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="10" cy="4" r="1.5" fill="currentColor"/>
+                  <circle cx="10" cy="10" r="1.5" fill="currentColor"/>
+                  <circle cx="10" cy="16" r="1.5" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+            <GenderAttendanceChart data={genderAttendanceData} height={280} />
+          </div>
+
+          {/* Location Breakdown */}
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-base font-semibold text-[#001740]">Location Distribution</h3>
+                <p className="text-xs text-gray-500 mt-1">Attendees by location</p>
+              </div>
+              <button className="text-gray-400 hover:text-gray-600">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="10" cy="4" r="1.5" fill="currentColor"/>
+                  <circle cx="10" cy="10" r="1.5" fill="currentColor"/>
+                  <circle cx="10" cy="16" r="1.5" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+            <LocationBreakdownChart data={locationBreakdownData} height={280} maxCapacity={230} />
           </div>
         </div>
       </div>

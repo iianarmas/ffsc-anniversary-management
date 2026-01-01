@@ -1,5 +1,21 @@
 import React from 'react';
-import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+        <p className="font-semibold text-gray-900 mb-2">{label}</p>
+        <div className="space-y-1">
+          <p className="text-sm text-green-600">
+            <span className="font-semibold">Checked In: {payload[0]?.value || 0}</span>
+          </p>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 const CustomLegend = () => {
   return (
@@ -36,6 +52,8 @@ export default function HourlyTrendChart({ data, height = 300 }) {
             tickLine={false}
             axisLine={false}
           />
+          
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }} />
           
           <Bar 
             dataKey="checkedIn" 

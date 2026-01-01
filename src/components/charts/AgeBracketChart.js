@@ -1,5 +1,25 @@
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    return (
+      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+        <p className="font-semibold text-gray-900 mb-2">{data.name}</p>
+        <div className="space-y-1">
+          <p className="text-sm text-gray-700">
+            Count: <span className="font-semibold">{data.payload.value}</span>
+          </p>
+          <p className="text-sm text-gray-700">
+            Percentage: <span className="font-semibold">{data.payload.percentage}%</span>
+          </p>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 const COLORS = {
   Adult: '#3b82f6',    // Blue
@@ -27,11 +47,12 @@ export default function AgeBracketChart({ data, height = 320 }) {
     <div className="relative h-full flex items-center justify-center">
       <ResponsiveContainer width="100%" height={height}>
         <PieChart>
+          <Tooltip content={<CustomTooltip />} />
           <Pie
             data={dataWithPercentage}
             cx="50%"
             cy="50%"
-            innerRadius={80}
+            innerRadius={60}
             outerRadius={120}
             fill="#8884d8"
             dataKey="value"
@@ -60,15 +81,15 @@ export default function AgeBracketChart({ data, height = 320 }) {
         </div>
       </div>
 
-      {/* Legend on the side */}
-      <div className="absolute right-0 top-1/2 transform -translate-y-1/2 space-y-5">
+      {/* Legend on the left */}
+      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 space-y-3">
         {dataWithPercentage.map((entry, index) => (
-          <div key={index} className="flex items-center gap-3">
+          <div key={index} className="flex items-center gap-2">
             <div 
-              className="w-4 h-4 rounded-full" 
+              className="w-4 h-4 rounded-full flex-shrink-0" 
               style={{ backgroundColor: COLORS[entry.name] }}
             />
-            <div className="text-sm">
+            <div className="text-sm whitespace-nowrap">
               <span className="font-medium text-gray-700">{entry.name}</span>
               <span className="text-gray-500 ml-2">{entry.percentage}%</span>
             </div>
