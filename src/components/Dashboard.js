@@ -7,7 +7,7 @@ import HourlyTrendChart from './charts/HourlyTrendChart';
 import ShirtDistributionChart from './charts/ShirtDistributionChart';
 import RegistrationSummary from './charts/RegistrationSummary';
 
-export default function Dashboard({ people = [], stats = {}, searchTerm, setSearchTerm }) {
+export default function Dashboard({ people = [], stats = {} }) {
   
   // Calculate age bracket distribution
   const ageBracketData = useMemo(() => {
@@ -99,9 +99,7 @@ export default function Dashboard({ people = [], stats = {}, searchTerm, setSear
     <>
       <Header 
         viewTitle="Dashboard" 
-        searchTerm={searchTerm} 
-        setSearchTerm={setSearchTerm} 
-        searchPlaceholder="Search dashboard..." 
+        showSearch={false}
       />
       
       <div className="p-6 bg-[#f9fafa] min-h-screen">
