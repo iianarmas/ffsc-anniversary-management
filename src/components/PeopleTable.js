@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Filter, StickyNote, CheckSquare, CheckCircle } from 'lucide-react';
 
 const formatContactNumber = (number) => {
@@ -71,35 +72,65 @@ export default function PeopleTable({
     }
   }, [selectedPeople, pagePeople]);
 
-  const FilterDropdown = ({ column, options, value, onChange }) => (
-    <div className="relative" ref={el => filterRefs.current[column] = el}>
-      <Filter 
-        size={14} 
-        className={`cursor-pointer transition ${value !== 'All' ? 'text-[#f4d642]' : 'text-gray-400 hover:text-gray-600'}`}
-        onClick={() => setOpenFilter(openFilter === column ? null : column)}
-      />
-      {openFilter === column && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-          <div className="py-1">
-            {options.map(option => (
-              <button
-                key={option.value}
-                onClick={() => {
-                  onChange(option.value);
-                  setOpenFilter(null);
-                }}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
-                  value === option.value ? 'bg-[#fffdf0] text-[#001740] font-semibold' : 'text-gray-700'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  const FilterDropdown = ({ column, options, value, onChange }) => {
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+
+    useEffect(() => {
+      if (openFilter === column && filterRefs.current[column]) {
+        const updatePosition = () => {
+          const rect = filterRefs.current[column].getBoundingClientRect();
+          setDropdownPosition({
+            top: rect.bottom + 4,
+            left: rect.right - 192 // 192px = w-48
+          });
+        };
+        updatePosition();
+        window.addEventListener('scroll', updatePosition, true);
+        window.addEventListener('resize', updatePosition);
+        return () => {
+          window.removeEventListener('scroll', updatePosition, true);
+          window.removeEventListener('resize', updatePosition);
+        };
+      }
+    }, [openFilter, column]);
+
+    return (
+      <div className="relative" ref={el => filterRefs.current[column] = el}>
+        <Filter 
+          size={14} 
+          className={`cursor-pointer transition ${value !== 'All' ? 'text-[#f4d642]' : 'text-gray-400 hover:text-gray-600'}`}
+          onClick={() => setOpenFilter(openFilter === column ? null : column)}
+        />
+        {openFilter === column && createPortal(
+          <div 
+            className="fixed w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+            style={{
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`
+            }}
+          >
+            <div className="py-1">
+              {options.map(option => (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    onChange(option.value);
+                    setOpenFilter(null);
+                  }}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
+                    value === option.value ? 'bg-[#fffdf0] text-[#001740] font-semibold' : 'text-gray-700'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>,
+          document.body
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -255,7 +286,7 @@ export default function PeopleTable({
                               aria-label="View tasks"
                             >
                               <CheckSquare size={14} className={`${priorityColor} hover:opacity-80 transition`} />
-                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-10">
+                              <span className="fixed px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-[100]" style={{ bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '4px' }}>
                                 {taskInfo.incompleteTasksCount} incomplete task{taskInfo.incompleteTasksCount > 1 ? 's' : ''} ({taskInfo.highestPriority} priority)
                                 {taskInfo.notesCount > 0 && `, ${taskInfo.notesCount} note${taskInfo.notesCount > 1 ? 's' : ''}`}
                               </span>
@@ -275,7 +306,7 @@ export default function PeopleTable({
                               aria-label="View completed tasks"
                             >
                               <CheckCircle size={14} className="text-gray-400 hover:text-gray-600 transition" />
-                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-10">
+                              <span className="fixed px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-[100]" style={{ bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '4px' }}>
                                 {taskInfo.completedTasksCount} completed task{taskInfo.completedTasksCount > 1 ? 's' : ''}
                                 {taskInfo.notesCount > 0 && `, ${taskInfo.notesCount} note${taskInfo.notesCount > 1 ? 's' : ''}`}
                               </span>
@@ -295,7 +326,7 @@ export default function PeopleTable({
                               aria-label="View notes"
                             >
                               <StickyNote size={14} className="text-gray-400 hover:text-[#0f2a71] transition" />
-                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-10">
+                              <span className="fixed px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-[100]" style={{ bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '4px' }}>
                                 {taskInfo.notesCount} note{taskInfo.notesCount > 1 ? 's' : ''}
                               </span>
                             </button>

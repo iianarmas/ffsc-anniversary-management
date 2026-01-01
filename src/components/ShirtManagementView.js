@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronUp, Search, Filter, DollarSign, Package, Clock, Users, StickyNote, CheckSquare, CheckCircle } from 'lucide-react';
 import Header from './Header';
 import StatsBar from './StatsBar';
@@ -118,35 +119,65 @@ export default function ShirtManagementView({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openFilter]);
 
-  const FilterDropdown = ({ column, options, value, onChange }) => (
-    <div className="relative" ref={el => filterRefs.current[column] = el}>
-      <Filter 
-        size={14} 
-        className={`cursor-pointer transition ${value !== 'All' ? 'text-[#f4d642]' : 'text-gray-400 hover:text-gray-600'}`}
-        onClick={() => setOpenFilter(openFilter === column ? null : column)}
-      />
-      {openFilter === column && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-          <div className="py-1">
-            {options.map(option => (
-              <button
-                key={option.value}
-                onClick={() => {
-                  onChange(option.value);
-                  setOpenFilter(null);
-                }}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
-                  value === option.value ? 'bg-[#fffdf0] text-[#001740] font-semibold' : 'text-gray-700'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  const FilterDropdown = ({ column, options, value, onChange }) => {
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+
+    useEffect(() => {
+      if (openFilter === column && filterRefs.current[column]) {
+        const updatePosition = () => {
+          const rect = filterRefs.current[column].getBoundingClientRect();
+          setDropdownPosition({
+            top: rect.bottom + 4,
+            left: rect.right - 192 // 192px = w-48
+          });
+        };
+        updatePosition();
+        window.addEventListener('scroll', updatePosition, true);
+        window.addEventListener('resize', updatePosition);
+        return () => {
+          window.removeEventListener('scroll', updatePosition, true);
+          window.removeEventListener('resize', updatePosition);
+        };
+      }
+    }, [openFilter, column]);
+
+    return (
+      <div className="relative" ref={el => filterRefs.current[column] = el}>
+        <Filter 
+          size={14} 
+          className={`cursor-pointer transition ${value !== 'All' ? 'text-[#f4d642]' : 'text-gray-400 hover:text-gray-600'}`}
+          onClick={() => setOpenFilter(openFilter === column ? null : column)}
+        />
+        {openFilter === column && createPortal(
+          <div 
+            className="fixed w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+            style={{
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`
+            }}
+          >
+            <div className="py-1">
+              {options.map(option => (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    onChange(option.value);
+                    setOpenFilter(null);
+                  }}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
+                    value === option.value ? 'bg-[#fffdf0] text-[#001740] font-semibold' : 'text-gray-700'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>,
+          document.body
+        )}
+      </div>
+    );
+  };
 
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
