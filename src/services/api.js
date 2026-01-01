@@ -422,7 +422,17 @@ export async function fetchAllTasks(filters = {}) {
     const { data, error } = await query;
 
     if (error) throw error;
-    return data || [];
+    
+    // Transform data to flatten person info
+    const transformed = (data || []).map(task => ({
+      ...task,
+      person_id: task.people?.id || task.person_id,
+      person_first_name: task.people?.first_name || '',
+      person_last_name: task.people?.last_name || '',
+      person_location: task.people?.location || ''
+    }));
+    
+    return transformed;
   } catch (error) {
     console.error('Error fetching tasks:', error);
     return [];
@@ -454,7 +464,16 @@ export async function fetchTasksDueToday() {
       .order('priority', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Transform data to flatten person info
+    const transformed = (data || []).map(task => ({
+      ...task,
+      person_id: task.people?.id || task.person_id,
+      person_first_name: task.people?.first_name || '',
+      person_last_name: task.people?.last_name || ''
+    }));
+    
+    return transformed;
   } catch (error) {
     console.error('Error fetching tasks due today:', error);
     return [];
@@ -483,7 +502,16 @@ export async function fetchOverdueTasks() {
       .order('due_date', { ascending: true });
 
     if (error) throw error;
-    return data || [];
+    
+    // Transform data to flatten person info
+    const transformed = (data || []).map(task => ({
+      ...task,
+      person_id: task.people?.id || task.person_id,
+      person_first_name: task.people?.first_name || '',
+      person_last_name: task.people?.last_name || ''
+    }));
+    
+    return transformed;
   } catch (error) {
     console.error('Error fetching overdue tasks:', error);
     return [];

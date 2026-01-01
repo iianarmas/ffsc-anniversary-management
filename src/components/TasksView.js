@@ -90,8 +90,10 @@ export default function TasksView({ onTaskUpdate }) {
       if (filterDueDate !== 'All') {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const taskDate = new Date(task.due_date);
-        taskDate.setHours(0, 0, 0, 0);
+        
+        // Parse task date as UTC then convert to local date
+        const taskDateObj = new Date(task.due_date);
+        const taskDate = new Date(taskDateObj.getUTCFullYear(), taskDateObj.getUTCMonth(), taskDateObj.getUTCDate());
         
         if (filterDueDate === 'Today') {
           matchesDueDate = taskDate.getTime() === today.getTime();
@@ -111,8 +113,16 @@ export default function TasksView({ onTaskUpdate }) {
 
     // Sort: Overdue first, then by due date
     filtered.sort((a, b) => {
-      const aOverdue = new Date(a.due_date) < new Date() && a.status === 'incomplete';
-      const bOverdue = new Date(b.due_date) < new Date() && b.status === 'incomplete';
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const aDateObj = new Date(a.due_date);
+      const aDate = new Date(aDateObj.getUTCFullYear(), aDateObj.getUTCMonth(), aDateObj.getUTCDate());
+      const aOverdue = aDate < today && a.status === 'incomplete';
+      
+      const bDateObj = new Date(b.due_date);
+      const bDate = new Date(bDateObj.getUTCFullYear(), bDateObj.getUTCMonth(), bDateObj.getUTCDate());
+      const bOverdue = bDate < today && b.status === 'incomplete';
       
       if (aOverdue && !bOverdue) return -1;
       if (!aOverdue && bOverdue) return 1;
@@ -235,11 +245,17 @@ export default function TasksView({ onTaskUpdate }) {
 
   const formatDate = (dateString) => {
     if (!dateString) return '—';
+    
+    // Parse the date string as UTC to avoid timezone shifts
     const date = new Date(dateString);
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth();
+    const day = date.getUTCDate();
+    
+    // Create date objects in local timezone for comparison
+    const taskDate = new Date(year, month, day);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const taskDate = new Date(date);
-    taskDate.setHours(0, 0, 0, 0);
     
     if (taskDate.getTime() === today.getTime()) return 'Today';
     
@@ -247,7 +263,7 @@ export default function TasksView({ onTaskUpdate }) {
     tomorrow.setDate(today.getDate() + 1);
     if (taskDate.getTime() === tomorrow.getTime()) return 'Tomorrow';
     
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return taskDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   const getPriorityColor = (priority) => {
@@ -270,9 +286,15 @@ export default function TasksView({ onTaskUpdate }) {
 
   const getRowBackgroundColor = (task) => {
     if (task.status === 'complete') return 'bg-gray-50';
-    const isOverdue = new Date(task.due_date) < new Date();
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const taskDateObj = new Date(task.due_date);
+    const taskDate = new Date(taskDateObj.getUTCFullYear(), taskDateObj.getUTCMonth(), taskDateObj.getUTCDate());
+    
+    const isOverdue = taskDate < today;
     if (isOverdue) return 'bg-red-50';
-    const isToday = formatDate(task.due_date) === 'Today';
+    const isToday = taskDate.getTime() === today.getTime();
     if (isToday) return 'bg-yellow-50';
     return '';
   };
