@@ -17,7 +17,17 @@ export default function Header({
   useEffect(() => {
     loadNotificationCount();
     const interval = setInterval(loadNotificationCount, 60000); // Refresh every 60 seconds
-    return () => clearInterval(interval);
+    
+    // Listen for task updates
+    const handleTaskUpdate = () => {
+      loadNotificationCount();
+    };
+    window.addEventListener('taskUpdated', handleTaskUpdate);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('taskUpdated', handleTaskUpdate);
+    };
   }, []);
 
   const loadNotificationCount = async () => {

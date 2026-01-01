@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronUp, Filter, CheckSquare, AlertCircle, Calendar, Tag, Users, CheckCircle, Clock, AlertTriangle, RotateCw } from 'lucide-react';
+import { ChevronUp, Filter, Square, Circle, CalendarDays, Hash, Users, CheckCircle2, Clock, AlertTriangle, RotateCw } from 'lucide-react';
 import Header from './Header';
 import Pagination from './Pagination';
 import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
-import { fetchAllTasks, toggleTaskComplete } from '../services/api';
+import { fetchAllTasks, toggleTaskComplete, getAgeBracket } from '../services/api';
+import { supabase } from '../services/supabase';
 
 export default function TasksView({ onTaskUpdate }) {
   const [tasks, setTasks] = useState([]);
@@ -33,20 +34,36 @@ export default function TasksView({ onTaskUpdate }) {
   const [openFilter, setOpenFilter] = useState(null);
   const filterRefs = useRef({});
 
-  // Load tasks
-  useEffect(() => {
-    loadTasks();
-  }, []);
-
   const loadTasks = async () => {
     setLoading(true);
     const allTasks = await fetchAllTasks();
     setTasks(allTasks);
     setLoading(false);
-    if (onTaskUpdate) {
-      onTaskUpdate();
-    }
   };
+
+  // Load tasks on mount
+  useEffect(() => {
+    loadTasks();
+  }, []);
+
+  // Listen for task updates from other components
+  useEffect(() => {
+    const handleTaskUpdate = async () => {
+      console.log('📋 TasksView: Reloading tasks due to external update');
+      setLoading(true);
+      const allTasks = await fetchAllTasks();
+      setTasks(allTasks);
+      setLoading(false);
+    };
+    
+    window.addEventListener('taskUpdated', handleTaskUpdate);
+    window.addEventListener('tasksLoaded', handleTaskUpdate);
+    
+    return () => {
+      window.removeEventListener('taskUpdated', handleTaskUpdate);
+      window.removeEventListener('tasksLoaded', handleTaskUpdate);
+    };
+  }, []);
 
   // Scroll detection
   useEffect(() => {
@@ -179,6 +196,9 @@ export default function TasksView({ onTaskUpdate }) {
     ));
     await toggleTaskComplete(taskId, currentStatus);
     await loadTasks();
+    
+    // Notify header to update badge count
+    window.dispatchEvent(new Event('taskUpdated'));
   };
 
   const handleBulkComplete = async () => {
@@ -192,6 +212,9 @@ export default function TasksView({ onTaskUpdate }) {
     await loadTasks();
     setSelectedTasks([]);
     setLoading(false);
+    
+    // Notify header to update badge count
+    window.dispatchEvent(new Event('taskUpdated'));
   };
 
   const handleBulkIncomplete = async () => {
@@ -205,6 +228,9 @@ export default function TasksView({ onTaskUpdate }) {
     await loadTasks();
     setSelectedTasks([]);
     setLoading(false);
+    
+    // Notify header to update badge count
+    window.dispatchEvent(new Event('taskUpdated'));
   };
 
   const handleResetFilters = () => {
@@ -215,12 +241,41 @@ export default function TasksView({ onTaskUpdate }) {
     setFilterDueDate('All');
   };
 
-  const handleOpenPerson = (task) => {
-    setSelectedPerson({
-      id: task.person_id,
-      firstName: task.person_first_name,
-      lastName: task.person_last_name
-    });
+  const handleOpenPerson = async (task) => {
+    // Fetch full person data
+    const { data, error } = await supabase
+      .from('people')
+      .select(`
+        *,
+        shirts(*),
+        registrations(*)
+      `)
+      .eq('id', task.person_id)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching person:', error);
+      return;
+    }
+    
+    // Transform to match expected format
+    const person = {
+      id: data.id,
+      firstName: data.first_name,
+      lastName: data.last_name,
+      age: data.age,
+      gender: data.gender,
+      ageBracket: getAgeBracket(data.age),
+      location: data.location === 'GUEST' ? 'Guest' : data.location,
+      contactNumber: data.contact_number,
+      registered: data.registrations?.[0]?.registered || false,
+      registeredAt: data.registrations?.[0]?.registered_at || null,
+      shirtSize: data.shirts?.[0]?.shirt_size || '',
+      paid: data.shirts?.[0]?.paid || false,
+      shirtGiven: data.shirts?.[0]?.shirt_given || false,
+    };
+    
+    setSelectedPerson(person);
     setSidebarOpen(true);
   };
 
@@ -348,7 +403,7 @@ export default function TasksView({ onTaskUpdate }) {
               <p className="text-sm text-gray-600 mt-1">Track and manage tasks across all attendees</p>
             </div>
             <div className="text-sm text-gray-500 flex items-baseline gap-2">
-              <CheckSquare size={18} className="text-gray-400" />
+              <Square size={18} className="text-gray-400" />
               <span className="font-semibold text-gray-900 text-lg">{filteredAndSortedTasks.length}</span>
               <span className="text-gray-500">{filteredAndSortedTasks.length === 1 ? 'task' : 'tasks'}</span>
             </div>
@@ -366,7 +421,7 @@ export default function TasksView({ onTaskUpdate }) {
                   {/* Stats */}
                   <div className="flex items-center gap-4 text-sm text-gray-600 mr-2">
                     <div className="flex items-center gap-2 whitespace-nowrap">
-                      <CheckSquare size={14} className="text-gray-400" />
+                      <Square size={14} className="text-gray-400" />
                       <span className="font-semibold text-gray-900">{stats.total}</span>
                       <span className="text-gray-500">Total</span>
                       <span className="text-gray-300">|</span>
@@ -378,7 +433,7 @@ export default function TasksView({ onTaskUpdate }) {
                       <span className="text-gray-300">|</span>
                     </div>
                     <div className="flex items-center gap-2 whitespace-nowrap">
-                      <CheckCircle size={14} className="text-green-600" />
+                      <CheckCircle2 size={14} className="text-green-600" />
                       <span className="font-semibold text-gray-900">{stats.complete}</span>
                       <span className="text-gray-500">Complete</span>
                       <span className="text-gray-300">|</span>
@@ -412,7 +467,7 @@ export default function TasksView({ onTaskUpdate }) {
                         onClick={handleBulkComplete}
                         className="flex items-center gap-2 px-4 py-2 border border-[#0f2a71] hover:border-[#1c3b8d] text-slate-600 hover:text-[#1c3b8d] rounded-lg font-medium transition text-sm"
                       >
-                        <CheckCircle size={16} />
+                        <CheckCircle2 size={16} />
                         Mark Complete
                       </button>
                       <button
@@ -579,7 +634,7 @@ export default function TasksView({ onTaskUpdate }) {
                         </td>
                         <td className="px-4 py-3 text-left border-r">
                           <div className="flex items-center gap-2">
-                            <Calendar size={14} className="text-gray-400" />
+                            <CalendarDays size={14} className="text-gray-400" />
                             <span className="text-sm text-gray-700">{formatDate(task.due_date)}</span>
                           </div>
                         </td>
@@ -591,7 +646,7 @@ export default function TasksView({ onTaskUpdate }) {
                         </td>
                         <td className="px-4 py-3 text-left border-r">
                           <span className="inline-flex items-center gap-1 text-sm text-gray-700">
-                            <Tag size={14} className="text-gray-400" />
+                            <Hash size={14} className="text-gray-400" />
                             {task.category}
                           </span>
                         </td>

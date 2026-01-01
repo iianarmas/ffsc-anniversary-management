@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Plus, Edit2, Trash2, Save, XCircle, AlertTriangle } from 'lucide-react';
+import { X, Plus, Edit2, Trash2, Save, XCircle, AlertTriangle, CalendarDays, Hash, Circle, RotateCw } from 'lucide-react';
 import { fetchNotesForPerson, createNote, updateNote, deleteNote, deletePerson } from '../services/api';
 import shirtMale from '../assets/images/shirt-male.png';
 import shirtFemale from '../assets/images/shirt-female.png';
@@ -11,6 +11,15 @@ export default function AccountSidebar({ person, open, onClose }) {
   const [editingNoteText, setEditingNoteText] = useState('');
   const [isLoadingNotes, setIsLoadingNotes] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
+  // Task-related states
+  const [isTask, setIsTask] = useState(false);
+  const [dueDate, setDueDate] = useState('');
+  const [priority, setPriority] = useState('Medium');
+  const [category, setCategory] = useState('General');
+  const [recurrence, setRecurrence] = useState('none');
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
+  const [assignedTo, setAssignedTo] = useState('Admin');
 
   useEffect(() => {
     const handleKey = (e) => {
@@ -44,8 +53,27 @@ export default function AccountSidebar({ person, open, onClose }) {
   const handleAddNote = async () => {
     if (!newNoteText.trim() || !person?.id) return;
     try {
-      await createNote(person.id, newNoteText.trim());
+      const taskData = isTask ? {
+        dueDate: dueDate || new Date().toISOString().split('T')[0],
+        priority,
+        category,
+        assignedTo,
+        recurrence,
+        recurrenceEndDate: recurrence !== 'none' ? recurrenceEndDate : null
+      } : {};
+      
+      await createNote(person.id, newNoteText.trim(), isTask, taskData);
+      
+      // Reset form
       setNewNoteText('');
+      setIsTask(false);
+      setDueDate('');
+      setPriority('Medium');
+      setCategory('General');
+      setRecurrence('none');
+      setRecurrenceEndDate('');
+      setAssignedTo('Admin');
+      
       await loadNotes();
     } catch (error) {
       alert('Failed to add note');
@@ -143,6 +171,26 @@ export default function AccountSidebar({ person, open, onClose }) {
     }
   };
 
+  const formatContactNumber = (number) => {
+    if (!number) return '—';
+    // Remove any non-digit characters
+    const cleaned = String(number).replace(/\D/g, '');
+    
+    // If it starts with 9 and is 10 digits, add 0 in front
+    let formatted = cleaned;
+    if (cleaned.length === 10 && cleaned.startsWith('9')) {
+      formatted = '0' + cleaned;
+    }
+    
+    // Format as (09xx) xxx-xxxx
+    if (formatted.length === 11) {
+      return `(${formatted.substring(0, 4)}) ${formatted.substring(4, 7)}-${formatted.substring(7)}`;
+    }
+    
+    // Return original if format doesn't match
+    return number;
+  };
+
   return (
     <>
       {/* backdrop overlay */}
@@ -220,7 +268,7 @@ export default function AccountSidebar({ person, open, onClose }) {
 
                   <div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Contact Number</div>
-                    <div className="text-sm text-gray-900 font-medium">{person?.contactNumber || '—'}</div>
+                    <div className="text-sm text-gray-900 font-medium">{formatContactNumber(person?.contactNumber)}</div>
                   </div>
 
                   <div>
@@ -287,26 +335,107 @@ export default function AccountSidebar({ person, open, onClose }) {
             <div className="pt-4 border-t border-gray-100">
               <h4 className="text-sm font-semibold text-gray-900 mb-3">Notes & Actions</h4>
               
-              {/* Add Note Input */}
+              {/* Add Note/Task Input */}
               <div className="mb-4">
-                <div className="flex gap-2">
+                <textarea
+                  value={newNoteText}
+                  onChange={(e) => setNewNoteText(e.target.value)}
+                  placeholder="Add a note or task..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0f2a71] focus:border-[#0f2a71] text-sm resize-none"
+                  rows={2}
+                />
+                
+                {/* Mark as Task Checkbox */}
+                <div className="flex items-center gap-2 mt-2">
                   <input
-                    type="text"
-                    value={newNoteText}
-                    onChange={(e) => setNewNoteText(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleAddNote()}
-                    placeholder="Add a note..."
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0f2a71] focus:border-[#0f2a71] text-sm"
+                    type="checkbox"
+                    id="markAsTask"
+                    checked={isTask}
+                    onChange={(e) => setIsTask(e.target.checked)}
+                    className="w-4 h-4 rounded accent-[#0f2a71] cursor-pointer"
                   />
-                  <button
-                    onClick={handleAddNote}
-                    disabled={!newNoteText.trim()}
-                    className="px-4 py-2 bg-[#001740] text-white text-sm rounded-lg hover:bg-[#0f2a71] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                  >
-                    <Plus size={16} />
-                    Add
-                  </button>
+                  <label htmlFor="markAsTask" className="text-sm text-gray-700 cursor-pointer">
+                    Mark as task
+                  </label>
                 </div>
+                
+                {/* Task Fields (show only if isTask is true) */}
+                {isTask && (
+                  <div className="mt-3 space-y-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-gray-600 mb-1 block">Due Date</label>
+                        <input
+                          type="date"
+                          value={dueDate}
+                          onChange={(e) => setDueDate(e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#0f2a71]"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-600 mb-1 block">Priority</label>
+                        <select
+                          value={priority}
+                          onChange={(e) => setPriority(e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#0f2a71]"
+                        >
+                          <option value="Low">Low</option>
+                          <option value="Medium">Medium</option>
+                          <option value="High">High</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600 mb-1 block">Category</label>
+                      <select
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#0f2a71]"
+                      >
+                        <option value="General">General</option>
+                        <option value="Follow-up">Follow-up</option>
+                        <option value="Shirt Payment">Shirt Payment</option>
+                        <option value="Shirt Distribution">Shirt Distribution</option>
+                        <option value="Shirt Print Request">Shirt Print Request</option>
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-gray-600 mb-1 block">Recurrence</label>
+                        <select
+                          value={recurrence}
+                          onChange={(e) => setRecurrence(e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#0f2a71]"
+                        >
+                          <option value="none">None</option>
+                          <option value="daily">Daily</option>
+                          <option value="weekly">Weekly</option>
+                          <option value="monthly">Monthly</option>
+                        </select>
+                      </div>
+                      {recurrence !== 'none' && (
+                        <div>
+                          <label className="text-xs text-gray-600 mb-1 block">Until</label>
+                          <input
+                            type="date"
+                            value={recurrenceEndDate}
+                            onChange={(e) => setRecurrenceEndDate(e.target.value)}
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#0f2a71]"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                <button
+                  onClick={handleAddNote}
+                  disabled={!newNoteText.trim()}
+                  className="mt-2 w-full px-4 py-2 bg-[#001740] text-white text-sm rounded-lg hover:bg-[#0f2a71] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
+                >
+                  <Plus size={16} />
+                  {isTask ? 'Add Task' : 'Add Note'}
+                </button>
               </div>
 
               {/* Notes List */}
@@ -317,7 +446,15 @@ export default function AccountSidebar({ person, open, onClose }) {
                   <p className="text-sm text-gray-500 text-center py-4">No notes yet. Add one above!</p>
                 ) : (
                   notes.map(note => (
-                    <div key={note.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <div key={note.id} className={`rounded-lg p-3 border ${
+                      note.is_task 
+                        ? note.priority === 'High' 
+                          ? 'bg-red-50 border-l-4 border-l-red-500 border-red-200' 
+                          : note.priority === 'Medium'
+                            ? 'bg-yellow-50 border-l-4 border-l-yellow-500 border-yellow-200'
+                            : 'bg-green-50 border-l-4 border-l-green-500 border-green-200'
+                        : 'bg-gray-50 border-gray-200'
+                    }`}>
                       {editingNoteId === note.id ? (
                         // Edit Mode
                         <div className="space-y-2">
@@ -371,7 +508,34 @@ export default function AccountSidebar({ person, open, onClose }) {
                               </button>
                             </div>
                           </div>
-                          <p className="text-sm text-gray-900 whitespace-pre-wrap">{note.note_text}</p>
+                          <p className={`text-sm whitespace-pre-wrap ${note.is_task && note.status === 'complete' ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                            {note.note_text}
+                          </p>
+                          {note.is_task && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-white border">
+                                <CalendarDays size={12} className="text-gray-500" />
+                                {note.due_date ? new Date(note.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No date'}
+                              </span>
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full ${
+                                note.priority === 'High' ? 'bg-red-100 text-red-800' :
+                                note.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-green-100 text-green-800'
+                              }`}>
+                                <Circle size={10} className={note.priority === 'High' ? 'fill-red-500 stroke-none' : note.priority === 'Medium' ? 'fill-yellow-500 stroke-none' : 'fill-green-500 stroke-none'} />
+                                {note.priority}
+                              </span>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-white border">
+                                <Hash size={12} className="text-gray-500" />
+                                {note.category}
+                              </span>
+                              {note.status === 'complete' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                  ✓ Complete
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <div className="text-xs text-gray-400 mt-2">
                             {formatNoteDate(note.updated_at || note.created_at)}
                           </div>

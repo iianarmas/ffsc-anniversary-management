@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, StickyNote, Trash2, Edit2, Plus, CheckSquare, Calendar, Tag, AlertCircle, RotateCw, Clock } from 'lucide-react';
+import { X, StickyNote, Trash2, Edit2, Plus, Square, CalendarDays, Hash, AlertCircle, RotateCw, Clock } from 'lucide-react';
 import { fetchNotesForPerson, createNote, updateNote, deleteNote, toggleTaskComplete } from '../services/api';
 
 export default function NotesDialog({ person, isOpen, onClose }) {
@@ -174,6 +174,9 @@ export default function NotesDialog({ person, isOpen, onClose }) {
     try {
       await toggleTaskComplete(taskId, currentStatus);
       await loadNotes();
+      
+      // Notify other components that a task was updated
+      window.dispatchEvent(new Event('taskUpdated'));
     } catch (error) {
       console.error('Failed to toggle task:', error);
     }
@@ -389,7 +392,7 @@ export default function NotesDialog({ person, isOpen, onClose }) {
                                     ? 'bg-red-100 text-red-800 border-red-300'
                                     : 'bg-blue-100 text-blue-800 border-blue-300'
                                 }`}>
-                                  <Calendar size={12} />
+                                  <CalendarDays size={12} />
                                   {formatDueDate(note.due_date)}
                                 </span>
                               )}
@@ -405,7 +408,7 @@ export default function NotesDialog({ person, isOpen, onClose }) {
                               {/* Category badge */}
                               {note.category && (
                                 <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium border ${getCategoryBadgeColor(note.category)}`}>
-                                  <Tag size={12} />
+                                  <Hash size={12} />
                                   {note.category}
                                 </span>
                               )}
@@ -494,7 +497,7 @@ export default function NotesDialog({ person, isOpen, onClose }) {
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <label htmlFor="isTask" className="text-sm font-medium text-gray-700 cursor-pointer flex items-center gap-1">
-                <CheckSquare size={16} />
+                <Square size={16} />
                 Mark as task
               </label>
             </div>

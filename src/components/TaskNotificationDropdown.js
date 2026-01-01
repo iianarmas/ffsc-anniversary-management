@@ -35,15 +35,25 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
       fetchOverdueTasks(),
       fetchTasksDueToday()
     ]);
+    console.log('Overdue tasks:', overdue);
+    console.log('Today tasks:', today);
     setOverdueTasks(overdue);
     setTodayTasks(today);
     setLoading(false);
+    
+    // Notify parent that tasks were loaded
+    window.dispatchEvent(new CustomEvent('tasksLoaded', { 
+      detail: { overdueCount: overdue.length, todayCount: today.length }
+    }));
   };
 
   const handleToggleComplete = async (taskId, currentStatus, e) => {
     e.stopPropagation();
     await toggleTaskComplete(taskId, currentStatus);
     await loadTasks();
+    
+    // Trigger parent to reload notification count
+    window.dispatchEvent(new Event('taskUpdated'));
   };
 
   const getDaysOverdue = (dueDate) => {
@@ -149,7 +159,7 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
                             {task.note_text}
                           </p>
                           <div className="flex items-center gap-2 mt-1 text-xs text-gray-600">
-                            <span className="font-medium">{task.personName}</span>
+                            <span className="font-medium">{task.person_first_name} {task.person_last_name}</span>
                             <span>•</span>
                             <span className={getPriorityColor(task.priority)}>
                               {getPriorityDot(task.priority)} {task.priority}
@@ -202,7 +212,7 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
                             {task.note_text}
                           </p>
                           <div className="flex items-center gap-2 mt-1 text-xs text-gray-600">
-                            <span className="font-medium">{task.personName}</span>
+                            <span className="font-medium">{task.person_first_name} {task.person_last_name}</span>
                             <span>•</span>
                             <span className={getPriorityColor(task.priority)}>
                               {getPriorityDot(task.priority)} {task.priority}

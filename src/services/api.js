@@ -443,9 +443,10 @@ export async function fetchAllTasks(filters = {}) {
 export async function fetchTasksDueToday() {
   try {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayDateString = `${year}-${month}-${day}`;
 
     const { data, error } = await supabase
       .from('notes')
@@ -459,8 +460,8 @@ export async function fetchTasksDueToday() {
       `)
       .eq('is_task', true)
       .eq('status', 'incomplete')
-      .gte('due_date', today.toISOString())
-      .lt('due_date', tomorrow.toISOString())
+      .gte('due_date', `${todayDateString}T00:00:00`)
+      .lt('due_date', `${todayDateString}T23:59:59`)
       .order('priority', { ascending: false });
 
     if (error) throw error;
