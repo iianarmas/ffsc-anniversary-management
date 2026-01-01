@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Shirt, Menu, X, BarChart3, ChevronRight, Plus } from 'lucide-react';
+import { Users, Shirt, Menu, X, BarChart3, ChevronRight, Plus, CheckSquare } from 'lucide-react';
 
 export default function Sidebar({ currentView, setCurrentView, onAddPersonClick }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -8,6 +8,7 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick 
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'registration', label: 'Registration', icon: Users },
     { id: 'shirts', label: 'Shirt Management', icon: Shirt },
+    { id: 'tasks', label: 'Tasks', icon: CheckSquare },
   ];
 
   return (

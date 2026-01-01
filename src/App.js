@@ -8,6 +8,9 @@ import MobileShirtManagementView from './components/MobileShirtManagementView';
 import Dashboard from './components/Dashboard';
 import AddPersonSidebar from './components/AddPersonSidebar';
 import LoadingOverlay from './components/LoadingOverlay';
+import TasksView from './components/TasksView';
+import MobileTasksView from './components/MobileTasksView';
+
 import { 
   fetchAllPeople, 
   checkInPerson, 
@@ -408,6 +411,14 @@ useEffect(() => {
               setShirtFilterSize={setShirtFilterSize}
               onResetFilters={handleResetShirtFilters}
             />
+          )
+        )}
+
+        {currentView === 'tasks' && (
+          isMobile ? (
+            <MobileTasksView />
+          ) : (
+            <TasksView />
           )
         )}
 
