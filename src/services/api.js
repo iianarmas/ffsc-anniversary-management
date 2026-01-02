@@ -209,6 +209,8 @@ export async function createNote(personId, noteText, createdBy = 'Admin', isTask
     if (taskData.priority) insertData.priority = taskData.priority;
     if (taskData.category) insertData.category = taskData.category;
     if (taskData.assignedTo) insertData.assigned_to = taskData.assignedTo;
+    if (taskData.assignedToUser) insertData.assigned_to_user = taskData.assignedToUser;
+    if (taskData.createdByUser) insertData.created_by_user = taskData.createdByUser;
     if (taskData.recurrence) insertData.recurrence = taskData.recurrence || 'none';
     if (taskData.recurrenceEndDate) insertData.recurrence_end_date = taskData.recurrenceEndDate;
     insertData.status = 'incomplete';
@@ -1102,5 +1104,22 @@ export async function getMyStats(userId) {
       overdueTasks: 0,
       dueToday: 0
     };
+  }
+}
+
+// Get all users for task assignment (name + id only)
+export async function getUsersForTaskAssignment() {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, full_name, role')
+      .eq('status', 'active')
+      .order('full_name', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching users for assignment:', error);
+    return [];
   }
 }

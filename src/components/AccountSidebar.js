@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { X, Plus, Edit2, Trash2, Save, XCircle, AlertTriangle, CalendarDays, Hash, Circle, RotateCw } from 'lucide-react';
-import { fetchNotesForPerson, createNote, updateNote, deleteNote, deletePerson } from '../services/api';
+import { X, Plus, Edit2, Trash2, Save, XCircle, AlertTriangle, CalendarDays, Hash, Circle, RotateCw, User } from 'lucide-react';
+import { fetchNotesForPerson, createNote, updateNote, deleteNote, deletePerson, getUsersForTaskAssignment } from '../services/api';
+import { useAuth } from './auth/AuthProvider';
 import shirtMale from '../assets/images/shirt-male.png';
 import shirtFemale from '../assets/images/shirt-female.png';
 
@@ -17,9 +18,11 @@ export default function AccountSidebar({ person, open, onClose }) {
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('Medium');
   const [category, setCategory] = useState('General');
+  const { profile } = useAuth();
+  const [assignedToUser, setAssignedToUser] = useState(profile?.id || '');
+  const [availableUsers, setAvailableUsers] = useState([]);
   const [recurrence, setRecurrence] = useState('none');
   const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
-  const [assignedTo, setAssignedTo] = useState('Admin');
 
   useEffect(() => {
     const handleKey = (e) => {
@@ -35,12 +38,23 @@ export default function AccountSidebar({ person, open, onClose }) {
     };
   }, [open, onClose]);
 
-  // Load notes when person changes
+  // Load available users for task assignment
   useEffect(() => {
-    if (person?.id && open) {
-      loadNotes();
+    const loadUsers = async () => {
+      const users = await getUsersForTaskAssignment();
+      setAvailableUsers(users);
+    };
+    if (open) {
+      loadUsers();
     }
-  }, [person?.id, open]);
+  }, [open]);
+
+  // Reset assigned user to current user when opening
+  useEffect(() => {
+    if (open && profile?.id) {
+      setAssignedToUser(profile.id);
+    }
+  }, [open, profile?.id]);
 
   const loadNotes = async () => {
     if (!person?.id) return;
@@ -57,12 +71,14 @@ export default function AccountSidebar({ person, open, onClose }) {
         dueDate: dueDate || new Date().toISOString().split('T')[0],
         priority,
         category,
-        assignedTo,
+        assignedTo: availableUsers.find(u => u.id === assignedToUser)?.full_name || profile?.full_name || 'Admin',
+        assignedToUser: assignedToUser,
+        createdByUser: profile?.id,
         recurrence,
         recurrenceEndDate: recurrence !== 'none' ? recurrenceEndDate : null
       } : {};
       
-      await createNote(person.id, newNoteText.trim(), 'Admin', isTask, taskData);
+      await createNote(person.id, newNoteText.trim(), profile?.full_name || 'Admin', isTask, taskData);
       
       // Reset form
       setNewNoteText('');
@@ -72,7 +88,7 @@ export default function AccountSidebar({ person, open, onClose }) {
       setCategory('General');
       setRecurrence('none');
       setRecurrenceEndDate('');
-      setAssignedTo('Admin');
+      setAssignedToUser(profile?.id || '');
       
       await loadNotes();
     } catch (error) {
@@ -398,6 +414,23 @@ export default function AccountSidebar({ person, open, onClose }) {
                         <option value="Shirt Payment">Shirt Payment</option>
                         <option value="Shirt Distribution">Shirt Distribution</option>
                         <option value="Shirt Print Request">Shirt Print Request</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600 mb-1 block flex items-center gap-1">
+                        <User size={12} />
+                        Assign To
+                      </label>
+                      <select
+                        value={assignedToUser}
+                        onChange={(e) => setAssignedToUser(e.target.value)}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#0f2a71]"
+                      >
+                        {availableUsers.map(user => (
+                          <option key={user.id} value={user.id}>
+                            {user.full_name} {user.id === profile?.id ? '(You)' : ''} - {user.role}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
