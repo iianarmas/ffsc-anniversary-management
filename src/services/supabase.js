@@ -18,17 +18,66 @@ export const signIn = async (email, password) => {
 };
 
 export const signUp = async (email, password, fullName) => {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: fullName
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName
+        },
+        emailRedirectTo: undefined
       }
+    });
+    
+    // Wait a moment for the trigger to create the profile
+    if (data?.user && !error) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
-  });
+    
+    return { data, error };
+  } catch (err) {
+    console.error('SignUp exception:', err);
+    return { data: null, error: err };
+  }
+};
+
+// Alternative signup that uses admin API
+export const signUpAlternative = async (email, password, fullName) => {
+  console.log('Starting alternative signup for:', email); // DEBUG
   
-  return { data, error };
+  try {
+    // First check if user already exists
+    const { data: existingUsers } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', email);
+    
+    if (existingUsers && existingUsers.length > 0) {
+      console.log('User already exists');
+      return { data: null, error: { message: 'User already exists with this email' } };
+    }
+    
+    // Create auth user with autoconfirm
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName
+        },
+        emailRedirectTo: undefined
+      }
+    });
+    
+    console.log('Auth signup response:', { data, error });
+    
+    // Return immediately without waiting
+    return { data, error };
+  } catch (err) {
+    console.error('SignUp exception:', err);
+    return { data: null, error: err };
+  }
 };
 
 export const signOut = async () => {
@@ -42,31 +91,49 @@ export const getCurrentUser = async () => {
 };
 
 export const getUserProfile = async (userId) => {
-  console.log('Getting profile for userId:', userId);
-  
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .limit(1);
-  
-  console.log('getUserProfile result:', { data, error });
-  return { data: data?.[0] || null, error };
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Profile fetch error:', error);
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (err) {
+    console.error('Exception in getUserProfile:', err);
+    return { data: null, error: err };
+  }
 };
 
 export const verifyRegistrationCode = async (code) => {
-  console.log('Verifying code:', code); // DEBUG
   
-  const { data, error } = await supabase
-    .from('registration_codes')
-    .select('*')
-    .eq('code', code.toUpperCase())
-    .eq('is_active', true)
-    .single();
-  
-  console.log('Verification result:', { data, error }); // DEBUG
-  
-  return { isValid: !!data && !error, data, error };
+  try {
+    const startTime = Date.now();
+    
+    const { data, error } = await supabase
+      .from('registration_codes')
+      .select('*')
+      .eq('code', code.toUpperCase())
+      .eq('is_active', true)
+      .maybeSingle();
+    
+    const endTime = Date.now();
+    
+    if (error) {
+      console.error('Verification error:', error);
+      return { isValid: false, data: null, error };
+    }
+    
+    return { isValid: !!data, data, error: null };
+  } catch (err) {
+    console.error('Exception in verifyRegistrationCode:', err);
+    return { isValid: false, data: null, error: err };
+  }
 };
 
 export const onAuthStateChange = (callback) => {

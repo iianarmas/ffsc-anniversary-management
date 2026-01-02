@@ -26,8 +26,13 @@ export default function LoginPage() {
 
       if (data?.user) {
         navigate('/home');
+        setLoading(false);
+      } else {
+        setError('Login failed. Please try again.');
+        setLoading(false);
       }
     } catch (err) {
+      console.error('Login error:', err);
       setError('An unexpected error occurred. Please try again.');
       setLoading(false);
     }

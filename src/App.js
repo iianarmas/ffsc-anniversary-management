@@ -36,7 +36,18 @@ import './assets/fonts/fonts.css';
 function AppContent() {
   const { profile } = useAuth();
   const [people, setPeople] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(() => {
+    // Check if user has seen welcome message before
+    const hasSeenWelcome = localStorage.getItem(`welcome-seen-${profile?.id}`);
+    return !hasSeenWelcome && profile?.role === 'viewer';
+  });
+
+  // Mark welcome as seen when user dismisses it
+  const dismissWelcome = () => {
+    localStorage.setItem(`welcome-seen-${profile?.id}`, 'true');
+    setShowWelcome(false);
+  };
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPeople, setSelectedPeople] = useState([]);
   const [filterAge, setFilterAge] = useState('All');
@@ -70,9 +81,17 @@ function AppContent() {
 
 // Realtime subscriptions for people, registrations, and shirts
 useEffect(() => {
-  loadData();
-  loadTaskStats();
-  loadPeopleTaskInfo();
+  const initializeData = async () => {
+    try {
+      await loadData(); 
+      await loadTaskStats();  
+      await loadPeopleTaskInfo();
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+  
+  initializeData();
 
   const updatePersonInState = (payload, table) => {
     const personId = table === 'people' 
@@ -186,12 +205,17 @@ useEffect(() => {
   }, []);
 
   const loadData = async (showLoadingOverlay = false) => {
-    if (showLoadingOverlay) {
-      setLoading(true);
+    try {
+      if (showLoadingOverlay) {
+        setLoading(true);
+      }
+      const allPeople = await fetchAllPeople();
+      setPeople(allPeople);
+    } catch (error) {
+      console.error('Error fetching people:', error);
+    } finally {
+      setLoading(false);
     }
-    const allPeople = await fetchAllPeople();
-    setPeople(allPeople);
-    setLoading(false);
   };
 
   const loadTaskStats = async () => {
@@ -382,14 +406,43 @@ useEffect(() => {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mt-6">
               <div className="text-center">
                 <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                  Welcome, {profile?.full_name}! 👋
+                  Welcome, {profile?.full_name || 'User'}! 👋
                 </h1>
                 <p className="text-lg text-gray-600 mb-2">
                   FFSC Anniversary Management System
                 </p>
                 <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold mt-4">
-                  Role: {profile?.role?.toUpperCase()}
+                  Role: {profile?.role?.toUpperCase() || 'VIEWER'}
                 </div>
+                
+                {/* First-time user welcome message */}
+                {showWelcome && profile?.role === 'viewer' && (
+                  <div className="mt-8 p-6 bg-green-50 border border-green-200 rounded-lg max-w-2xl mx-auto relative">
+                    <button
+                      onClick={dismissWelcome}
+                      className="absolute top-4 right-4 text-green-600 hover:text-green-800"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                    <h2 className="text-xl font-semibold text-green-900 mb-3">
+                      🎉 Account Created Successfully!
+                    </h2>
+                    <p className="text-green-800 mb-4">
+                      Your account has been created with <strong>Viewer</strong> access. You can view dashboards and reports.
+                    </p>
+                    <p className="text-sm text-green-700 mb-4">
+                      📧 If you need additional permissions (Volunteer or Admin access), please contact an administrator.
+                    </p>
+                    <button
+                      onClick={dismissWelcome}
+                      className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
+                    >
+                      Got it, thanks!
+                    </button>
+                  </div>
+                )}
                 
                 <div className="mt-8 p-6 bg-gray-50 rounded-lg">
                   <p className="text-gray-600 mb-4">
@@ -522,6 +575,10 @@ useEffect(() => {
           ) : (
             <TasksView onTaskUpdate={() => { loadTaskStats(); loadPeopleTaskInfo(); }} />
           )
+        )}
+
+        {currentView === 'dashboard' && (
+          <Dashboard people={people} stats={stats} />
         )}
 
         {/* Add Person Sidebar */}

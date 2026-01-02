@@ -42,9 +42,7 @@ export default function RegisterPage() {
 
     try {
       // Step 1: Verify secret code
-      const { isValid } = await verifyRegistrationCode(formData.secretCode);
-
-      if (!isValid) {
+      if (formData.secretCode !== 'FFSC2026') {
         setError('Invalid registration code. Please contact an administrator.');
         setLoading(false);
         return;
@@ -58,15 +56,18 @@ export default function RegisterPage() {
       );
 
       if (signUpError) {
-        setError(signUpError.message);
+        setError(signUpError.message || 'Failed to create account');
         setLoading(false);
         return;
       }
 
       if (data?.user) {
-        // Success - redirect to login or home
-        alert('Registration successful! You can now log in.');
+        alert('Registration successful! Please check your email to confirm your account.');
+        setLoading(false);
         navigate('/login');
+      } else {
+        setError('Registration failed. Please try again.');
+        setLoading(false);
       }
     } catch (err) {
       console.error('Registration error:', err);

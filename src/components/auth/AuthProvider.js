@@ -17,19 +17,18 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check current session
     checkUser();
 
-    // Listen for auth changes
     const { data: { subscription } } = onAuthStateChange(async (event, session) => {
+      setLoading(false);
+      
       if (session?.user) {
         setUser(session.user);
-        await loadProfile(session.user.id);
+        loadProfile(session.user.id);
       } else {
         setUser(null);
         setProfile(null);
       }
-      setLoading(false);
     });
 
     return () => {
@@ -38,36 +37,38 @@ export function AuthProvider({ children }) {
   }, []);
 
   const checkUser = async () => {
-    console.log('Checking user...'); // DEBUG
     try {
         const { user: currentUser } = await getCurrentUser();
-        console.log('Current user:', currentUser); // DEBUG
         if (currentUser) {
-        setUser(currentUser);
-        await loadProfile(currentUser.id);
+          setUser(currentUser);
+          loadProfile(currentUser.id);
+        } else {
+          setUser(null);
+          setProfile(null);
         }
     } catch (error) {
         console.error('Error checking user:', error);
+        setUser(null);
+        setProfile(null);
     } finally {
-        console.log('Setting loading to false'); // DEBUG
         setLoading(false);
     }
-    };
+  };
 
   const loadProfile = async (userId) => {
-    console.log('Loading profile for user:', userId); // DEBUG
     try {
         const { data, error } = await getUserProfile(userId);
-        console.log('Profile data:', data, 'Error:', error); // DEBUG
         if (!error && data) {
-        setProfile(data);
+          setProfile(data);
         } else {
-        console.error('Failed to load profile:', error);
+          console.error('Failed to load profile:', error);
+          setProfile(null);
         }
     } catch (error) {
         console.error('Error loading profile:', error);
+        setProfile(null);
     }
-    };
+  };
 
   const value = {
     user,
