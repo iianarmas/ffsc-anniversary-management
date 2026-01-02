@@ -85,7 +85,7 @@ export default function Header({
 
   return (
     <div className="fixed top-0 left-0 right-0 z-30 bg-[#f9fafa] border-b border-gray-200 shadow-sm">
-      <div className="px-6 py-3">
+      <div className="px-6 py-1">
         <div className="flex items-center justify-between gap-6">
           {/* Left: Logo and Title */}
           <div className="flex items-center gap-4 min-w-0">
