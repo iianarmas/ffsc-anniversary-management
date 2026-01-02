@@ -77,19 +77,20 @@ export default function ShirtManagementView({
     setTimeout(() => setNotesDialogPerson(null), 300);
   };
 
+  // Function to load people task info
+  const loadPeopleTaskInfo = async () => {
+    const taskInfo = await getAllPeopleTaskInfo();
+    setPeopleTaskInfo(taskInfo);
+    
+    // Also maintain backward compatibility with peopleWithNotes
+    const withNotes = Object.keys(taskInfo).filter(
+      id => taskInfo[id].hasNotes || taskInfo[id].hasTasks
+    );
+    setPeopleWithNotes(withNotes);
+  };
+
   // Load people with notes and tasks
   useEffect(() => {
-    const loadPeopleTaskInfo = async () => {
-      const taskInfo = await getAllPeopleTaskInfo();
-      setPeopleTaskInfo(taskInfo);
-      
-      // Also maintain backward compatibility with peopleWithNotes
-      const withNotes = Object.keys(taskInfo).filter(
-        id => taskInfo[id].hasNotes || taskInfo[id].hasTasks
-      );
-      setPeopleWithNotes(withNotes);
-    };
-    
     if (people.length > 0) {
       loadPeopleTaskInfo();
     }
@@ -733,7 +734,14 @@ export default function ShirtManagementView({
 
       {/* Account details sidebar */}
       <div className="no-print">
-        {sidebarOpen && <AccountSidebar person={selectedPerson} open={sidebarOpen} onClose={handleCloseSidebar} />}
+        {sidebarOpen && (
+          <AccountSidebar 
+            person={selectedPerson} 
+            open={sidebarOpen} 
+            onClose={handleCloseSidebar}
+            onNotesUpdate={loadPeopleTaskInfo}
+          />
+        )}
       </div>
       
       {/* Notes Dialog */}

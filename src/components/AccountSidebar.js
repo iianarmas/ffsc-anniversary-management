@@ -5,7 +5,7 @@ import { useAuth } from './auth/AuthProvider';
 import shirtMale from '../assets/images/shirt-male.png';
 import shirtFemale from '../assets/images/shirt-female.png';
 
-export default function AccountSidebar({ person, open, onClose }) {
+export default function AccountSidebar({ person, open, onClose, onNotesUpdate }) {
   const [notes, setNotes] = useState([]);
   const [newNoteText, setNewNoteText] = useState('');
   const [editingNoteId, setEditingNoteId] = useState(null);
@@ -91,6 +91,11 @@ export default function AccountSidebar({ person, open, onClose }) {
       setAssignedToUser(profile?.id || '');
       
       await loadNotes();
+      
+      // Notify parent component to refresh
+      if (onNotesUpdate) {
+        onNotesUpdate();
+      }
     } catch (error) {
       alert('Failed to add note');
     }
@@ -108,6 +113,10 @@ export default function AccountSidebar({ person, open, onClose }) {
       setEditingNoteId(null);
       setEditingNoteText('');
       await loadNotes();
+      
+      if (onNotesUpdate) {
+        onNotesUpdate();
+      }
     } catch (error) {
       alert('Failed to update note');
     }
@@ -133,6 +142,10 @@ export default function AccountSidebar({ person, open, onClose }) {
       await loadNotes();
       setShowDeleteNoteDialog(false);
       setDeletingNoteId(null);
+      
+      if (onNotesUpdate) {
+        onNotesUpdate();
+      }
     } catch (error) {
       alert('Failed to delete note');
     }

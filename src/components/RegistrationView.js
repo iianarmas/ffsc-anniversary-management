@@ -68,19 +68,20 @@ export default function RegistrationView({
     setTimeout(() => setNotesDialogPerson(null), 300);
   };
 
+  // Function to load people task info
+  const loadPeopleTaskInfo = async () => {
+    const taskInfo = await getAllPeopleTaskInfo();
+    setPeopleTaskInfo(taskInfo);
+    
+    // Also maintain backward compatibility with peopleWithNotes
+    const withNotes = Object.keys(taskInfo).filter(
+      id => taskInfo[id].hasNotes || taskInfo[id].hasTasks
+    );
+    setPeopleWithNotes(withNotes);
+  };
+
   // Load people with notes and tasks
   useEffect(() => {
-    const loadPeopleTaskInfo = async () => {
-      const taskInfo = await getAllPeopleTaskInfo();
-      setPeopleTaskInfo(taskInfo);
-      
-      // Also maintain backward compatibility with peopleWithNotes
-      const withNotes = Object.keys(taskInfo).filter(
-        id => taskInfo[id].hasNotes || taskInfo[id].hasTasks
-      );
-      setPeopleWithNotes(withNotes);
-    };
-    
     if (filteredAndSortedPeople.length > 0) {
       loadPeopleTaskInfo();
     }
@@ -359,7 +360,12 @@ useEffect(() => {
         </div>
 
         {/* Account details sidebar */}
-        <AccountSidebar person={selectedPerson} open={sidebarOpen} onClose={handleCloseSidebar} />
+        <AccountSidebar 
+          person={selectedPerson} 
+          open={sidebarOpen} 
+          onClose={handleCloseSidebar}
+          onNotesUpdate={loadPeopleTaskInfo}
+        />
         
         {/* Notes Dialog */}
         <NotesDialog 

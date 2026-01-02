@@ -46,11 +46,18 @@ export default function Header({
   }, [showProfileMenu]);
 
   const loadNotificationCount = async () => {
+    if (!profile?.id) return;
+    
     const [overdue, today] = await Promise.all([
       fetchOverdueTasks(),
       fetchTasksDueToday()
     ]);
-    setNotificationCount(overdue.length + today.length);
+    
+    // Filter to only show tasks assigned to current user
+    const myOverdue = overdue.filter(task => task.assigned_to_user === profile.id);
+    const myToday = today.filter(task => task.assigned_to_user === profile.id);
+    
+    setNotificationCount(myOverdue.length + myToday.length);
   };
 
   const handleTaskClick = (personId) => {
