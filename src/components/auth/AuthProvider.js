@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { getCurrentUser, getUserProfile, onAuthStateChange } from '../../services/supabase';
+import { getCurrentUser, getUserProfile, onAuthStateChange, signOut as supabaseSignOut } from '../../services/supabase';
 
 const AuthContext = createContext({});
 
@@ -70,6 +70,17 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const signOut = async () => {
+    try {
+      const { signOut: supabaseSignOut } = await import('../../services/supabase');
+      await supabaseSignOut();
+      setUser(null);
+      setProfile(null);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   const value = {
     user,
     profile,
@@ -78,7 +89,8 @@ export function AuthProvider({ children }) {
     isAdmin: profile?.role === 'admin',
     isVolunteer: profile?.role === 'volunteer',
     isViewer: profile?.role === 'viewer',
-    refreshProfile: () => user ? loadProfile(user.id) : null
+    refreshProfile: () => user ? loadProfile(user.id) : null,
+    signOut
   };
 
   return (

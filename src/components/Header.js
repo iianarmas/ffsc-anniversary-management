@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, User, Bell } from 'lucide-react';
+import { Search, User, Bell, LogOut, Settings, UserCircle } from 'lucide-react';
 import TaskNotificationDropdown from './TaskNotificationDropdown';
 import { fetchOverdueTasks, fetchTasksDueToday } from '../services/api';
+import { useAuth } from './auth/AuthProvider';
 
 export default function Header({ 
   viewTitle, 
@@ -11,7 +12,9 @@ export default function Header({
   showSearch = true,
   onOpenPersonNotes
 }) {
+  const { profile, signOut } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
@@ -30,6 +33,17 @@ export default function Header({
     };
   }, []);
 
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showProfileMenu && !e.target.closest('.profile-menu-container')) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showProfileMenu]);
+
   const loadNotificationCount = async () => {
     const [overdue, today] = await Promise.all([
       fetchOverdueTasks(),
@@ -42,6 +56,29 @@ export default function Header({
     setShowNotifications(false);
     if (onOpenPersonNotes) {
       onOpenPersonNotes(personId);
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    window.location.href = '/login';
+  };
+
+  const getRoleColor = (role) => {
+    switch (role) {
+      case 'admin': return 'text-red-600';
+      case 'volunteer': return 'text-blue-600';
+      case 'viewer': return 'text-gray-600';
+      default: return 'text-gray-600';
+    }
+  };
+
+  const getRoleDisplayName = (role) => {
+    switch (role) {
+      case 'admin': return 'Administrator';
+      case 'volunteer': return 'Volunteer';
+      case 'viewer': return 'Viewer';
+      default: return role;
     }
   };
 
@@ -102,12 +139,58 @@ export default function Header({
                 onTaskClick={handleTaskClick}
               />
             </div>
-            <div className="text-right hidden md:block">
-              <p className="text-sm font-medium text-[#001740]">Admin User</p>
-              <p className="text-xs text-gray-500">Administrator</p>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#001740] to-[#0f2a71] flex items-center justify-center">
-              <User size={20} className="text-[#f4d642]" />
+
+            {/* User Profile Section */}
+            <div className="relative profile-menu-container">
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="flex items-center gap-3 hover:bg-gray-100 rounded-lg px-3 py-2 transition"
+              >
+                <div className="text-right hidden md:block">
+                  <p className="text-sm font-medium text-[#001740]">
+                    {profile?.full_name || 'User'}
+                  </p>
+                  <p className={`text-xs ${getRoleColor(profile?.role)}`}>
+                    {getRoleDisplayName(profile?.role)}
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#001740] to-[#0f2a71] flex items-center justify-center">
+                  <User size={20} className="text-[#f4d642]" />
+                </div>
+              </button>
+
+              {/* Profile Dropdown Menu */}
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                  {/* User Info Section */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-gray-900">
+                      {profile?.full_name || 'User'}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">{profile?.email}</p>
+                    <div className="mt-2">
+                      <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
+                        profile?.role === 'admin' ? 'bg-red-100 text-red-800' :
+                        profile?.role === 'volunteer' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {getRoleDisplayName(profile?.role)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="py-1">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition"
+                    >
+                      <LogOut size={16} />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

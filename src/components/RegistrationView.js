@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ActionButtons from './ActionButtons';
+import { useAuth } from './auth/AuthProvider';
+import { canRegisterPeople } from '../utils/permissions';
 import PeopleTable from './PeopleTable';
 import { ChevronUp, Search, Users, CheckCircle, Clock } from 'lucide-react';
 import Header from './Header';
@@ -28,6 +30,9 @@ export default function RegistrationView({
   handleSelectPerson,
   people
 }) {
+
+  const { profile } = useAuth();
+  const canRegister = canRegisterPeople(profile);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -274,8 +279,8 @@ useEffect(() => {
                   handleSelectAll={handleSelectAll}
                   selectedPeople={selectedPeople}
                   filteredPeopleLength={filteredAndSortedPeople.length}
-                  handleBulkRegister={handleBulkRegister}
-                  handleBulkRemove={handleBulkRemove}
+                  handleBulkRegister={canRegister ? handleBulkRegister : null}
+                  handleBulkRemove={canRegister ? handleBulkRemove : null}
                   handlePrint={handlePrint}
                   handleDeselectAll={() => selectedPeople.forEach(id => handleSelectPerson(id))}
                   hasActiveFilters={filterAge !== 'All' || filterLocation !== 'All' || filterStatus !== 'All' || searchTerm.trim() !== ''}
@@ -285,6 +290,8 @@ useEffect(() => {
                     { Icon: CheckCircle, label: 'Checked In', value: people.filter(p => p.registered).length },
                     { Icon: Clock, label: 'Pending', value: people.filter(p => !p.registered).length }
                   ]}
+                  readOnly={!canRegister}
+                
                 />
               </div>
 

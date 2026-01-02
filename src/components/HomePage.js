@@ -26,6 +26,19 @@ export default function HomePage({
     loadMyStats();
   }, [profile?.id]);
 
+  // Realtime updates - reload stats when tasks/registrations change
+  useEffect(() => {
+    const handleTaskUpdate = () => {
+      loadMyStats();
+    };
+    
+    window.addEventListener('taskUpdated', handleTaskUpdate);
+    
+    return () => {
+      window.removeEventListener('taskUpdated', handleTaskUpdate);
+    };
+  }, [profile?.id]);
+
   const loadMyStats = async () => {
     if (!profile?.id) return;
     setLoading(true);

@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useAuth } from './auth/AuthProvider';
+import { canManageShirts } from '../utils/permissions';
 import { ChevronUp, Search, Filter, DollarSign, Package, Clock, Users, StickyNote, CheckSquare, CheckCircle } from 'lucide-react';
 import Header from './Header';
 import StatsBar from './StatsBar';
@@ -29,6 +31,9 @@ export default function ShirtManagementView({
   setShirtFilterSize,
   onResetFilters
 }) {
+
+  const { profile } = useAuth();
+  const canManage = canManageShirts(profile);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -620,8 +625,9 @@ export default function ShirtManagementView({
                         <td className="px-4 py-3">
                           <select
                             value={person.shirtSize || ''}
-                            onChange={(e) => updateShirtSize(person.id, e.target.value)}
-                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onChange={(e) => canManage && updateShirtSize(person.id, e.target.value)}
+                            disabled={!canManage}
+                            className={`px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${!canManage ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           >
                             <option value="">Select Size</option>
                             <option value="#4 (XS) 1-2">#4 (XS) 1-2</option>
@@ -641,24 +647,26 @@ export default function ShirtManagementView({
                         </td>
                         <td className="px-4 py-3">
                           <button
-                            onClick={() => toggleShirtPayment(person.id)}
+                            onClick={() => canManage && toggleShirtPayment(person.id)}
+                            disabled={!canManage}
                             className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
                               person.paid
                                 ? 'bg-green-600 text-white hover:bg-green-500'
                                 : 'bg-red-600 text-white hover:bg-red-500'
-                            }`}
+                            } ${!canManage ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             {person.paid ? 'Paid' : 'Unpaid'}
                           </button>
                         </td>
                         <td className="px-4 py-3">
                           <button
-                            onClick={() => toggleShirtGiven(person.id)}
+                            onClick={() => canManage && toggleShirtGiven(person.id)}
+                            disabled={!canManage}
                             className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
                               person.shirtGiven
                                 ? 'bg-green-600 text-white hover:bg-green-700'
                                 : 'bg-yellow-500 text-white hover:bg-yellow-400'
-                            }`}
+                            } ${!canManage ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             {person.shirtGiven ? 'Given' : 'Pending'}
                           </button>

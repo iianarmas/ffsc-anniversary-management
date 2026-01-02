@@ -11,7 +11,8 @@ export default function ActionButtons({
   handleDeselectAll,
   hasActiveFilters,
   onResetFilters,
-  stats = []
+  stats = [],
+  readOnly = false
 }) {
 
   // Debug logging
@@ -66,7 +67,7 @@ export default function ActionButtons({
 
       {/* Right side buttons */}
       <div className="flex items-center gap-2">
-        {selectedPeople.length > 0 && (
+        {selectedPeople.length > 0 && !readOnly && handleBulkRegister && handleBulkRemove && (
           <>
             <button
               onClick={handleBulkRegister}
@@ -83,6 +84,13 @@ export default function ActionButtons({
               Remove
             </button>
           </>
+        )}
+        
+        {readOnly && selectedPeople.length > 0 && (
+          <div className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm flex items-center gap-2">
+            <span className="text-xs">👁️</span>
+            View Only - No registration permissions
+          </div>
         )}
         
         {hasActiveFilters && (
