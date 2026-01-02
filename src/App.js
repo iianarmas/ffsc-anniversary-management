@@ -16,6 +16,7 @@ import LoadingOverlay from './components/LoadingOverlay';
 import TasksView from './components/TasksView';
 import MobileTasksView from './components/MobileTasksView';
 import UserManagement from './components/admin/UserManagement';
+import HomePage from './components/HomePage';
 
 
 import { 
@@ -403,79 +404,12 @@ useEffect(() => {
         <div className="w-full">
 
         {currentView === 'home' && (
-          <div className="max-w-7xl mx-auto">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mt-6">
-              <div className="text-center">
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                  Welcome, {profile?.full_name || 'User'}! 👋
-                </h1>
-                <p className="text-lg text-gray-600 mb-2">
-                  FFSC Anniversary Management System
-                </p>
-                <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold mt-4">
-                  Role: {profile?.role?.toUpperCase() || 'VIEWER'}
-                </div>
-                
-                {/* First-time user welcome message */}
-                {showWelcome && profile?.role === 'viewer' && (
-                  <div className="mt-8 p-6 bg-green-50 border border-green-200 rounded-lg max-w-2xl mx-auto relative">
-                    <button
-                      onClick={dismissWelcome}
-                      className="absolute top-4 right-4 text-green-600 hover:text-green-800"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                    <h2 className="text-xl font-semibold text-green-900 mb-3">
-                      🎉 Account Created Successfully!
-                    </h2>
-                    <p className="text-green-800 mb-4">
-                      Your account has been created with <strong>Viewer</strong> access. You can view dashboards and reports.
-                    </p>
-                    <p className="text-sm text-green-700 mb-4">
-                      📧 If you need additional permissions (Volunteer or Admin access), please contact an administrator.
-                    </p>
-                    <button
-                      onClick={dismissWelcome}
-                      className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
-                    >
-                      Got it, thanks!
-                    </button>
-                  </div>
-                )}
-                
-                <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-                  <p className="text-gray-600 mb-4">
-                    🚧 Home page with personalized dashboard coming soon!
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    For now, use the sidebar to navigate to other sections.
-                  </p>
-                </div>
-
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">{stats.registered}</div>
-                    <div className="text-sm text-gray-600">Registered</div>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{stats.paid}</div>
-                    <div className="text-sm text-gray-600">Paid</div>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">{stats.shirtsGiven}</div>
-                    <div className="text-sm text-gray-600">Shirts Given</div>
-                  </div>
-                  <div className="bg-orange-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">{taskStats.incomplete}</div>
-                    <div className="text-sm text-gray-600">Active Tasks</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <HomePage 
+            stats={stats}
+            taskStats={taskStats}
+            profile={profile}
+            setCurrentView={setCurrentView}
+          />
         )}
 
         {currentView === 'registration' && (

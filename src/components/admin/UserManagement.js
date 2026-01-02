@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Search, Shield, Eye, ChevronDown, Key, Plus, X, AlertTriangle } from 'lucide-react';
+import Header from '../Header';
 import { 
   getAllUsers, 
   updateUserRole, 
@@ -116,9 +117,17 @@ export default function UserManagement() {
   }
 
   return (
-    
-    
-    <div className="max-w-7xl mx-auto">
+    <>
+      <Header 
+        viewTitle="User Management" 
+        showSearch={false}
+        onOpenPersonNotes={(personId) => {
+          console.log('Open notes for person:', personId);
+        }}
+      />
+      
+      <div className="p-6 bg-[#f9fafa] min-h-screen">
+        <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -434,6 +443,8 @@ export default function UserManagement() {
           </div>
         </>
       )}
-    </div>
+        </div>
+      </div>
+    </>
   );
 }
