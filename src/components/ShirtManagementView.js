@@ -308,8 +308,8 @@ export default function ShirtManagementView({
   return (
     <>
       {/* Print-only content */}
-      <div className="print-content hidden">
-        <div className="p-8">
+      <div className="print-content hidden" style={{ boxShadow: 'none', background: 'white' }}>
+        <div className="p-8" style={{ boxShadow: 'none', background: 'white' }}>
           <h1 className="text-3xl font-bold mb-2">FFSC Anniversary Management</h1>
           <h2 className="text-xl font-semibold mb-1">Shirt Management View</h2>
           
@@ -332,8 +332,8 @@ export default function ShirtManagementView({
               <tr className="bg-gray-100">
                 <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Age</th>
-                <th className="border border-gray-300 px-4 py-2 text-left font-normal">Age Bracket</th>
-                <th className="border border-gray-300 px-4 py-2 text-left font-normal">Location</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Age Bracket</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Location</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Shirt Size</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Payment</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Distribution</th>
@@ -390,7 +390,7 @@ export default function ShirtManagementView({
 
 
         {/* Table Section (fixed area) — scrollable content inside */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-white rounded-lg overflow-hidden">
           <div
             className="relative overflow-y-auto"
             ref={tableContainerRef}
@@ -399,6 +399,7 @@ export default function ShirtManagementView({
             <div ref={actionBarRef} className="sticky top-0 z-20 bg-white">
               <ShirtActionButtons
                 hasActiveFilters={
+                  shirtSearchTerm !== '' ||
                   shirtFilterAge !== 'All' || 
                   shirtFilterLocation !== 'All' || 
                   shirtFilterPayment !== 'All' || 
@@ -723,14 +724,20 @@ export default function ShirtManagementView({
       </div>
 
       {/* Account details sidebar */}
-      <AccountSidebar person={selectedPerson} open={sidebarOpen} onClose={handleCloseSidebar} />
+      <div className="no-print">
+        {sidebarOpen && <AccountSidebar person={selectedPerson} open={sidebarOpen} onClose={handleCloseSidebar} />}
+      </div>
       
       {/* Notes Dialog */}
-      <NotesDialog 
-        person={notesDialogPerson} 
-        isOpen={notesDialogOpen} 
-        onClose={handleCloseNotes} 
-      />
+      <div className="no-print">
+        {notesDialogOpen && (
+          <NotesDialog 
+            person={notesDialogPerson} 
+            isOpen={notesDialogOpen} 
+            onClose={handleCloseNotes} 
+          />
+        )}
+      </div>
     </>
   );
 }

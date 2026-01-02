@@ -62,7 +62,7 @@ export default function AccountSidebar({ person, open, onClose }) {
         recurrenceEndDate: recurrence !== 'none' ? recurrenceEndDate : null
       } : {};
       
-      await createNote(person.id, newNoteText.trim(), isTask, taskData);
+      await createNote(person.id, newNoteText.trim(), 'Admin', isTask, taskData);
       
       // Reset form
       setNewNoteText('');
@@ -193,17 +193,18 @@ export default function AccountSidebar({ person, open, onClose }) {
 
   return (
     <>
-      {/* backdrop overlay */}
-      {/* Backdrop overlay, fade in/out */}
-      <div
-        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-        onClick={onClose}
-        aria-hidden
-      />
+      {/* Backdrop overlay - only render when open */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300 opacity-100"
+          onClick={onClose}
+          aria-hidden
+        />
+      )}
 
       {/* Sidebar panel, slide in/out from right */}
       <aside
-        className={`fixed top-0 right-0 h-full z-50 w-full sm:w-3/5 md:w-2/5 lg:w-2/5 bg-white shadow-2xl border-l border-gray-200 transform transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 h-full z-50 w-full sm:w-3/5 md:w-2/5 lg:w-2/5 bg-white border-l border-gray-200 transform transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}
         role="dialog"
         aria-modal="true"
         style={{ willChange: 'transform' }}

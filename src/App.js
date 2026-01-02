@@ -494,14 +494,31 @@ useEffect(() => {
             display: block !important;
           }
           body {
-            background: white;
+            background: white !important;
+            box-shadow: none !important;
+          }
+          * {
+            box-shadow: none !important;
+            background-image: none !important;
+          }
+          *::before, *::after {
+            box-shadow: none !important;
+            background: none !important;
+          }
+          /* Hide all fixed positioned elements (sidebars) in print */
+          .fixed {
+            display: none !important;
           }
           table {
             page-break-inside: auto;
+            box-shadow: none !important;
           }
           tr {
             page-break-inside: avoid;
             page-break-after: auto;
+          }
+          div, section, main {
+            box-shadow: none !important;
           }
         }
         @media screen {
