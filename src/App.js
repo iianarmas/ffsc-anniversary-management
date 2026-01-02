@@ -1,4 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './components/auth/AuthProvider';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import LoginPage from './components/auth/LoginPage';
+import RegisterPage from './components/auth/RegisterPage';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import RegistrationView from './components/RegistrationView';
@@ -10,6 +15,7 @@ import AddPersonSidebar from './components/AddPersonSidebar';
 import LoadingOverlay from './components/LoadingOverlay';
 import TasksView from './components/TasksView';
 import MobileTasksView from './components/MobileTasksView';
+
 
 import { 
   fetchAllPeople, 
@@ -27,7 +33,8 @@ import { supabase } from './services/supabase';
 
 import './assets/fonts/fonts.css';
 
-export default function App() {
+function AppContent() {
+  const { profile } = useAuth();
   const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,9 +49,9 @@ export default function App() {
   const [shirtFilterDistribution, setShirtFilterDistribution] = useState('All');
   const [shirtFilterSize, setShirtFilterSize] = useState('All');
   const [currentView, setCurrentView] = useState(() => {
-    // Try to get saved view from localStorage, default to 'registration'
-    return localStorage.getItem('currentView') || 'registration';
-  });
+  // Try to get saved view from localStorage, default to 'home'
+  return localStorage.getItem('currentView') || 'home';
+});
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
   const [taskStats, setTaskStats] = useState({
@@ -365,12 +372,56 @@ useEffect(() => {
         }}
         onAddPersonClick={() => setIsAddPersonOpen(true)}
         taskStats={taskStats}
+        userProfile={profile}
       />
       <div className="flex-1 px-6 pt-16 ml-0 md:ml-16 transition-all duration-300">
         <div className="w-full">
 
-        {currentView === 'dashboard' && (
-          <Dashboard people={people} stats={stats} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        {currentView === 'home' && (
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mt-6">
+              <div className="text-center">
+                <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                  Welcome, {profile?.full_name}! 👋
+                </h1>
+                <p className="text-lg text-gray-600 mb-2">
+                  FFSC Anniversary Management System
+                </p>
+                <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold mt-4">
+                  Role: {profile?.role?.toUpperCase()}
+                </div>
+                
+                <div className="mt-8 p-6 bg-gray-50 rounded-lg">
+                  <p className="text-gray-600 mb-4">
+                    🚧 Home page with personalized dashboard coming soon!
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    For now, use the sidebar to navigate to other sections.
+                  </p>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{stats.registered}</div>
+                    <div className="text-sm text-gray-600">Registered</div>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">{stats.paid}</div>
+                    <div className="text-sm text-gray-600">Paid</div>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">{stats.shirtsGiven}</div>
+                    <div className="text-sm text-gray-600">Shirts Given</div>
+                  </div>
+                  <div className="bg-orange-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600">{taskStats.incomplete}</div>
+                    <div className="text-sm text-gray-600">Active Tasks</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {currentView === 'registration' && (
@@ -528,5 +579,33 @@ useEffect(() => {
         }
       `}</style>
     </div>
+  );
+}
+
+// Main App with Router and Authentication
+export default function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          
+          {/* Protected routes - all app content */}
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <AppContent />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Redirect root to home */}
+          <Route path="/" element={<Navigate to="/home" replace />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 }
