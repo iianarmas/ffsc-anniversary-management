@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import HeroSection from './home/HeroSection';
 import MyTasksWidget from './home/MyTasksWidget';
@@ -6,6 +6,7 @@ import QuickActionsWidget from './home/QuickActionsWidget';
 import CalendarWidget from './home/CalendarWidget';
 import RecentActivityWidget from './home/RecentActivityWidget';
 import NotificationsWidget from './home/NotificationsWidget';
+import { getMyStats } from '../services/api';
 
 export default function HomePage({ 
   stats, 
@@ -13,6 +14,31 @@ export default function HomePage({
   profile,
   setCurrentView 
 }) {
+  const [myStats, setMyStats] = useState({
+    myTasks: 0,
+    registeredToday: 0,
+    overdueTasks: 0,
+    dueToday: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadMyStats();
+  }, [profile?.id]);
+
+  const loadMyStats = async () => {
+    if (!profile?.id) return;
+    setLoading(true);
+    try {
+      const data = await getMyStats(profile.id);
+      setMyStats(data);
+    } catch (error) {
+      console.error('Error loading my stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Header 
@@ -29,9 +55,9 @@ export default function HomePage({
           <HeroSection 
             user={profile} 
             stats={{
-              myTasks: taskStats?.incomplete || 0,
-              registeredToday: 0, // Will be calculated in Phase 5
-              pendingTasks: taskStats?.overdue || 0,
+              myTasks: myStats.myTasks,
+              registeredToday: myStats.registeredToday,
+              pendingTasks: myStats.overdueTasks,
               shirtsGiven: stats?.shirtsGiven || 0
             }}
           />
@@ -40,7 +66,10 @@ export default function HomePage({
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
             {/* My Tasks Widget - 2 columns */}
             <div className="lg:col-span-2">
-              <MyTasksWidget userId={profile?.id} />
+              <MyTasksWidget 
+                userId={profile?.id}
+                onTaskUpdate={loadMyStats}
+              />
             </div>
 
             {/* Quick Actions Widget - 1 column */}
@@ -62,7 +91,10 @@ export default function HomePage({
             {/* Notifications Widget */}
             <div className="lg:col-span-1">
               <NotificationsWidget 
-                taskStats={taskStats}
+                taskStats={{
+                  overdue: myStats.overdueTasks,
+                  dueToday: myStats.dueToday
+                }}
                 capacity={{ current: stats?.registered || 0, max: 230 }}
               />
             </div>

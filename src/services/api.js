@@ -888,3 +888,219 @@ export async function deleteRegistrationCode(codeId) {
     return { success: false, error };
   }
 }
+
+// ============================================
+// HOME PAGE DATA FUNCTIONS
+// ============================================
+
+// Get tasks assigned to specific user
+export async function getMyTasks(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('notes')
+      .select(`
+        *,
+        people (
+          id,
+          first_name,
+          last_name
+        )
+      `)
+      .eq('is_task', true)
+      .eq('assigned_to_user', userId)
+      .order('due_date', { ascending: true });
+    
+    if (error) throw error;
+    
+    // Format the data
+    return (data || []).map(task => ({
+      id: task.id,
+      noteText: task.note_text,
+      status: task.status,
+      priority: task.priority,
+      dueDate: task.due_date,
+      category: task.category,
+      personId: task.person_id,
+      personFirstName: task.people?.first_name || '',
+      personLastName: task.people?.last_name || '',
+      createdAt: task.created_at
+    }));
+  } catch (error) {
+    console.error('Error fetching my tasks:', error);
+    return [];
+  }
+}
+
+// Get user's registrations today
+export async function getMyRegistrationsToday(userId) {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayUTC = today.toISOString();
+    
+    const { data, error } = await supabase
+      .from('registrations')
+      .select(`
+        *,
+        people (
+          id,
+          first_name,
+          last_name
+        )
+      `)
+      .eq('registered_by', userId)
+      .gte('registered_at', todayUTC)
+      .order('registered_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    return (data || []).map(reg => ({
+      id: reg.id,
+      personId: reg.person_id,
+      personFirstName: reg.people?.first_name || '',
+      personLastName: reg.people?.last_name || '',
+      registeredAt: reg.registered_at,
+      registered: reg.registered
+    }));
+  } catch (error) {
+    console.error('Error fetching my registrations:', error);
+    return [];
+  }
+}
+
+// Get user's recent activity (last 10 actions)
+export async function getMyRecentActivity(userId) {
+  try {
+    // Get registrations
+    const { data: registrations, error: regError } = await supabase
+      .from('registrations')
+      .select(`
+        *,
+        people (
+          id,
+          first_name,
+          last_name
+        )
+      `)
+      .eq('registered_by', userId)
+      .order('registered_at', { ascending: false })
+      .limit(10);
+    
+    if (regError) throw regError;
+    
+    // Get created tasks
+    const { data: tasks, error: taskError } = await supabase
+      .from('notes')
+      .select(`
+        *,
+        people (
+          id,
+          first_name,
+          last_name
+        )
+      `)
+      .eq('is_task', true)
+      .eq('created_by_user', userId)
+      .order('created_at', { ascending: false })
+      .limit(10);
+    
+    if (taskError) throw taskError;
+    
+    // Combine and format activities
+    const activities = [];
+    
+    (registrations || []).forEach(reg => {
+      activities.push({
+        id: `reg-${reg.id}`,
+        type: 'registration',
+        action: 'Registered',
+        personName: `${reg.people?.first_name || ''} ${reg.people?.last_name || ''}`.trim(),
+        timestamp: reg.registered_at,
+        icon: 'UserCheck'
+      });
+    });
+    
+    (tasks || []).forEach(task => {
+      activities.push({
+        id: `task-${task.id}`,
+        type: 'task',
+        action: 'Created task for',
+        personName: `${task.people?.first_name || ''} ${task.people?.last_name || ''}`.trim(),
+        taskText: task.note_text,
+        timestamp: task.created_at,
+        icon: 'CheckSquare'
+      });
+    });
+    
+    // Sort by timestamp and return last 10
+    return activities
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .slice(0, 10);
+  } catch (error) {
+    console.error('Error fetching recent activity:', error);
+    return [];
+  }
+}
+
+// Get user's stats for home page
+export async function getMyStats(userId) {
+  try {
+    // Count tasks assigned to me (incomplete)
+    const { count: myTasks } = await supabase
+      .from('notes')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_task', true)
+      .eq('assigned_to_user', userId)
+      .eq('status', 'incomplete');
+    
+    // Count registrations I did today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayUTC = today.toISOString();
+    
+    const { count: registeredToday } = await supabase
+      .from('registrations')
+      .select('*', { count: 'exact', head: true })
+      .eq('registered_by', userId)
+      .gte('registered_at', todayUTC);
+    
+    // Count overdue tasks
+    const now = new Date().toISOString();
+    const { count: overdueTasks } = await supabase
+      .from('notes')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_task', true)
+      .eq('assigned_to_user', userId)
+      .eq('status', 'incomplete')
+      .lt('due_date', now);
+    
+    // Count tasks due today
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+    const todayEndUTC = todayEnd.toISOString();
+    
+    const { count: dueToday } = await supabase
+      .from('notes')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_task', true)
+      .eq('assigned_to_user', userId)
+      .eq('status', 'incomplete')
+      .gte('due_date', todayUTC)
+      .lte('due_date', todayEndUTC);
+    
+    return {
+      myTasks: myTasks || 0,
+      registeredToday: registeredToday || 0,
+      overdueTasks: overdueTasks || 0,
+      dueToday: dueToday || 0
+    };
+  } catch (error) {
+    console.error('Error fetching my stats:', error);
+    return {
+      myTasks: 0,
+      registeredToday: 0,
+      overdueTasks: 0,
+      dueToday: 0
+    };
+  }
+}

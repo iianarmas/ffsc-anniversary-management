@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Users, Shirt, Menu, X, BarChart3, ChevronRight, Plus, CheckSquare, Shield } from 'lucide-react';
+import { Users, Shirt, Menu, X, BarChart3, ChevronRight, Plus, CheckSquare, Shield, Home } from 'lucide-react';
 
 export default function Sidebar({ currentView, setCurrentView, onAddPersonClick, taskStats, userProfile }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
+    { id: 'home', label: 'Home', icon: Home },
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'registration', label: 'Registration', icon: Users },
     { id: 'shirts', label: 'Shirt Management', icon: Shirt },

@@ -1,51 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, UserCheck, FileText } from 'lucide-react';
+import { Activity, UserCheck, FileText, CheckSquare } from 'lucide-react';
+import { getMyRecentActivity } from '../../services/api';
 
 export default function RecentActivityWidget({ userId }) {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Placeholder - will implement in Phase 5
-    setLoading(false);
-    // Mock data for UI
-    setActivities([
-      {
-        id: 1,
-        type: 'registration',
-        message: 'Registered Jane Smith',
-        time: new Date(Date.now() - 3600000).toISOString()
-      },
-      {
-        id: 2,
-        type: 'task',
-        message: 'Created task for John Doe',
-        time: new Date(Date.now() - 7200000).toISOString()
-      },
-      {
-        id: 3,
-        type: 'registration',
-        message: 'Registered Bob Lee',
-        time: new Date(Date.now() - 10800000).toISOString()
-      }
-    ]);
+    loadActivities();
   }, [userId]);
+
+  const loadActivities = async () => {
+    if (!userId) return;
+    setLoading(true);
+    try {
+      const data = await getMyRecentActivity(userId);
+      setActivities(data);
+    } catch (error) {
+      console.error('Error loading activities:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getActivityIcon = (type) => {
     switch (type) {
       case 'registration': return UserCheck;
-      case 'task': return FileText;
+      case 'task': return CheckSquare;
       default: return Activity;
     }
   };
 
   const formatActivityTime = (dateString) => {
+    if (!dateString) return '';
     const date = new Date(dateString + (dateString.endsWith('Z') ? '' : 'Z'));
-    return date.toLocaleTimeString('en-US', {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return date.toLocaleDateString('en-US', {
       timeZone: 'Asia/Manila',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+      month: 'short',
+      day: 'numeric'
     });
   };
 
@@ -77,12 +80,21 @@ export default function RecentActivityWidget({ userId }) {
                 key={activity.id}
                 className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg transition"
               >
-                <div className="p-2 bg-blue-100 rounded-full flex-shrink-0">
-                  <Icon size={16} className="text-blue-600" />
+                <div className={`p-2 rounded-full flex-shrink-0 ${
+                  activity.type === 'registration' ? 'bg-green-100' : 'bg-blue-100'
+                }`}>
+                  <Icon size={16} className={
+                    activity.type === 'registration' ? 'text-green-600' : 'text-blue-600'
+                  } />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900">{activity.message}</p>
-                  <p className="text-xs text-gray-500">{formatActivityTime(activity.time)}</p>
+                  <p className="text-sm text-gray-900">
+                    <span className="font-medium">{activity.action}</span> {activity.personName}
+                  </p>
+                  {activity.taskText && (
+                    <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">{activity.taskText}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">{formatActivityTime(activity.timestamp)}</p>
                 </div>
               </div>
             );
@@ -91,6 +103,7 @@ export default function RecentActivityWidget({ userId }) {
           <div className="text-center py-12 text-gray-500">
             <Activity size={48} className="mx-auto mb-3 text-gray-300" />
             <p>No recent activity</p>
+            <p className="text-sm mt-1">Start registering people or creating tasks!</p>
           </div>
         )}
       </div>
