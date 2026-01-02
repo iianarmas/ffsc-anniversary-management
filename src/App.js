@@ -15,6 +15,7 @@ import AddPersonSidebar from './components/AddPersonSidebar';
 import LoadingOverlay from './components/LoadingOverlay';
 import TasksView from './components/TasksView';
 import MobileTasksView from './components/MobileTasksView';
+import UserManagement from './components/admin/UserManagement';
 
 
 import { 
@@ -579,6 +580,10 @@ useEffect(() => {
 
         {currentView === 'dashboard' && (
           <Dashboard people={people} stats={stats} />
+        )}
+
+        {currentView === 'users' && profile?.role === 'admin' && (
+          <UserManagement />
         )}
 
         {/* Add Person Sidebar */}

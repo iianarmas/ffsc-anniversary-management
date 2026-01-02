@@ -754,3 +754,137 @@ export async function deletePerson(personId) {
     throw error;
   }
 }
+
+// ============================================
+// USER MANAGEMENT FUNCTIONS
+// ============================================
+
+// Get all users (Admin only)
+export async function getAllUsers() {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return [];
+  }
+}
+
+// Update user role (Admin only)
+export async function updateUserRole(userId, newRole) {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ 
+        role: newRole,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    return { success: false, error };
+  }
+}
+
+// Update user status (Admin only)
+export async function updateUserStatus(userId, status) {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ 
+        status,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error updating user status:', error);
+    return { success: false, error };
+  }
+}
+
+// Get all registration codes (Admin only)
+export async function getRegistrationCodes() {
+  try {
+    const { data, error } = await supabase
+      .from('registration_codes')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching registration codes:', error);
+    return [];
+  }
+}
+
+// Create new registration code (Admin only)
+export async function createRegistrationCode(code, description, createdBy) {
+  try {
+    const { data, error } = await supabase
+      .from('registration_codes')
+      .insert({
+        code: code.toUpperCase(),
+        description,
+        created_by: createdBy,
+        is_active: true
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error creating registration code:', error);
+    return { success: false, error };
+  }
+}
+
+// Toggle registration code active status (Admin only)
+export async function toggleRegistrationCodeStatus(codeId, currentStatus) {
+  try {
+    const { data, error } = await supabase
+      .from('registration_codes')
+      .update({ is_active: !currentStatus })
+      .eq('id', codeId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error toggling code status:', error);
+    return { success: false, error };
+  }
+}
+
+// Delete registration code (Admin only)
+export async function deleteRegistrationCode(codeId) {
+  try {
+    const { error } = await supabase
+      .from('registration_codes')
+      .delete()
+      .eq('id', codeId);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting code:', error);
+    return { success: false, error };
+  }
+}
