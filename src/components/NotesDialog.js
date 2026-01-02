@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, StickyNote, Trash2, Edit2, Plus, Square, CalendarDays, Hash, AlertCircle, RotateCw, Clock } from 'lucide-react';
-import { fetchNotesForPerson, createNote, updateNote, deleteNote, toggleTaskComplete } from '../services/api';
+import { X, StickyNote, Trash2, Edit2, Plus, Square, CalendarDays, Hash, AlertCircle, RotateCw, Clock, User } from 'lucide-react';
+import { fetchNotesForPerson, createNote, updateNote, deleteNote, toggleTaskComplete, getUsersForTaskAssignment } from '../services/api';
+import { useAuth } from './auth/AuthProvider';
 
 export default function NotesDialog({ person, isOpen, onClose }) {
   const [notes, setNotes] = useState([]);
@@ -14,7 +15,9 @@ export default function NotesDialog({ person, isOpen, onClose }) {
   const [taskDueDate, setTaskDueDate] = useState('');
   const [taskPriority, setTaskPriority] = useState('Medium');
   const [taskCategory, setTaskCategory] = useState('General');
-  const [taskAssignedTo, setTaskAssignedTo] = useState('Admin');
+  const { profile } = useAuth();
+  const [taskAssignedToUser, setTaskAssignedToUser] = useState('');
+  const [availableUsers, setAvailableUsers] = useState([]);
   const [taskRecurrence, setTaskRecurrence] = useState('none');
   const [taskRecurrenceEndDate, setTaskRecurrenceEndDate] = useState('');
   
@@ -26,6 +29,20 @@ export default function NotesDialog({ person, isOpen, onClose }) {
       loadNotes();
     }
   }, [isOpen, person]);
+
+  // Load available users for task assignment
+  useEffect(() => {
+    const loadUsers = async () => {
+      const users = await getUsersForTaskAssignment();
+      setAvailableUsers(users);
+      if (profile?.id) {
+        setTaskAssignedToUser(profile.id);
+      }
+    };
+    if (isOpen) {
+      loadUsers();
+    }
+  }, [isOpen, profile?.id]);
 
   const loadNotes = async () => {
     if (!person) return;
@@ -43,12 +60,14 @@ export default function NotesDialog({ person, isOpen, onClose }) {
         dueDate: taskDueDate || new Date().toISOString(),
         priority: taskPriority,
         category: taskCategory,
-        assignedTo: taskAssignedTo,
+        assignedTo: availableUsers.find(u => u.id === taskAssignedToUser)?.full_name || profile?.full_name || 'Admin',
+        assignedToUser: taskAssignedToUser,
+        createdByUser: profile?.id,
         recurrence: taskRecurrence,
         recurrenceEndDate: taskRecurrenceEndDate || null
       } : {};
       
-      await createNote(person.id, newNoteText.trim(), 'Admin', isTask, taskData);
+      await createNote(person.id, newNoteText.trim(), profile?.full_name || 'Admin', isTask, taskData);
       
       // Reset form
       setNewNoteText('');
@@ -56,11 +75,14 @@ export default function NotesDialog({ person, isOpen, onClose }) {
       setTaskDueDate('');
       setTaskPriority('Medium');
       setTaskCategory('General');
-      setTaskAssignedTo('Admin');
+      setTaskAssignedToUser(profile?.id || '');
       setTaskRecurrence('none');
       setTaskRecurrenceEndDate('');
       
       await loadNotes();
+      
+      // Notify other components that a task was created
+      window.dispatchEvent(new Event('taskUpdated'));
     } catch (error) {
       console.error('Failed to add note:', error);
     }
@@ -553,16 +575,21 @@ export default function NotesDialog({ person, isOpen, onClose }) {
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                    Assigned To
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5 flex items-center gap-1">
+                    <User size={12} />
+                    Assign To
                   </label>
-                  <input
-                    type="text"
-                    value={taskAssignedTo}
-                    onChange={(e) => setTaskAssignedTo(e.target.value)}
-                    placeholder="Admin"
+                  <select
+                    value={taskAssignedToUser}
+                    onChange={(e) => setTaskAssignedToUser(e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                  >
+                    {availableUsers.map(user => (
+                      <option key={user.id} value={user.id}>
+                        {user.full_name} {user.id === profile?.id ? '(You)' : ''} - {user.role}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div>

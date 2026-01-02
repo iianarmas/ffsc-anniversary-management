@@ -5,10 +5,12 @@ import Header from './Header';
 import Pagination from './Pagination';
 import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
-import { fetchAllTasks, toggleTaskComplete, getAgeBracket } from '../services/api';
+import { fetchAllTasks, toggleTaskComplete, getAgeBracket, getUsersForTaskAssignment } from '../services/api';
+import { useAuth } from './auth/AuthProvider';
 import { supabase } from '../services/supabase';
 
 export default function TasksView({ onTaskUpdate }) {
+  const { profile } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,6 +21,8 @@ export default function TasksView({ onTaskUpdate }) {
   const [filterPriority, setFilterPriority] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterDueDate, setFilterDueDate] = useState('All');
+  const [filterAssignedTo, setFilterAssignedTo] = useState('me'); // Default to 'me'
+  const [availableUsers, setAvailableUsers] = useState([]);
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -113,6 +117,9 @@ export default function TasksView({ onTaskUpdate }) {
       
       const matchesPriority = filterPriority === 'All' || task.priority === filterPriority;
       const matchesCategory = filterCategory === 'All' || task.category === filterCategory;
+      const matchesAssignedTo = filterAssignedTo === 'All' || 
+        (filterAssignedTo === 'me' && task.assigned_to_user === profile?.id) ||
+        task.assigned_to_user === filterAssignedTo;
       
       let matchesDueDate = true;
       if (filterDueDate !== 'All') {
@@ -136,7 +143,7 @@ export default function TasksView({ onTaskUpdate }) {
         }
       }
       
-      return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesDueDate;
+      return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesDueDate && matchesAssignedTo;
     });
 
     // Sort: Overdue first, then by due date
@@ -387,6 +394,15 @@ export default function TasksView({ onTaskUpdate }) {
       }
     }, [openFilter, column]);
 
+    // Load users for filter
+    useEffect(() => {
+      const loadUsers = async () => {
+        const users = await getUsersForTaskAssignment();
+        setAvailableUsers(users);
+      };
+      loadUsers();
+    }, []);
+
     return (
       <div className="relative" ref={el => filterRefs.current[column] = el}>
         <Filter 
@@ -426,7 +442,7 @@ export default function TasksView({ onTaskUpdate }) {
     );
   };
 
-  const hasActiveFilters = filterStatus !== 'All' || filterPriority !== 'All' || filterCategory !== 'All' || filterDueDate !== 'All';
+  const hasActiveFilters = filterStatus !== 'All' || filterPriority !== 'All' || filterCategory !== 'All' || filterDueDate !== 'All' || filterAssignedTo !== 'me';
 
   return (
     <>
@@ -615,6 +631,11 @@ export default function TasksView({ onTaskUpdate }) {
                         />
                       </div>
                     </th>
+                    <td className="px-4 py-3 text-left border-r">
+                          <span className="text-sm text-gray-700">
+                            {task.assigned_to || '—'}
+                          </span>
+                        </td>
                     <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Status</span>
@@ -708,7 +729,7 @@ export default function TasksView({ onTaskUpdate }) {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="text-center py-12 text-gray-500">
+                      <td colSpan={8} className="text-center py-12 text-gray-500">
                         No tasks found matching your criteria
                       </td>
                     </tr>
