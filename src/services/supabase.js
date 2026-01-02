@@ -139,3 +139,79 @@ export const verifyRegistrationCode = async (code) => {
 export const onAuthStateChange = (callback) => {
   return supabase.auth.onAuthStateChange(callback);
 };
+
+// ============================================
+// PROFILE PICTURE FUNCTIONS
+// ============================================
+
+export const uploadAvatar = async (userId, file) => {
+  try {
+    // Delete old avatar if exists
+    const { data: oldFiles } = await supabase.storage
+      .from('avatars')
+      .list(userId);
+    
+    if (oldFiles && oldFiles.length > 0) {
+      await supabase.storage
+        .from('avatars')
+        .remove(oldFiles.map(file => `${userId}/${file.name}`));
+    }
+
+    // Upload new avatar
+    const fileExt = file.name.split('.').pop();
+    const fileName = `avatar.${fileExt}`;
+    const filePath = `${userId}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) throw uploadError;
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+    // Update profile with avatar URL
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ avatar_url: publicUrl })
+      .eq('id', userId);
+
+    if (updateError) throw updateError;
+
+    return { url: publicUrl, error: null };
+  } catch (error) {
+    console.error('Error uploading avatar:', error);
+    return { url: null, error };
+  }
+};
+
+export const deleteAvatar = async (userId) => {
+  try {
+    // Delete from storage
+    const { data: files } = await supabase.storage
+      .from('avatars')
+      .list(userId);
+    
+    if (files && files.length > 0) {
+      await supabase.storage
+        .from('avatars')
+        .remove(files.map(file => `${userId}/${file.name}`));
+    }
+
+    // Remove from profile
+    const { error } = await supabase
+      .from('profiles')
+      .update({ avatar_url: null })
+      .eq('id', userId);
+
+    if (error) throw error;
+
+    return { success: true, error: null };
+  } catch (error) {
+    console.error('Error deleting avatar:', error);
+    return { success: false, error };
+  }
+};

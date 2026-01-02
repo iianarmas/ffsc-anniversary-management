@@ -16,6 +16,7 @@ import LoadingOverlay from './components/LoadingOverlay';
 import TasksView from './components/TasksView';
 import MobileTasksView from './components/MobileTasksView';
 import UserManagement from './components/admin/UserManagement';
+import ProfileSettings from './components/ProfileSettings';
 import HomePage from './components/HomePage';
 
 
@@ -204,6 +205,17 @@ useEffect(() => {
 
     window.addEventListener('navigate-to-tasks', handleNavigateToTasks);
     return () => window.removeEventListener('navigate-to-tasks', handleNavigateToTasks);
+  }, []);
+
+  // Listen for navigation to profile
+  useEffect(() => {
+    const handleNavigateToProfile = () => {
+      setCurrentView('profile');
+      localStorage.setItem('currentView', 'profile');
+    };
+
+    window.addEventListener('navigate-to-profile', handleNavigateToProfile);
+    return () => window.removeEventListener('navigate-to-profile', handleNavigateToProfile);
   }, []);
 
   const loadData = async (showLoadingOverlay = false) => {
@@ -518,6 +530,10 @@ useEffect(() => {
 
         {currentView === 'users' && profile?.role === 'admin' && (
           <UserManagement />
+        )}
+
+        {currentView === 'profile' && (
+          <ProfileSettings />
         )}
 
         {/* Add Person Sidebar */}

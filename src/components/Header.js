@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, User, Bell, LogOut, Settings, UserCircle } from 'lucide-react';
+import { Search, Bell, LogOut, UserCircle } from 'lucide-react';
+import Avatar from './Avatar';
 import TaskNotificationDropdown from './TaskNotificationDropdown';
 import { fetchOverdueTasks, fetchTasksDueToday } from '../services/api';
 import { useAuth } from './auth/AuthProvider';
@@ -154,9 +155,11 @@ export default function Header({
                     {getRoleDisplayName(profile?.role)}
                   </p>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#001740] to-[#0f2a71] flex items-center justify-center">
-                  <User size={20} className="text-[#f4d642]" />
-                </div>
+                <Avatar 
+                  src={profile?.avatar_url} 
+                  name={profile?.full_name}
+                  size="md"
+                />
               </button>
 
               {/* Profile Dropdown Menu */}
@@ -181,6 +184,16 @@ export default function Header({
 
                   {/* Menu Items */}
                   <div className="py-1">
+                    <button
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('navigate-to-profile'));
+                        setShowProfileMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition"
+                    >
+                      <UserCircle size={16} />
+                      Profile Settings
+                    </button>
                     <button
                       onClick={handleLogout}
                       className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition"

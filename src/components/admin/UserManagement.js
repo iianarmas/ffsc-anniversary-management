@@ -119,10 +119,12 @@ export default function UserManagement() {
   return (
     <>
       <Header 
-        viewTitle="User Management" 
+        viewTitle="Dashboard" 
         showSearch={false}
         onOpenPersonNotes={(personId) => {
+          // For dashboard, we'll just log it for now since we don't have direct access to open notes
           console.log('Open notes for person:', personId);
+          // In a full implementation, you'd want to navigate to registration view and open that person
         }}
       />
       
