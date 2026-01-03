@@ -404,11 +404,11 @@ export default function ShirtManagementView({
         {/* Table Section (fixed area) — scrollable content inside */}
         <div className="bg-white rounded-lg overflow-hidden">
           <div
-            className="relative overflow-y-auto"
+            className="relative overflow-y-auto overflow-x-hidden"
             ref={tableContainerRef}
             style={{ maxHeight: 'calc(100vh - 12.7rem)' }}
           >
-            <div ref={actionBarRef} className="sticky top-0 z-20 bg-white">
+            <div ref={actionBarRef} className="sticky top-0 z-20 bg-white border-b-2 border-gray-200" style={{ paddingBottom: '1px' }}>
               <ShirtActionButtons
                 hasActiveFilters={
                   shirtSearchTerm !== '' ||
@@ -429,21 +429,20 @@ export default function ShirtManagementView({
               />
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-white border">
-                  <tr>
-                    <th className="px-4 py-1 border-r text-left text-sm font-semibold text-gray-700">
+            <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+                <thead className="sticky bg-white z-30 border-b border-gray-200" style={{ top: `${actionBarHeight}px`, boxShadow: '0 2px 4px rgba(0,0,0,0.08)' }}>
+                  <tr className="border-b border-gray-200">
+                    <th className="px-4 py-1 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center">
                         <span>Name</span>
                       </div>
                     </th>
-                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700 sticky z-10">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700 sticky z-10">
                       <div className="flex items-center">
                         <span>Age</span>
                       </div>
                     </th>
-                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700 sticky z-10">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700 sticky z-10">
                       <div className="flex items-center justify-between">
                         <span>Age Bracket</span>
                         <FilterDropdown 
@@ -460,7 +459,7 @@ export default function ShirtManagementView({
                         />
                       </div>
                     </th>
-                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Location</span>
                         <FilterDropdown 
@@ -477,7 +476,7 @@ export default function ShirtManagementView({
                         />
                       </div>
                     </th>
-                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Shirt Size</span>
                         <FilterDropdown 
@@ -504,7 +503,7 @@ export default function ShirtManagementView({
                         />
                       </div>
                     </th>
-                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Print Option</span>
                         <FilterDropdown 
@@ -534,7 +533,7 @@ export default function ShirtManagementView({
                         />
                       </div>
                     </th>
-                    <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Distribution Status</span>
                         <FilterDropdown 
@@ -554,8 +553,8 @@ export default function ShirtManagementView({
                 <tbody>
                   {currentItems.length > 0 ? (
                     currentItems.map((person, index) => (
-                      <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''}`}>
-                        <td className="px-4 py-3 text-left">
+                      <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''} border-t-0`}>
+                        <td className="px-4 border-l border-r py-3 text-left">
                           <div className="font-medium text-gray-900 flex items-center justify-between gap-2">
                             <button
                               onClick={() => handleOpenPerson(person)}
@@ -652,16 +651,16 @@ export default function ShirtManagementView({
                             })()}
                           </div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 border-r ">
                           <div className="text-sm text-gray-700">{person.age}</div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 border-r">
                           <div className="text-sm text-gray-700">{person.ageBracket}</div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 border-r">
                           <div className="text-sm text-gray-700">{person.location}</div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 border-r">
                           <select
                             value={person.shirtSize || ''}
                             onChange={(e) => canManage && updateShirtSize(person.id, e.target.value)}
@@ -684,7 +683,7 @@ export default function ShirtManagementView({
                             <option value="2XL">2XL</option>
                           </select>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 border-r">
                           <button
                             onClick={() => canManage && toggleShirtPrint(person.id)}
                             disabled={!canManage}
@@ -697,7 +696,7 @@ export default function ShirtManagementView({
                             {person.hasPrint ? 'With Print' : 'Plain'}
                           </button>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 border-r">
                           <button
                             onClick={() => canManage && toggleShirtPayment(person.id)}
                             disabled={!canManage}
@@ -710,7 +709,7 @@ export default function ShirtManagementView({
                             {person.paid ? 'Paid' : 'Unpaid'}
                           </button>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 border-r">
                           <button
                             onClick={() => canManage && toggleShirtGiven(person.id)}
                             disabled={!canManage}
@@ -733,8 +732,7 @@ export default function ShirtManagementView({
                     </tr>
                   )}
                 </tbody>
-              </table>
-          </div>
+            </table>
           </div>
         </div>
 

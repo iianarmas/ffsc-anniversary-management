@@ -41,6 +41,16 @@ export default function TasksView({ onTaskUpdate }) {
   const filterRefs = useRef({});
   const dropdownRefs = useRef({});
 
+  // Refs for layout measurements
+  const tableContainerRef = useRef(null);
+  const paginationRefEl = useRef(null);
+  const actionBarRef = useRef(null);
+
+  // Heights and fixed pagination state
+  const [paginationHeight, setPaginationHeight] = useState(0);
+  const [actionBarHeight, setActionBarHeight] = useState(0);
+  const [useFixedPagination, setUseFixedPagination] = useState(false);
+
   const loadTasks = async () => {
     setLoading(true);
     const allTasks = await fetchAllTasks();
@@ -89,7 +99,7 @@ export default function TasksView({ onTaskUpdate }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close filter dropdowns when clicking outside
+  / Close filter dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (openFilter) {
@@ -198,6 +208,39 @@ export default function TasksView({ onTaskUpdate }) {
     return { total, incomplete, complete, overdue };
   }, [filteredAndSortedTasks]);
 
+  // Measure heights and determine overflow
+  useEffect(() => {
+    const measureHeights = () => {
+      const tableEl = tableContainerRef.current;
+      const paginationEl = paginationRefEl.current;
+      const actionEl = actionBarRef.current;
+
+      const tableHeight = tableEl ? tableEl.scrollHeight : 0;
+      const containerHeight = tableEl ? tableEl.clientHeight : 0;
+      setUseFixedPagination(tableHeight > containerHeight);
+
+      setPaginationHeight(paginationEl ? paginationEl.offsetHeight : 0);
+      setActionBarHeight(actionEl ? actionEl.offsetHeight : 0);
+    };
+
+    measureHeights();
+
+    const resizeObserver = new ResizeObserver(() => {
+      measureHeights();
+    });
+
+    if (tableContainerRef.current) resizeObserver.observe(tableContainerRef.current);
+    if (paginationRefEl.current) resizeObserver.observe(paginationRefEl.current);
+    if (actionBarRef.current) resizeObserver.observe(actionBarRef.current);
+
+    window.addEventListener('resize', measureHeights);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', measureHeights);
+    };
+  }, [filteredAndSortedTasks.length, itemsPerPage, currentPage]);
+
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -205,12 +248,13 @@ export default function TasksView({ onTaskUpdate }) {
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    tableContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleItemsPerPageChange = (newItemsPerPage) => {
     setItemsPerPage(newItemsPerPage);
     setCurrentPage(1);
+    tableContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Actions
@@ -516,10 +560,14 @@ export default function TasksView({ onTaskUpdate }) {
 
         {/* Table Section */}
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="relative overflow-y-auto" style={{ maxHeight: 'calc(100vh - 12.7rem)' }}>
+          <div 
+            className="relative overflow-y-auto overflow-x-hidden"
+            ref={tableContainerRef}
+            style={{ maxHeight: 'calc(100vh - 12.7rem)' }}
+          >
             
             {/* Action Bar */}
-            <div className="sticky top-0 z-20 bg-white">
+            <div ref={actionBarRef} className="sticky top-0 z-20 bg-white border-b-2 border-gray-200" style={{ paddingBottom: '1px' }}>
               <div className="bg-white px-4 py-3 flex items-center justify-between min-h-[60px] border-b border-gray-200">
                 <div className="flex items-center gap-4">
                   {/* Stats */}
@@ -598,11 +646,10 @@ export default function TasksView({ onTaskUpdate }) {
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-white border">
+            <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+              <thead className="sticky bg-white z-30 border-b border-gray-200" style={{ top: `${actionBarHeight}px`, boxShadow: '0 2px 4px rgba(0,0,0,0.08)' }}>
                   <tr>
-                    <th className="px-4 py-2 border-r text-center text-sm font-semibold text-gray-700 w-12">
+                    <th className="px-4 py-2 border-r border-b border-gray-200 text-center text-sm font-semibold text-gray-700 bg-white w-12">
                       <input
                         type="checkbox"
                         onChange={(e) => {
@@ -748,9 +795,9 @@ export default function TasksView({ onTaskUpdate }) {
                     currentItems.map((task, index) => (
                       <tr 
                         key={task.id} 
-                        className={`hover:bg-blue-50 transition ${getRowBackgroundColor(task)} ${index % 2 === 1 && task.status !== 'complete' && new Date(task.due_date) >= new Date() ? 'bg-slate-50' : ''}`}
+                        className={`hover:bg-blue-50 transition border-t-0 ${getRowBackgroundColor(task)} ${index % 2 === 1 && task.status !== 'complete' && new Date(task.due_date) >= new Date() ? 'bg-slate-50' : ''}`}
                       >
-                        <td className="px-3 py-3 border-r border-l text-center">
+                        <td className="px-3 py-3 border-r border-b border-gray-200 text-center">
                           <input
                             type="checkbox"
                             checked={selectedTasks.includes(task.id)}
@@ -827,13 +874,26 @@ export default function TasksView({ onTaskUpdate }) {
                   )}
                 </tbody>
               </table>
+
+              {/* Fixed pagination when table overflows */}
+              {useFixedPagination && (
+                <div ref={paginationRefEl} className="absolute bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200">
+                  <Pagination
+                    totalItems={filteredAndSortedTasks.length}
+                    itemsPerPage={itemsPerPage}
+                    currentPage={currentPage}
+                    onPageChange={handlePageChange}
+                    onItemsPerPageChange={handleItemsPerPageChange}
+                  />
+                </div>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* Pagination */}
-        <div className="mt-4">
-          <Pagination
+        {/* Inline pagination when table doesn't overflow */}
+        {!useFixedPagination && (
+          <div className="mt-4">
+            <Pagination
             totalItems={filteredAndSortedTasks.length}
             itemsPerPage={itemsPerPage}
             currentPage={currentPage}
@@ -841,6 +901,7 @@ export default function TasksView({ onTaskUpdate }) {
             onItemsPerPageChange={handleItemsPerPageChange}
           />
         </div>
+        )}
 
         {/* Back to Top Button */}
         {showBackToTop && (

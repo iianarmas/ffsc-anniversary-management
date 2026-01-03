@@ -173,11 +173,10 @@ export default function PeopleTable({
 
   return (
     <>
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse" style={{ minWidth: '1000px' }}>
-          <thead>
-            <tr>
-              <th className="px-2 py-1 text-left border w-12 text-center">
+      <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+          <thead className="sticky bg-white z-30" style={{ top: `${stickyTop}px`, boxShadow: '0 2px 4px rgba(0,0,0,0.08)' }}>
+            <tr className="border-b border-gray-200">
+              <th className="px-2 py-1 text-left border-r border-b border-gray-200 w-12 text-center bg-white">
                 <input
                   ref={selectAllCheckboxRef}
                   type="checkbox"
@@ -287,7 +286,7 @@ export default function PeopleTable({
           <tbody>
             {pagePeople.length > 0 ? (
               pagePeople.map((person, index) => (
-                <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''}`}>
+                <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''} border-t-0`}>
                   <td className="px-3 py-3 border-r border-l text-center w-30">
                     <input
                       type="checkbox"
@@ -440,9 +439,8 @@ export default function PeopleTable({
                 </td>
               </tr>
             )}
-          </tbody>
+            </tbody>
         </table>
-      </div>
     </>
   );
 }

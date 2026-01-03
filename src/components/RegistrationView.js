@@ -277,13 +277,13 @@ useEffect(() => {
             {/* Table area (fixed height) — scrollable content inside */}
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               <div
-                className="relative overflow-y-auto"
+                className="relative overflow-y-auto overflow-x-hidden"
                 ref={tableContainerRef}
                 style={{
                   maxHeight: `calc(100vh - 12.7rem)`
                 }}
               >
-              <div ref={actionBarRef} className="sticky top-0 z-20 bg-white">
+              <div ref={actionBarRef} className="sticky top-0 z-20 bg-white border-b-2 border-gray-200" style={{ paddingBottom: '1px' }}>
                 <ActionButtons
                   handleSelectAll={handleSelectAll}
                   selectedPeople={selectedPeople}
@@ -309,25 +309,23 @@ useEffect(() => {
                 />
               </div>
 
-              <div className="overflow-x-auto">
-                <PeopleTable
-                  filteredAndSortedPeople={filteredAndSortedPeople}
-                  pagePeople={currentItems}
-                  selectedPeople={selectedPeople}
-                  handleSelectPerson={handleSelectPerson}
-                  filterAge={filterAge}
-                  setFilterAge={setFilterAge}
-                  filterLocation={filterLocation}
-                  setFilterLocation={setFilterLocation}
-                  filterStatus={filterStatus}
-                  setFilterStatus={setFilterStatus}
-                  onOpenPerson={handleOpenPerson}
-                  onOpenNotes={handleOpenNotes}
-                  peopleWithNotes={peopleWithNotes}
-                  peopleTaskInfo={peopleTaskInfo}
-                  stickyTop={actionBarHeight}
-                />
-              </div>
+              <PeopleTable
+                filteredAndSortedPeople={filteredAndSortedPeople}
+                pagePeople={currentItems}
+                selectedPeople={selectedPeople}
+                handleSelectPerson={handleSelectPerson}
+                filterAge={filterAge}
+                setFilterAge={setFilterAge}
+                filterLocation={filterLocation}
+                setFilterLocation={setFilterLocation}
+                filterStatus={filterStatus}
+                setFilterStatus={setFilterStatus}
+                onOpenPerson={handleOpenPerson}
+                onOpenNotes={handleOpenNotes}
+                peopleWithNotes={peopleWithNotes}
+                peopleTaskInfo={peopleTaskInfo}
+                stickyTop={actionBarHeight}
+              />
             </div>
 
             {/* Fixed pagination when table overflows */}
