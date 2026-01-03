@@ -19,12 +19,22 @@ export default function Header({
   const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
-    loadNotificationCount();
-    const interval = setInterval(loadNotificationCount, 60000); // Refresh every 60 seconds
+    // Only load if profile is available
+    if (profile?.id) {
+      loadNotificationCount();
+    }
+    
+    const interval = setInterval(() => {
+      if (profile?.id) {
+        loadNotificationCount();
+      }
+    }, 60000); // Refresh every 60 seconds
     
     // Listen for task updates
     const handleTaskUpdate = () => {
-      loadNotificationCount();
+      if (profile?.id) {
+        loadNotificationCount();
+      }
     };
     window.addEventListener('taskUpdated', handleTaskUpdate);
     
@@ -32,7 +42,7 @@ export default function Header({
       clearInterval(interval);
       window.removeEventListener('taskUpdated', handleTaskUpdate);
     };
-  }, []);
+  }, [profile?.id]);
 
   // Close profile menu when clicking outside
   useEffect(() => {
@@ -75,7 +85,7 @@ export default function Header({
   const getRoleColor = (role) => {
     switch (role) {
       case 'admin': return 'text-red-600';
-      case 'volunteer': return 'text-blue-600';
+      case 'committee': return 'text-blue-600';
       case 'viewer': return 'text-gray-600';
       default: return 'text-gray-600';
     }
@@ -84,7 +94,7 @@ export default function Header({
   const getRoleDisplayName = (role) => {
     switch (role) {
       case 'admin': return 'Administrator';
-      case 'volunteer': return 'Volunteer';
+      case 'committee': return 'Committee';
       case 'viewer': return 'Viewer';
       default: return role;
     }
@@ -181,7 +191,7 @@ export default function Header({
                     <div className="mt-2">
                       <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
                         profile?.role === 'admin' ? 'bg-red-100 text-red-800' :
-                        profile?.role === 'volunteer' ? 'bg-blue-100 text-blue-800' :
+                        profile?.role === 'committee' ? 'bg-blue-100 text-blue-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
                         {getRoleDisplayName(profile?.role)}

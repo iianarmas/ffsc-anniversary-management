@@ -56,6 +56,13 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
     }
   }, [open, profile?.id]);
 
+  // Load notes when sidebar opens or person changes
+  useEffect(() => {
+    if (open && person?.id) {
+      loadNotes();
+    }
+  }, [open, person?.id]);
+
   const loadNotes = async () => {
     if (!person?.id) return;
     setIsLoadingNotes(true);

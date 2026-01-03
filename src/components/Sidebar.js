@@ -6,7 +6,7 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
 
   const menuItems = [
     { id: 'home', label: 'Home', icon: Home },
-    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3, showDividerAfter: true },
     { id: 'registration', label: 'Registration', icon: Users },
     { id: 'shirts', label: 'Shirt Management', icon: Shirt },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, badge: taskStats?.incomplete || 0 },
@@ -55,7 +55,7 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
                     </span>
                   )}
                 </button>
-                {idx === 0 && (
+                {item.showDividerAfter && (
                   <div className="border-b border-dashed border-gray-300 mx-2 my-2" />
                 )}
               </React.Fragment>

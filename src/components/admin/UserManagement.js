@@ -96,7 +96,7 @@ export default function UserManagement() {
   const getRoleBadgeColor = (role) => {
     switch (role) {
       case 'admin': return 'bg-red-100 text-red-800';
-      case 'volunteer': return 'bg-blue-100 text-blue-800';
+      case 'committee': return 'bg-blue-100 text-blue-800';
       case 'viewer': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -173,7 +173,7 @@ export default function UserManagement() {
               >
                 <option value="All">All Roles</option>
                 <option value="Admin">Admin</option>
-                <option value="Volunteer">Volunteer</option>
+                <option value="Committee">Committee</option>
                 <option value="Viewer">Viewer</option>
               </select>
               
@@ -203,9 +203,9 @@ export default function UserManagement() {
             </div>
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="text-2xl font-bold text-blue-600">
-                {users.filter(u => u.role === 'volunteer').length}
+                {users.filter(u => u.role === 'committee').length}
               </div>
-              <div className="text-sm text-gray-600">Volunteers</div>
+              <div className="text-sm text-gray-600">Committee</div>
             </div>
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="text-2xl font-bold text-gray-600">
@@ -270,7 +270,7 @@ export default function UserManagement() {
                             className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleBadgeColor(user.role)} border-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50`}
                           >
                             <option value="admin">Admin</option>
-                            <option value="volunteer">Volunteer</option>
+                            <option value="committee">Committee</option>
                             <option value="viewer">Viewer</option>
                           </select>
                         </div>

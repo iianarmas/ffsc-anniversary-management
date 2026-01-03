@@ -78,6 +78,11 @@ function AppContent() {
     byPriority: { High: 0, Medium: 0, Low: 0 }
   });
   const [peopleTaskInfo, setPeopleTaskInfo] = useState({});
+  const [myTaskStats, setMyTaskStats] = useState({
+    incomplete: 0,
+    overdue: 0,
+    dueToday: 0
+  });
   
 
   
@@ -94,7 +99,10 @@ useEffect(() => {
     }
   };
   
-  initializeData();
+  // Only initialize when profile is available
+  if (profile?.id) {
+    initializeData();
+  }
 
   const updatePersonInState = (payload, table) => {
     const personId = table === 'people' 
@@ -182,7 +190,7 @@ useEffect(() => {
     supabase.removeChannel(registrationsSub);
     supabase.removeChannel(tasksSub);
   };
-}, []);
+}, [profile?.id]);
 
 
 
@@ -235,6 +243,31 @@ useEffect(() => {
   const loadTaskStats = async () => {
     const stats = await getTaskStats();
     setTaskStats(stats);
+    
+    // Calculate user-specific stats
+    if (profile?.id) {
+      const { data: myTasks } = await supabase
+        .from('notes')
+        .select('*')
+        .eq('is_task', true)
+        .eq('assigned_to_user', profile.id);
+      
+      if (myTasks) {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        const incomplete = myTasks.filter(t => t.status === 'incomplete').length;
+        const overdue = myTasks.filter(t => t.status === 'incomplete' && new Date(t.due_date) < now).length;
+        const dueToday = myTasks.filter(t => {
+          const dueDate = new Date(t.due_date);
+          return t.status === 'incomplete' && dueDate >= now && dueDate < tomorrow;
+        }).length;
+        
+        setMyTaskStats({ incomplete, overdue, dueToday });
+      }
+    }
   };
 
   const loadPeopleTaskInfo = async () => {
@@ -335,7 +368,7 @@ useEffect(() => {
     for (const personId of selectedPeople) {
       const person = people.find(p => p.id === personId);
       if (person && !person.registered) {
-        await checkInPerson(personId);
+        await checkInPerson(personId, profile?.id);  // ← Make sure profile?.id is here
       }
     }
     await loadData(true);
@@ -343,12 +376,13 @@ useEffect(() => {
     setLoading(false);
   };
 
+
   const handleBulkRemove = async () => {
     setLoading(true);
     for (const personId of selectedPeople) {
       const person = people.find(p => p.id === personId);
       if (person && person.registered) {
-        await removeCheckIn(personId);
+        await removeCheckIn(personId, profile?.id);
       }
     }
     await loadData(true);
@@ -409,7 +443,7 @@ useEffect(() => {
           localStorage.setItem('currentView', view);
         }}
         onAddPersonClick={() => setIsAddPersonOpen(true)}
-        taskStats={taskStats}
+        taskStats={myTaskStats}
         userProfile={profile}
       />
       <div className="flex-1 px-6 pt-16 ml-0 md:ml-16 transition-all duration-300">

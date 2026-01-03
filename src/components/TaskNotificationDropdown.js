@@ -1,20 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, CheckSquare, AlertTriangle } from 'lucide-react';
 import { fetchOverdueTasks, fetchTasksDueToday, toggleTaskComplete } from '../services/api';
+import { useAuth } from './auth/AuthProvider';
 
 export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick }) {
+  const { profile } = useAuth();
   const [overdueTasks, setOverdueTasks] = useState([]);
   const [todayTasks, setTodayTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && profile?.id) {
       loadTasks();
       const interval = setInterval(loadTasks, 60000); // Refresh every 60 seconds
       return () => clearInterval(interval);
     }
-  }, [isOpen]);
+  }, [isOpen, profile?.id]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -30,20 +32,27 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
   }, [isOpen, onClose]);
 
   const loadTasks = async () => {
+    if (!profile?.id) return;
+    
     setLoading(true);
     const [overdue, today] = await Promise.all([
       fetchOverdueTasks(),
       fetchTasksDueToday()
     ]);
-    console.log('Overdue tasks:', overdue);
-    console.log('Today tasks:', today);
-    setOverdueTasks(overdue);
-    setTodayTasks(today);
+    
+    // Filter to only show tasks assigned to current user
+    const myOverdue = overdue.filter(task => task.assigned_to_user === profile.id);
+    const myToday = today.filter(task => task.assigned_to_user === profile.id);
+    
+    console.log('My overdue tasks:', myOverdue);
+    console.log('My today tasks:', myToday);
+    setOverdueTasks(myOverdue);
+    setTodayTasks(myToday);
     setLoading(false);
     
     // Notify parent that tasks were loaded
     window.dispatchEvent(new CustomEvent('tasksLoaded', { 
-      detail: { overdueCount: overdue.length, todayCount: today.length }
+      detail: { overdueCount: myOverdue.length, todayCount: myToday.length }
     }));
   };
 

@@ -50,7 +50,7 @@ export const fetchAllPeople = async () => {
 };
 
 // Check in a person (add/update registration)
-export const checkInPerson = async (personId) => {
+export const checkInPerson = async (personId, userId = null) => {
   try {
     // Check if registration already exists
     const { data: existing } = await supabase
@@ -65,7 +65,8 @@ export const checkInPerson = async (personId) => {
         .from('registrations')
         .update({
           registered: true,
-          registered_at: new Date().toISOString()
+          registered_at: new Date().toISOString(),
+          registered_by: userId
         })
         .eq('person_id', personId);
 
@@ -77,12 +78,16 @@ export const checkInPerson = async (personId) => {
         .insert({
           person_id: personId,
           registered: true,
-          registered_at: new Date().toISOString()
+          registered_at: new Date().toISOString(),
+          registered_by: userId
         });
 
       if (error) throw error;
     }
 
+    // Dispatch event to notify other components
+    window.dispatchEvent(new Event('registrationUpdated'));
+    
     return true;
   } catch (error) {
     console.error('Error checking in person:', error);
@@ -97,11 +102,16 @@ export const removeCheckIn = async (personId) => {
       .from('registrations')
       .update({
         registered: false,
-        registered_at: null
+        registered_at: null,
+        registered_by: null
       })
       .eq('person_id', personId);
 
     if (error) throw error;
+    
+    // Dispatch event to notify other components
+    window.dispatchEvent(new Event('registrationUpdated'));
+    
     return true;
   } catch (error) {
     console.error('Error removing check-in:', error);
@@ -483,11 +493,12 @@ export async function fetchTasksDueToday() {
   }
 }
 
-// Fetch overdue tasks
+// Fetch overdue tasks (BEFORE today, not including today)
 export async function fetchOverdueTasks() {
   try {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayDateString = today.toISOString().split('T')[0]; // Get YYYY-MM-DD
 
     const { data, error } = await supabase
       .from('notes')
@@ -501,7 +512,7 @@ export async function fetchOverdueTasks() {
       `)
       .eq('is_task', true)
       .eq('status', 'incomplete')
-      .lt('due_date', now.toISOString())
+      .lt('due_date', `${todayDateString}T00:00:00`)  // Strictly before today
       .order('due_date', { ascending: true });
 
     if (error) throw error;

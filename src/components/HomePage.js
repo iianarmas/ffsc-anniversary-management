@@ -28,14 +28,16 @@ export default function HomePage({
 
   // Realtime updates - reload stats when tasks/registrations change
   useEffect(() => {
-    const handleTaskUpdate = () => {
+    const handleUpdate = () => {
       loadMyStats();
     };
     
-    window.addEventListener('taskUpdated', handleTaskUpdate);
+    window.addEventListener('taskUpdated', handleUpdate);
+    window.addEventListener('registrationUpdated', handleUpdate);
     
     return () => {
-      window.removeEventListener('taskUpdated', handleTaskUpdate);
+      window.removeEventListener('taskUpdated', handleUpdate);
+      window.removeEventListener('registrationUpdated', handleUpdate);
     };
   }, [profile?.id]);
 

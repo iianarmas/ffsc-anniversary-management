@@ -47,6 +47,15 @@ export default function TasksView({ onTaskUpdate }) {
     setLoading(false);
   };
 
+  // Load available users for assignment filter
+  useEffect(() => {
+    const loadUsers = async () => {
+      const users = await getUsersForTaskAssignment();
+      setAvailableUsers(users);
+    };
+    loadUsers();
+  }, []);
+
   // Load tasks on mount
   useEffect(() => {
     loadTasks();
@@ -166,16 +175,25 @@ export default function TasksView({ onTaskUpdate }) {
     });
 
     return filtered;
-  }, [tasks, searchTerm, filterStatus, filterPriority, filterCategory, filterDueDate]);
+  }, [tasks, searchTerm, filterStatus, filterPriority, filterCategory, filterDueDate, filterAssignedTo, profile?.id]);
 
-  // Calculate stats
+  // Calculate stats based on FILTERED tasks (not all tasks)
   const stats = React.useMemo(() => {
-    const total = tasks.length;
-    const incomplete = tasks.filter(t => t.status === 'incomplete').length;
-    const complete = tasks.filter(t => t.status === 'complete').length;
-    const overdue = tasks.filter(t => t.status === 'incomplete' && new Date(t.due_date) < new Date()).length;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const total = filteredAndSortedTasks.length;
+    const incomplete = filteredAndSortedTasks.filter(t => t.status === 'incomplete').length;
+    const complete = filteredAndSortedTasks.filter(t => t.status === 'complete').length;
+    const overdue = filteredAndSortedTasks.filter(t => {
+      if (t.status !== 'incomplete') return false;
+      const taskDateObj = new Date(t.due_date);
+      const taskDate = new Date(taskDateObj.getUTCFullYear(), taskDateObj.getUTCMonth(), taskDateObj.getUTCDate());
+      return taskDate < today;
+    }).length;
+    
     return { total, incomplete, complete, overdue };
-  }, [tasks]);
+  }, [filteredAndSortedTasks]);
 
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -257,6 +275,7 @@ export default function TasksView({ onTaskUpdate }) {
     setFilterPriority('All');
     setFilterCategory('All');
     setFilterDueDate('All');
+    setFilterAssignedTo('me');
   };
 
   const handleOpenPerson = async (task) => {
@@ -393,15 +412,6 @@ export default function TasksView({ onTaskUpdate }) {
         };
       }
     }, [openFilter, column]);
-
-    // Load users for filter
-    useEffect(() => {
-      const loadUsers = async () => {
-        const users = await getUsersForTaskAssignment();
-        setAvailableUsers(users);
-      };
-      loadUsers();
-    }, []);
 
     return (
       <div className="relative" ref={el => filterRefs.current[column] = el}>
@@ -631,11 +641,24 @@ export default function TasksView({ onTaskUpdate }) {
                         />
                       </div>
                     </th>
-                    <td className="px-4 py-3 text-left border-r">
-                          <span className="text-sm text-gray-700">
-                            {task.assigned_to || '—'}
-                          </span>
-                        </td>
+                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                      <div className="flex items-center justify-between">
+                        <span>Assigned To</span>
+                        <FilterDropdown 
+                          column="assignedTo"
+                          options={[
+                            { value: 'All', label: 'All Users' },
+                            { value: 'me', label: 'Assigned to Me' },
+                            ...availableUsers.map(user => ({
+                              value: user.id,
+                              label: user.full_name
+                            }))
+                          ]}
+                          value={filterAssignedTo}
+                          onChange={setFilterAssignedTo}
+                        />
+                      </div>
+                    </th>
                     <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Status</span>
@@ -657,7 +680,7 @@ export default function TasksView({ onTaskUpdate }) {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={7} className="text-center py-12">
+                      <td colSpan={8} className="text-center py-12">
                         <div className="flex items-center justify-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0f2a71]"></div>
                         </div>
@@ -711,6 +734,11 @@ export default function TasksView({ onTaskUpdate }) {
                           <span className="inline-flex items-center gap-1 text-sm text-gray-700">
                             <Hash size={14} className="text-gray-400" />
                             {task.category}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-left border-r">
+                          <span className="text-sm text-gray-700">
+                            {task.assigned_to || '—'}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-left border-r">
