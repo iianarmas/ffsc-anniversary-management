@@ -26,7 +26,7 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
 
       {/* Sidebar - Always Collapsed on Desktop */}
       <div
-        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#edf1fa] text-white transform transition-all duration-300 ease-in-out z-20 ${
+        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#edf1fa] text-white transform transition-all duration-300 ease-in-out z-40 ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0 w-16`}
       >
@@ -62,11 +62,11 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
                   
                   {/* Modern Tooltip */}
                   {hoveredItem === item.id && (
-                    <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 z-50 pointer-events-none">
+                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
                       <div className="bg-[#001740] text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap shadow-lg animate-slide-in">
                         {item.label}
                         {/* Tooltip arrow */}
-                        <div className="absolute right-full top-1/2 transform -translate-y-1/2">
+                        <div className="absolute right-full top-1/2 -translate-y-1/2">
                           <div className="w-0 h-0 border-t-4 border-t-transparent border-r-4 border-r-[#001740] border-b-4 border-b-transparent"></div>
                         </div>
                       </div>
@@ -97,11 +97,11 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
             
             {/* Modern Tooltip */}
             {hoveredItem === 'add-person' && (
-              <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 z-50 pointer-events-none">
+              <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
                 <div className="bg-[#001740] text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap shadow-lg animate-slide-in">
                   Add Person
                   {/* Tooltip arrow */}
-                  <div className="absolute right-full top-1/2 transform -translate-y-1/2">
+                  <div className="absolute right-full top-1/2 -translate-y-1/2">
                     <div className="w-0 h-0 border-t-4 border-t-transparent border-r-4 border-r-[#001740] border-b-4 border-b-transparent"></div>
                   </div>
                 </div>
@@ -115,23 +115,22 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
       {isMobileMenuOpen && (
         <div
           onClick={() => setIsMobileMenuOpen(false)}
-          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-35"
         />
       )}
-
       <style>{`
         @keyframes slide-in {
           from {
             opacity: 0;
-            transform: translateX(-8px) translateY(-50%);
+            transform: translateX(-8px);
           }
           to {
             opacity: 1;
-            transform: translateX(0) translateY(-50%);
+            transform: translateX(0);
           }
         }
         .animate-slide-in {
-          animation: slide-in 0.2s ease-out;
+          animation: slide-in 0.15s ease-out;
         }
       `}</style>
     </>
