@@ -11,7 +11,8 @@ export default function NotificationsWidget({ taskStats, capacity }) {
       show: (taskStats?.overdue || 0) > 0,
       bgColor: 'bg-red-600',
       textColor: 'text-white',
-      iconColor: 'text-white'
+      iconColor: 'text-white',
+      clickable: true
     },
     {
       id: 2,
@@ -53,7 +54,10 @@ export default function NotificationsWidget({ taskStats, capacity }) {
           activeNotifications.map(notification => (
             <div
               key={notification.id}
-              className={`p-3 rounded-lg ${notification.bgColor}`}
+              className={`p-3 rounded-lg ${notification.bgColor} ${notification.clickable ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+              onClick={notification.clickable ? () => {
+                window.dispatchEvent(new CustomEvent('navigate-to-tasks-overdue'));
+              } : undefined}
             >
               <div className="flex items-center gap-2 mb-1">
                 <notification.icon size={16} className={notification.iconColor} />

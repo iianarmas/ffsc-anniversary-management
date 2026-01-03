@@ -247,7 +247,29 @@ useEffect(() => {
   };
 }, [profile?.id]);
 
-
+// Listen for role request changes to update bell badge (admin only)
+useEffect(() => {
+  if (!profile?.id || profile.role !== 'admin') return;
+  
+  const channel = supabase
+    .channel('admin-role-requests-badge')
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'role_change_requests'
+    }, async () => {
+      // Reload pending role requests count
+      const requests = await getPendingRoleRequests();
+      setPendingRoleRequestCount(requests.length);
+      // Trigger header to reload notification count
+      window.dispatchEvent(new Event('taskUpdated'));
+    })
+    .subscribe();
+  
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [profile?.id, profile?.role]);
 
 
   useEffect(() => {
@@ -277,13 +299,21 @@ useEffect(() => {
       setCurrentView('users');
     };
 
+    const handleNavigateToTasksOverdue = () => {
+      setCurrentView('tasks');
+      // Set a flag that TasksView can read to apply overdue filter
+      sessionStorage.setItem('tasks-filter-overdue', 'true');
+    };
+
     window.addEventListener('navigate-to-tasks', handleNavigateToTasks);
+    window.addEventListener('navigate-to-tasks-overdue', handleNavigateToTasksOverdue);
     window.addEventListener('navigate-to-profile', handleNavigateToProfile);
     window.addEventListener('navigate-to-home', handleNavigateToHome);
     window.addEventListener('navigate-to-users', handleNavigateToUsers);
     
     return () => {
       window.removeEventListener('navigate-to-tasks', handleNavigateToTasks);
+      window.removeEventListener('navigate-to-tasks-overdue', handleNavigateToTasksOverdue);
       window.removeEventListener('navigate-to-profile', handleNavigateToProfile);
       window.removeEventListener('navigate-to-home', handleNavigateToHome);
       window.removeEventListener('navigate-to-users', handleNavigateToUsers);
@@ -611,7 +641,7 @@ useEffect(() => {
         )}
 
         {/* Mobile Add Person Button - Top Right */}
-        {isMobile && profile?.role !== 'viewer' && currentView !== 'home' && currentView !== 'profile' && (
+        {isMobile && profile?.role !== 'viewer' && currentView !== 'home' && currentView !== 'profile' && currentView !== 'users' && (
           <button
             onClick={() => setIsAddPersonOpen(true)}
             className="fixed top-4 right-4 z-40 p-2 hover:bg-gray-100 rounded-lg transition-all duration-300 active:scale-95"

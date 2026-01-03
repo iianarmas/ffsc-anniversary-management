@@ -81,21 +81,54 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
           .select(`
             created_at,
             created_by,
-            profiles:created_by (
+            profiles!people_created_by_fkey (
               full_name
             )
           `)
           .eq('id', person.id)
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching creator info:', error);
+          // Try fallback without the profiles join
+          const { data: personData, error: personError } = await supabase
+            .from('people')
+            .select('created_at, created_by')
+            .eq('id', person.id)
+            .single();
+            
+          if (!personError && personData) {
+            setCreatedAt(personData.created_at);
+            // If we have created_by ID, try to fetch the profile separately
+            if (personData.created_by) {
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('full_name, role')
+                .eq('id', personData.created_by)
+                .single();
+              // Show "Admin" for admin users, actual name for others
+              const creatorName = profileData?.full_name || 'Unknown';
+              const isAdmin = profileData?.role === 'admin';
+              setCreatedByName(isAdmin ? 'Admin' : creatorName);
+            } else {
+              setCreatedByName('System');
+            }
+          }
+          return;
+        }
         
         if (data) {
           setCreatedAt(data.created_at);
-          setCreatedByName(data.profiles?.full_name || 'Unknown');
+          // Show "Admin" for admin users, actual name for others
+          const creatorName = data.profiles?.full_name || 'Unknown';
+          const isAdmin = data.profiles?.role === 'admin';
+          setCreatedByName(isAdmin ? 'Admin' : creatorName);
         }
       } catch (error) {
         console.error('Error loading creator info:', error);
+        // Set defaults
+        setCreatedAt(person.createdAt || person.timestamp || '');
+        setCreatedByName('Unknown');
       }
     };
     

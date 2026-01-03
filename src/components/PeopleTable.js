@@ -132,11 +132,16 @@ export default function PeopleTable({
 
     return (
       <div className="relative" ref={el => filterRefs.current[column] = el}>
-        <Filter 
-          size={14} 
-          className={`cursor-pointer transition ${value !== 'All' ? 'text-[#f4d642]' : 'text-gray-400 hover:text-gray-600'}`}
-          onClick={() => setOpenFilter(openFilter === column ? null : column)}
-        />
+        <div className="relative">
+          <Filter 
+            size={14} 
+            className="cursor-pointer transition text-gray-400 hover:text-gray-600"
+            onClick={() => setOpenFilter(openFilter === column ? null : column)}
+          />
+          {value !== 'All' && (
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          )}
+        </div>
         {openFilter === column && createPortal(
           <div 
             ref={el => dropdownRefs.current[column] = el}
@@ -156,8 +161,8 @@ export default function PeopleTable({
                     onChange(option.value);
                     setOpenFilter(null);
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
-                    value === option.value ? 'bg-[#fffdf0] text-[#001740] font-semibold' : 'text-gray-700'
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-blue-50 transition ${
+                    value === option.value ? 'bg-blue-100 text-[#001740] font-semibold' : 'text-gray-700'
                   }`}
                 >
                   {option.label}

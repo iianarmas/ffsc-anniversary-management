@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Search, Bell, LogOut, UserCircle } from 'lucide-react';
 import Avatar from './Avatar';
 import TaskNotificationDropdown from './TaskNotificationDropdown';
-import { fetchOverdueTasks, fetchTasksDueToday } from '../services/api';
+import { fetchOverdueTasks, fetchTasksDueToday, getPendingRoleRequests } from '../services/api';
 import { useAuth } from './auth/AuthProvider';
 
 export default function Header({ 
@@ -84,16 +84,25 @@ export default function Header({
   const loadNotificationCount = async () => {
     if (!profile?.id) return;
     
-    const [overdue, today] = await Promise.all([
+    const promises = [
       fetchOverdueTasks(),
       fetchTasksDueToday()
-    ]);
+    ];
+    
+    // Add role requests for admin
+    if (profile.role === 'admin') {
+      promises.push(getPendingRoleRequests());
+    }
+    
+    const results = await Promise.all(promises);
+    const [overdue, today, roleRequests] = results;
     
     // Filter to only show tasks assigned to current user
     const myOverdue = overdue.filter(task => task.assigned_to_user === profile.id);
     const myToday = today.filter(task => task.assigned_to_user === profile.id);
     
-    setNotificationCount(myOverdue.length + myToday.length);
+    const roleRequestCount = (profile.role === 'admin' && roleRequests) ? roleRequests.length : 0;
+    setNotificationCount(myOverdue.length + myToday.length + roleRequestCount);
   };
 
   const handleTaskClick = (personId) => {

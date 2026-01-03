@@ -538,10 +538,9 @@ export default function NotesDialog({ person, isOpen, onClose }) {
                     setTaskDueDate(new Date().toISOString());
                   }
                 }}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 rounded border-gray-300 accent-[#0f2a71] focus:ring-[#0f2a71] cursor-pointer"
               />
-              <label htmlFor="isTask" className="text-sm font-medium text-gray-700 cursor-pointer flex items-center gap-1">
-                <Square size={16} />
+              <label htmlFor="isTask" className="text-sm font-medium text-gray-700 cursor-pointer">
                 Mark as task
               </label>
             </div>

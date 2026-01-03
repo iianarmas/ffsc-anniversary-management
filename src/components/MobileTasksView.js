@@ -21,6 +21,16 @@ export default function MobileTasksView({ onTaskUpdate }) {
   const [filterAssignedTo, setFilterAssignedTo] = useState('me'); // Default to 'me'
   const [availableUsers, setAvailableUsers] = useState([]);
   const [filterCreatedBy, setFilterCreatedBy] = useState('All');
+
+  // Check for overdue filter from navigation
+  useEffect(() => {
+    const overdueFlag = sessionStorage.getItem('tasks-filter-overdue');
+    if (overdueFlag === 'true') {
+      setFilterDueDate('Overdue');
+      setFilterAssignedTo('me');
+      sessionStorage.removeItem('tasks-filter-overdue');
+    }
+  }, []);
   
   // Sidebar/Dialog states
   const [selectedPerson, setSelectedPerson] = useState(null);

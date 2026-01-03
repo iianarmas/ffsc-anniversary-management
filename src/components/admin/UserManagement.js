@@ -196,23 +196,24 @@ export default function UserManagement() {
 
   return (
     <>
-      <Header 
-        viewTitle="Dashboard" 
-        showSearch={false}
-        onOpenPersonNotes={(personId) => {
-          // For dashboard, we'll just log it for now since we don't have direct access to open notes
-          console.log('Open notes for person:', personId);
-          // In a full implementation, you'd want to navigate to registration view and open that person
-        }}
-      />
+      {/* Desktop Header */}
+      {!window.matchMedia('(max-width: 767px)').matches && (
+        <Header 
+          viewTitle="Dashboard" 
+          showSearch={false}
+          onOpenPersonNotes={(personId) => {
+            console.log('Open notes for person:', personId);
+          }}
+        />
+      )}
       
       <div className="p-6 bg-[#f9fafa] min-h-screen">
         <div className="max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Users size={28} />
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Users size={24} className="md:block" />
             User Management
           </h1>
           <p className="text-gray-600 text-sm mt-1">
@@ -362,7 +363,7 @@ export default function UserManagement() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="text-2xl font-bold text-gray-900">{users.length}</div>
               <div className="text-sm text-gray-600">Total Users</div>
@@ -389,7 +390,7 @@ export default function UserManagement() {
 
           {/* Users Table */}
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -492,6 +493,86 @@ export default function UserManagement() {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile View */}
+            <div className="md:hidden divide-y divide-gray-200">
+              {filteredUsers.map(user => (
+                <div key={user.id} className="p-4 hover:bg-gray-50">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="flex-shrink-0 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-600 font-semibold text-lg">
+                        {user.full_name?.charAt(0).toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-base font-semibold text-gray-900 truncate">
+                        {user.full_name || 'No name'}
+                        {user.id === profile.id && (
+                          <span className="text-xs text-blue-600 ml-2">(You)</span>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-600 truncate">{user.email}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 mb-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Role</span>
+                      <select
+                        value={user.role}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                        disabled={user.id === profile.id}
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${getRoleBadgeColor(user.role)} border-none disabled:cursor-not-allowed disabled:opacity-50`}
+                      >
+                        <option value="admin">Admin</option>
+                        <option value="committee">Committee</option>
+                        <option value="viewer">Viewer</option>
+                      </select>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Status</span>
+                      <button
+                        onClick={() => handleStatusChange(
+                          user.id, 
+                          user.status === 'active' ? 'suspended' : 'active'
+                        )}
+                        disabled={user.id === profile.id}
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(user.status)} disabled:cursor-not-allowed disabled:opacity-50`}
+                      >
+                        {user.status === 'active' ? 'Active' : 'Suspended'}
+                      </button>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Joined</span>
+                      <span className="text-xs text-gray-900">
+                        {new Date(user.created_at + 'Z').toLocaleDateString('en-US', {
+                          timeZone: 'Asia/Manila',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={() => setDeleteConfirm({ 
+                      isOpen: true, 
+                      userId: user.id, 
+                      userName: user.full_name || user.email 
+                    })}
+                    disabled={user.id === profile.id}
+                    className="w-full px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2 border border-red-200"
+                  >
+                    <Trash2 size={16} />
+                    <span className="text-sm font-medium">Delete User</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+
 
             {filteredUsers.length === 0 && (
               <div className="text-center py-12 text-gray-500">

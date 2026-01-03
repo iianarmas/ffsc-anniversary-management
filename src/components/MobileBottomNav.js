@@ -24,7 +24,7 @@ export default function MobileBottomNav({ currentView, setCurrentView, taskCount
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-bottom z-30">
-      <div className="flex items-center justify-around px-2 py-2">
+      <div className="flex items-center justify-between px-1 py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentView === item.id;
@@ -36,12 +36,12 @@ export default function MobileBottomNav({ currentView, setCurrentView, taskCount
                 setCurrentView(item.id);
                 localStorage.setItem('currentView', item.id);
               }}
-              className={`flex flex-col items-center justify-center px-4 py-2 rounded-lg transition-all duration-200 min-w-[60px] relative ${
+              className={`flex flex-col items-center justify-center py-2 rounded-lg transition-all duration-200 flex-1 mx-0.5 relative ${
                 isActive
                   ? 'bg-[#001740] text-white'
                   : 'text-gray-500 hover:bg-gray-100'
               }`}
-              style={{ minHeight: '56px' }}
+              style={{ minHeight: '56px', maxWidth: '80px' }}
             >
               <Icon size={22} strokeWidth={2} />
               <span className="text-xs font-medium mt-1">{item.label}</span>

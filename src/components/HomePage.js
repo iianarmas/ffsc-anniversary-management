@@ -128,8 +128,8 @@ export default function HomePage({
                   <div className={`flex items-center ${isMobile ? 'justify-between mb-1' : 'mb-1'}`}>
                     <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600`}>My Tasks</p>
                     {isMobile && (
-                      <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                        <CheckSquare size={16} className="text-blue-600" />
+                      <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <CheckSquare size={20} className="text-blue-600" />
                       </div>
                     )}
                   </div>
@@ -149,8 +149,8 @@ export default function HomePage({
                   <div className={`flex items-center ${isMobile ? 'justify-between mb-1' : 'mb-1'}`}>
                     <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600`}>Registered</p>
                     {isMobile && (
-                      <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
-                        <Users size={16} className="text-green-600" />
+                      <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                        <Users size={20} className="text-green-600" />
                       </div>
                     )}
                   </div>
@@ -170,8 +170,8 @@ export default function HomePage({
                   <div className={`flex items-center ${isMobile ? 'justify-between mb-1' : 'mb-1'}`}>
                     <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600`}>Overdue</p>
                     {isMobile && (
-                      <div className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center">
-                        <Clock size={16} className="text-red-600" />
+                      <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                        <Clock size={20} className="text-red-600" />
                       </div>
                     )}
                   </div>
@@ -191,8 +191,8 @@ export default function HomePage({
                   <div className={`flex items-center ${isMobile ? 'justify-between mb-1' : 'mb-1'}`}>
                     <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600`}>Shirts Given</p>
                     {isMobile && (
-                      <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
-                        <ShoppingBag size={16} className="text-purple-600" />
+                      <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                        <ShoppingBag size={20} className="text-purple-600" />
                       </div>
                     )}
                   </div>

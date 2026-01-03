@@ -22,6 +22,16 @@ export default function TasksView({ onTaskUpdate }) {
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterDueDate, setFilterDueDate] = useState('All');
   const [filterAssignedTo, setFilterAssignedTo] = useState('me'); // Default to 'me'
+  
+  // Check for overdue filter from navigation
+  useEffect(() => {
+    const overdueFlag = sessionStorage.getItem('tasks-filter-overdue');
+    if (overdueFlag === 'true') {
+      setFilterDueDate('Overdue');
+      setFilterAssignedTo('me');
+      sessionStorage.removeItem('tasks-filter-overdue');
+    }
+  }, []);
   const [availableUsers, setAvailableUsers] = useState([]);
   const [filterCreatedBy, setFilterCreatedBy] = useState('All');
   
@@ -495,11 +505,16 @@ export default function TasksView({ onTaskUpdate }) {
 
     return (
       <div className="relative" ref={el => filterRefs.current[column] = el}>
-        <Filter 
-          size={14} 
-          className={`cursor-pointer transition ${value !== 'All' ? 'text-[#f4d642]' : 'text-gray-400 hover:text-gray-600'}`}
-          onClick={() => setOpenFilter(openFilter === column ? null : column)}
-        />
+        <div className="relative">
+          <Filter 
+            size={14} 
+            className="cursor-pointer transition text-gray-400 hover:text-gray-600"
+            onClick={() => setOpenFilter(openFilter === column ? null : column)}
+          />
+          {value !== 'All' && value !== 'me' && (
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          )}
+        </div>
         {openFilter === column && createPortal(
           <div 
             ref={el => dropdownRefs.current[column] = el}
@@ -517,8 +532,8 @@ export default function TasksView({ onTaskUpdate }) {
                     onChange(option.value);
                     setOpenFilter(null);
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
-                    value === option.value ? 'bg-[#fffdf0] text-[#001740] font-semibold' : 'text-gray-700'
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-blue-50 transition ${
+                    value === option.value ? 'bg-blue-100 text-[#001740] font-semibold' : 'text-gray-700'
                   }`}
                 >
                   {option.label}

@@ -145,9 +145,9 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick,
   return createPortal(
     <div
       ref={dropdownRef}
-      className="fixed w-96 max-h-96 bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden z-[9999]"
+      className="fixed w-96 bg-white rounded-lg shadow-2xl border border-gray-200 z-[9999] flex flex-col"
       style={{ 
-        maxHeight: '32rem',
+        maxHeight: 'min(32rem, calc(100vh - 80px))',
         top: `${dropdownPosition.top}px`,
         right: `${dropdownPosition.right}px`
       }}
@@ -173,12 +173,12 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick,
       </div>
 
       {/* Content */}
-      <div className="overflow-y-auto" style={{ maxHeight: 'calc(32rem - 3.5rem)' }}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0f2a71]"></div>
           </div>
-        ) : totalCount === 0 ? (
+       ) : totalCount === 0 ? (
           <div className="text-center py-8 px-4">
             <CheckSquare size={32} className="text-gray-300 mx-auto mb-2" />
             <p className="text-gray-500 font-medium">All caught up!</p>
@@ -186,7 +186,46 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick,
           </div>
         ) : (
           <>
-            {/* Overdue Tasks */}
+            {/* Role Change Requests (Admin Only) - FIRST */}
+            {profile.role === 'admin' && roleRequests.length > 0 && (
+              <div className="bg-blue-50 border-b border-blue-100">
+                <div className="px-4 py-2 flex items-center gap-2 bg-blue-100">
+                  <Shield size={16} className="text-blue-600" />
+                  <h4 className="font-semibold text-blue-900 text-sm">
+                    Role Change Requests ({roleRequests.length})
+                  </h4>
+                </div>
+                <div className="divide-y divide-blue-100">
+                  {roleRequests.map((request) => (
+                    <div
+                      key={request.id}
+                      onClick={() => {
+                        onClose();
+                        window.dispatchEvent(new CustomEvent('navigate-to-users'));
+                      }}
+                      className="px-4 py-3 hover:bg-blue-100 cursor-pointer transition"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900">
+                            {request.profiles?.full_name || 'Unknown User'}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1 text-xs text-gray-600">
+                            <span>Viewer → Committee</span>
+                            <span>•</span>
+                            <span className="text-blue-700 font-medium">
+                              Requested {new Date(request.requested_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Overdue Tasks - SECOND */}
             {overdueTasks.length > 0 && (
               <div className="bg-red-50 border-b border-red-100">
                 <div className="px-4 py-2 flex items-center gap-2 bg-red-100">
@@ -240,7 +279,7 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick,
               </div>
             )}
 
-            {/* Due Today Tasks */}
+            {/* Due Today Tasks - THIRD */}
             {todayTasks.length > 0 && (
               <div className="bg-white border-b border-gray-100">
                 <div className="px-4 py-2 flex items-center gap-2 bg-white">
@@ -283,45 +322,6 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick,
                               </span>
                             </div>
                           )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Role Change Requests (Admin Only) */}
-            {profile.role === 'admin' && roleRequests.length > 0 && (
-              <div className="bg-blue-50 border-b border-blue-100">
-                <div className="px-4 py-2 flex items-center gap-2 bg-blue-100">
-                  <Shield size={16} className="text-blue-600" />
-                  <h4 className="font-semibold text-blue-900 text-sm">
-                    Role Change Requests ({roleRequests.length})
-                  </h4>
-                </div>
-                <div className="divide-y divide-blue-100">
-                  {roleRequests.map((request) => (
-                    <div
-                      key={request.id}
-                      onClick={() => {
-                        onClose();
-                        window.dispatchEvent(new CustomEvent('navigate-to-users'));
-                      }}
-                      className="px-4 py-3 hover:bg-blue-100 cursor-pointer transition"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900">
-                            {request.profiles?.full_name || 'Unknown User'}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1 text-xs text-gray-600">
-                            <span>Viewer → Committee</span>
-                            <span>•</span>
-                            <span className="text-blue-700 font-medium">
-                              Requested {new Date(request.requested_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                            </span>
-                          </div>
                         </div>
                       </div>
                     </div>
