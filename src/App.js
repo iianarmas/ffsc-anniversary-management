@@ -40,6 +40,15 @@ import { supabase } from './services/supabase';
 
 import './assets/fonts/fonts.css';
 
+// Register service worker for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => console.log('SW registered:', registration))
+      .catch(error => console.log('SW registration failed:', error));
+  });
+}
+
 function AppContent() {
   const { profile } = useAuth();
   const [people, setPeople] = useState([]);
@@ -75,6 +84,16 @@ function AppContent() {
     overdue: 0,
     dueToday: 0
   });
+
+  // Update status bar color based on current view
+  useEffect(() => {
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      // Use dark blue for most views, white for home
+      const color = currentView === 'home' ? '#ffffff' : '#001740';
+      metaThemeColor.setAttribute('content', color);
+    }
+  }, [currentView]);
 
 // Realtime subscriptions for people, registrations, and shirts
 useEffect(() => {
@@ -489,8 +508,20 @@ useEffect(() => {
 
   // Don't show full-screen loading on initial load, only on data updates
 
+  
+
+  // Update status bar color based on current view
+  useEffect(() => {
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      // Use dark blue for most views, white for home
+      const color = currentView === 'home' ? '#ffffff' : '#001740';
+      metaThemeColor.setAttribute('content', color);
+    }
+  }, [currentView]);
+
   return (
-    <div className="min-h-screen bg-white flex">
+    <div className="min-h-screen bg-white flex" style={{ background: 'white' }}>
       {/* Welcome Modal */}
       <WelcomeModal
         isOpen={showWelcome}
@@ -516,7 +547,7 @@ useEffect(() => {
           userProfile={profile}
         />
       )}
-      <div className={`flex-1 ${isMobile ? 'px-0 pt-0' : 'px-6 pt-16 ml-0 md:ml-16'} transition-all duration-300`}>
+      <div className={`flex-1 ${isMobile ? 'px-0 pt-0' : 'px-6 pt-16 ml-0 md:ml-16'} transition-all duration-300`} style={{ background: 'transparent' }}>
         <div className="w-full">
 
         {currentView === 'home' && (
@@ -672,6 +703,12 @@ useEffect(() => {
       <TaskAssignmentNotification />
 
       <style>{`
+        /* Remove any default gradients */
+        body, html, #root {
+          background: white !important;
+          background-image: none !important;
+        }
+        
         /* Hide scrollbar on mobile */
         @media (max-width: 767px) {
           * {
