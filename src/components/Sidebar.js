@@ -53,11 +53,6 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
                     }`}
                   >
                     <Icon size={18} />
-                    {item.badge > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                        {item.badge > 99 ? '99+' : item.badge}
-                      </span>
-                    )}
                   </button>
                   
                   {/* Modern Tooltip */}

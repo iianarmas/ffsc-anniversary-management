@@ -610,14 +610,14 @@ useEffect(() => {
           />
         )}
 
-        {/* Mobile Add Person Button - Floating Action Button */}
+        {/* Mobile Add Person Button - Top Right */}
         {isMobile && profile?.role !== 'viewer' && currentView !== 'home' && currentView !== 'profile' && (
           <button
             onClick={() => setIsAddPersonOpen(true)}
-            className="fixed bottom-20 right-6 z-40 w-14 h-14 bg-[#001740] hover:bg-[#0f2a71] text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 active:scale-95"
+            className="fixed top-4 right-4 z-40 p-2 hover:bg-gray-100 rounded-lg transition-all duration-300 active:scale-95"
             aria-label="Add person"
           >
-            <Plus size={24} />
+            <Plus size={20} className="text-gray-400" />
           </button>
         )}
 
