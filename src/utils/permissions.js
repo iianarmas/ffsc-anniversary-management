@@ -1,20 +1,20 @@
 export const ROLES = {
   ADMIN: 'admin',
-  VOLUNTEER: 'volunteer',
+  COMMITTEE: 'committee',
   VIEWER: 'viewer'
 };
 
 export const PERMISSIONS = {
   // Data viewing
-  VIEW_DASHBOARD: [ROLES.ADMIN, ROLES.VOLUNTEER, ROLES.VIEWER],
-  VIEW_ALL_PEOPLE: [ROLES.ADMIN, ROLES.VOLUNTEER, ROLES.VIEWER],
-  VIEW_ALL_TASKS: [ROLES.ADMIN, ROLES.VOLUNTEER], // Viewer CANNOT see tasks
-  VIEW_HOME: [ROLES.ADMIN, ROLES.VOLUNTEER, ROLES.VIEWER],
+  VIEW_DASHBOARD: [ROLES.ADMIN, ROLES.COMMITTEE, ROLES.VIEWER],
+  VIEW_ALL_PEOPLE: [ROLES.ADMIN, ROLES.COMMITTEE, ROLES.VIEWER],
+  VIEW_ALL_TASKS: [ROLES.ADMIN, ROLES.COMMITTEE], // Viewer CANNOT see tasks
+  VIEW_HOME: [ROLES.ADMIN, ROLES.COMMITTEE, ROLES.VIEWER],
   
   // Data modification
-  REGISTER_PEOPLE: [ROLES.ADMIN, ROLES.VOLUNTEER],
-  MANAGE_SHIRTS: [ROLES.ADMIN, ROLES.VOLUNTEER],
-  CREATE_TASKS: [ROLES.ADMIN, ROLES.VOLUNTEER],
+  REGISTER_PEOPLE: [ROLES.ADMIN, ROLES.COMMITTEE],
+  MANAGE_SHIRTS: [ROLES.ADMIN, ROLES.COMMITTEE],
+  CREATE_TASKS: [ROLES.ADMIN, ROLES.COMMITTEE],
   EDIT_ANY_TASK: [ROLES.ADMIN],
   DELETE_TASKS: [ROLES.ADMIN],
   
@@ -35,8 +35,8 @@ export const canEditTask = (task, user) => {
   if (!user) return false;
   // Admin can edit any task
   if (user.role === ROLES.ADMIN) return true;
-  // Volunteer can only edit their own tasks
-  if (user.role === ROLES.VOLUNTEER && task.assigned_to_user === user.id) return true;
+  // Committee can only edit their own tasks
+  if (user.role === ROLES.COMMITTEE && task.assigned_to_user === user.id) return true;
   return false;
 };
 
@@ -48,9 +48,9 @@ export const canDeleteTask = (user) => {
 // Check if user can view tasks
 export const canViewTask = (user) => {
   if (!user) return false;
-  // Admin and Volunteer can view all tasks
+  // Admin and Committee can view all tasks
   // Viewer CANNOT view tasks
-  return user.role === ROLES.ADMIN || user.role === ROLES.VOLUNTEER;
+  return user.role === ROLES.ADMIN || user.role === ROLES.COMMITTEE;
 };
 
 // Check if user can manage users
@@ -61,20 +61,20 @@ export const canManageUsers = (user) => {
 // Check if user can register people
 export const canRegisterPeople = (user) => {
   if (!user) return false;
-  return user.role === ROLES.ADMIN || user.role === ROLES.VOLUNTEER;
+  return user.role === ROLES.ADMIN || user.role === ROLES.COMMITTEE;
 };
 
 // Check if user can manage shirts
 export const canManageShirts = (user) => {
   if (!user) return false;
-  return user.role === ROLES.ADMIN || user.role === ROLES.VOLUNTEER;
+  return user.role === ROLES.ADMIN || user.role === ROLES.COMMITTEE;
 };
 
 // Get role display name
 export const getRoleDisplayName = (role) => {
   const names = {
     [ROLES.ADMIN]: 'Administrator',
-    [ROLES.VOLUNTEER]: 'Volunteer',
+    [ROLES.COMMITTEE]: 'Committee',
     [ROLES.VIEWER]: 'Viewer'
   };
   return names[role] || role;
@@ -84,7 +84,7 @@ export const getRoleDisplayName = (role) => {
 export const getRoleColor = (role) => {
   const colors = {
     [ROLES.ADMIN]: 'red',
-    [ROLES.VOLUNTEER]: 'blue',
+    [ROLES.COMMITTEE]: 'blue',
     [ROLES.VIEWER]: 'gray'
   };
   return colors[role] || 'gray';
