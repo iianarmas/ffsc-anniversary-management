@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { UserPlus, UserMinus, Printer, RotateCcw, Lock } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 
@@ -16,6 +17,17 @@ export default function ActionButtons({
   readOnly = false
 }) {
   const { profile } = useAuth();
+  const [showPrintTooltip, setShowPrintTooltip] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+
+  const handleMouseEnter = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltipPosition({
+      top: rect.top - 8,
+      left: rect.left + rect.width / 2
+    });
+    setShowPrintTooltip(true);
+  };
 
   // Debug logging
   console.log('ActionButtons - selectedPeople:', selectedPeople, 'length:', selectedPeople.length);
@@ -114,18 +126,30 @@ export default function ActionButtons({
             Print
           </button>
         ) : (
-          <div className="group relative">
+          <>
             <button
               disabled
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={() => setShowPrintTooltip(false)}
               className="flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-500 rounded-lg font-medium transition text-sm cursor-not-allowed"
             >
               <Lock size={16} />
               Print
             </button>
-            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none">
-              Contact admin for print access
-            </span>
-          </div>
+            {showPrintTooltip && createPortal(
+              <div
+                className="fixed px-3 py-2 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap pointer-events-none z-[9999]"
+                style={{
+                  top: `${tooltipPosition.top}px`,
+                  left: `${tooltipPosition.left}px`,
+                  transform: 'translate(-50%, -100%)'
+                }}
+              >
+                Contact admin for print access
+              </div>,
+              document.body
+            )}
+          </>
         )}
       </div>
     </div>

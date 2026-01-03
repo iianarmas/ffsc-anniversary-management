@@ -296,7 +296,7 @@ export default function PeopleTable({
                     />
                   </td>
                   <td className="px-4 py-3 text-left border-r">
-                    <div className="font-medium text-gray-900 flex items-center gap-2">
+                    <div className="font-medium text-gray-900 flex items-center justify-between gap-2">
                       <button
                         onClick={() => onOpenPerson(person)}
                         className="text-left text-sm text-[#001740] hover:text-blue-700 transition font-medium focus:outline-none"
@@ -315,7 +315,7 @@ export default function PeopleTable({
                             return (
                               <div className="p-1 rounded transition group relative">
                                 <Lock size={14} className="text-gray-400" />
-                                <span className="fixed px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-[100]" style={{ bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '4px' }}>
+                                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
                                   Contact admin to view notes/tasks
                                 </span>
                               </div>
@@ -341,7 +341,7 @@ export default function PeopleTable({
                               aria-label="View tasks"
                             >
                               <CheckSquare size={14} className={`${priorityColor} hover:opacity-80 transition`} />
-                              <span className="fixed px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-[100]" style={{ bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '4px' }}>
+                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
                                 {taskInfo.incompleteTasksCount} incomplete task{taskInfo.incompleteTasksCount > 1 ? 's' : ''} ({taskInfo.highestPriority} priority)
                                 {taskInfo.notesCount > 0 && `, ${taskInfo.notesCount} note${taskInfo.notesCount > 1 ? 's' : ''}`}
                               </span>
@@ -361,7 +361,7 @@ export default function PeopleTable({
                               aria-label="View completed tasks"
                             >
                               <CheckCircle size={14} className="text-gray-400 hover:text-gray-600 transition" />
-                              <span className="fixed px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-[100]" style={{ bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '4px' }}>
+                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
                                 {taskInfo.completedTasksCount} completed task{taskInfo.completedTasksCount > 1 ? 's' : ''}
                                 {taskInfo.notesCount > 0 && `, ${taskInfo.notesCount} note${taskInfo.notesCount > 1 ? 's' : ''}`}
                               </span>
@@ -381,7 +381,7 @@ export default function PeopleTable({
                               aria-label="View notes"
                             >
                               <StickyNote size={14} className="text-gray-400 hover:text-[#0f2a71] transition" />
-                              <span className="fixed px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-[100]" style={{ bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '4px' }}>
+                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
                                 {taskInfo.notesCount} note{taskInfo.notesCount > 1 ? 's' : ''}
                               </span>
                             </button>

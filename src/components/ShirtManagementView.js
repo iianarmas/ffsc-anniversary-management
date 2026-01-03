@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from './auth/AuthProvider';
 import { canManageShirts } from '../utils/permissions';
-import { ChevronUp, Search, Filter, DollarSign, Package, Clock, Users, StickyNote, CheckSquare, CheckCircle } from 'lucide-react';
+import { ChevronUp, Search, Filter, DollarSign, Package, Clock, Users, StickyNote, CheckSquare, CheckCircle, Lock } from 'lucide-react';
 import Header from './Header';
 import StatsBar from './StatsBar';
 import ShirtActionButtons from './ShirtActionButtons';
@@ -534,7 +534,7 @@ export default function ShirtManagementView({
                     currentItems.map((person, index) => (
                       <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''}`}>
                         <td className="px-4 py-3 text-left">
-                          <div className="font-medium text-gray-900 flex items-center gap-2">
+                          <div className="font-medium text-gray-900 flex items-center justify-between gap-2">
                             <button
                               onClick={() => handleOpenPerson(person)}
                               className="text-left text-sm text-[#001740] hover:text-blue-700 transition font-medium focus:outline-none"
@@ -545,6 +545,22 @@ export default function ShirtManagementView({
                             {/* Notes/Task Indicators */}
                             {(() => {
                               const taskInfo = peopleTaskInfo[person.id];
+                              
+                              // Check if user is viewer
+                              if (profile?.role === 'viewer') {
+                                // Show locked indicator for viewers if there are notes/tasks
+                                if (taskInfo?.incompleteTasksCount > 0 || taskInfo?.hasOnlyCompletedTasks || taskInfo?.hasNotes) {
+                                  return (
+                                    <div className="p-1 rounded transition group relative">
+                                      <Lock size={14} className="text-gray-400" />
+                                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
+                                        Contact admin to view notes/tasks
+                                      </span>
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              }
                               
                               // Show task indicator if person has incomplete tasks
                               if (taskInfo?.incompleteTasksCount > 0) {

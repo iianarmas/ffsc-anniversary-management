@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Plus, Edit2, Trash2, Save, XCircle, AlertTriangle, CalendarDays, Hash, Circle, RotateCw, User } from 'lucide-react';
+import { X, Plus, Edit2, Trash2, Save, XCircle, AlertTriangle, CalendarDays, Hash, Circle, RotateCw, User, Lock } from 'lucide-react';
 import { fetchNotesForPerson, createNote, updateNote, deleteNote, deletePerson, getUsersForTaskAssignment } from '../services/api';
 import { useAuth } from './auth/AuthProvider';
 import shirtMale from '../assets/images/shirt-male.png';
@@ -372,6 +372,25 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
             <div className="pt-4 border-t border-gray-100">
               <h4 className="text-sm font-semibold text-gray-900 mb-3">Notes & Actions</h4>
               
+              {/* Check if viewer - show restricted message */}
+              {profile?.role === 'viewer' ? (
+                <div className="text-center py-12 px-4">
+                  <div className="mb-4">
+                    <Lock size={48} className="mx-auto text-gray-300" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Access Restricted</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    You don't have permission to view or manage notes and tasks. This feature is only available to Committee members and Administrators.
+                  </p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-left">
+                    <p className="text-xs text-blue-900 font-medium mb-1">Need access?</p>
+                    <p className="text-xs text-blue-800">
+                      Contact your administrator to request Committee or Admin permissions.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
               {/* Add Note/Task Input */}
               <div className="mb-4">
                 <textarea
@@ -599,6 +618,8 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
                   ))
                 )}
               </div>
+              </>
+            )}
             </div>
 
           </div>
