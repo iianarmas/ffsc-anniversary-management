@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, CheckSquare, AlertTriangle } from 'lucide-react';
 import { fetchOverdueTasks, fetchTasksDueToday, toggleTaskComplete } from '../services/api';
 import { useAuth } from './auth/AuthProvider';
 
-export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick }) {
+export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick, buttonRef }) {
   const { profile } = useAuth();
   const [overdueTasks, setOverdueTasks] = useState([]);
   const [todayTasks, setTodayTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
 
   useEffect(() => {
     if (isOpen && profile?.id) {
@@ -30,6 +32,27 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (isOpen && buttonRef?.current) {
+      const updatePosition = () => {
+        const rect = buttonRef.current.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + 8, // 8px gap below button
+          right: window.innerWidth - rect.right // Align right edge with button
+        });
+      };
+      
+      updatePosition();
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+      
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
+  }, [isOpen, buttonRef]);
 
   const loadTasks = async () => {
     if (!profile?.id) return;
@@ -99,11 +122,15 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
 
   const totalCount = overdueTasks.length + todayTasks.length;
 
-  return (
+  return createPortal(
     <div
       ref={dropdownRef}
-      className="absolute top-full right-0 mt-2 w-96 max-h-96 bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden z-50"
-      style={{ maxHeight: '32rem' }}
+      className="fixed w-96 max-h-96 bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden z-[9999]"
+      style={{ 
+        maxHeight: '32rem',
+        top: `${dropdownPosition.top}px`,
+        right: `${dropdownPosition.right}px`
+      }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
@@ -262,6 +289,7 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick 
           </button>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }

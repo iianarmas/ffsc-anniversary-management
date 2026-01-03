@@ -509,12 +509,24 @@ export default function MobileShirtManagementView({
                             className="flex-shrink-0 p-1.5 hover:bg-blue-50 rounded transition active:scale-95"
                             aria-label="View notes"
                           >
-                            <StickyNote size={16} className="text-gray-400" />
+                            <StickyNote size={16} className="text-blue-600" fill="currentColor" />
                           </button>
                         );
                       }
                       
-                      return null;
+                      // ALWAYS show a button to add notes/tasks even if none exist yet
+                      return (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setNotesDialogPerson(person);
+                          }}
+                          className="flex-shrink-0 p-1.5 hover:bg-blue-50 rounded transition active:scale-95"
+                          aria-label="Add note or task"
+                        >
+                          <StickyNote size={16} className="text-gray-300 hover:text-gray-500" />
+                        </button>
+                      );
                     })()}
                   </div>
                   

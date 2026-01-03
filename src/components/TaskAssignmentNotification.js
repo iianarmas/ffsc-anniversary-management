@@ -118,12 +118,36 @@ export default function TaskAssignmentNotification() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  const getPriorityColor = (priority) => {
+  const getPriorityStyles = (priority) => {
     switch (priority) {
-      case 'High': return 'border-l-red-500 bg-red-50';
-      case 'Medium': return 'border-l-yellow-500 bg-yellow-50';
-      case 'Low': return 'border-l-green-500 bg-green-50';
-      default: return 'border-l-blue-500 bg-blue-50';
+      case 'High': 
+        return {
+          bg: 'bg-red-600',
+          text: 'text-white',
+          border: 'border-red-200',
+          accent: 'bg-red-50'
+        };
+      case 'Medium': 
+        return {
+          bg: 'bg-orange-500',
+          text: 'text-white',
+          border: 'border-orange-200',
+          accent: 'bg-orange-50'
+        };
+      case 'Low': 
+        return {
+          bg: 'bg-green-600',
+          text: 'text-white',
+          border: 'border-green-200',
+          accent: 'bg-green-50'
+        };
+      default: 
+        return {
+          bg: 'bg-gray-500',
+          text: 'text-white',
+          border: 'border-gray-200',
+          accent: 'bg-gray-50'
+        };
     }
   };
 
@@ -149,77 +173,88 @@ export default function TaskAssignmentNotification() {
 
   return (
     <div className="fixed top-20 right-4 z-50 space-y-3 max-w-sm w-full">
-      {notifications.map((notification, index) => (
-        <div
-          key={notification.id}
-          className={`border-l-4 rounded-lg shadow-lg p-4 bg-white ${getPriorityColor(notification.priority)} animate-slide-in-right`}
-          style={{ animationDelay: `${index * 0.1}s` }}
-        >
-          <div className="flex items-start gap-3">
-            {/* Icon */}
-            <div className="flex-shrink-0 p-2 bg-blue-100 rounded-lg">
-              <Bell size={20} className="text-blue-600" />
-            </div>
+      {notifications.map((notification, index) => {
+        const priorityStyles = getPriorityStyles(notification.priority);
+        
+        return (
+          <div
+            key={notification.id}
+            className="bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden animate-slide-in-right"
+            style={{ animationDelay: `${index * 0.1}s` }}
+          >
+            {/* Color accent top bar */}
+            <div className={`h-1 ${priorityStyles.bg}`} />
+            
+            <div className="p-4">
+              <div className="flex items-start gap-3">
+                {/* Icon with accent color */}
+                <div className={`flex-shrink-0 p-2.5 rounded-lg ${priorityStyles.accent}`}>
+                  <Bell size={22} className={notification.priority === 'High' ? 'text-red-600' : notification.priority === 'Medium' ? 'text-orange-600' : 'text-green-600'} />
+                </div>
 
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <h4 className="text-sm font-bold text-gray-900">New Task Assigned</h4>
-                <button
-                  onClick={() => removeNotification(notification.id)}
-                  className="flex-shrink-0 p-1 hover:bg-gray-200 rounded transition"
-                  aria-label="Dismiss"
-                >
-                  <X size={16} className="text-gray-500" />
-                </button>
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <h4 className="text-sm font-bold text-gray-900">New Task Assigned</h4>
+                    <button
+                      onClick={() => removeNotification(notification.id)}
+                      className="flex-shrink-0 p-1 hover:bg-gray-100 rounded-lg transition"
+                      aria-label="Dismiss"
+                    >
+                      <X size={16} className="text-gray-400" />
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-gray-600 mb-2 font-medium">
+                    {notification.personName}
+                  </p>
+
+                  <p className="text-sm text-gray-800 mb-3 line-clamp-2 leading-snug">
+                    {notification.taskText}
+                  </p>
+
+                  {/* Metadata badges */}
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {/* Priority badge - using task management styling */}
+                    {notification.priority && (
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full ${priorityStyles.bg} ${priorityStyles.text}`}>
+                        <span className="h-2 w-2 bg-white rounded-full inline-block"></span>
+                        {notification.priority}
+                      </span>
+                    )}
+                    
+                    {/* Category badge - dark gray with white text */}
+                    {notification.category && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-700 text-white">
+                        {notification.category}
+                      </span>
+                    )}
+                    
+                    {/* Due date */}
+                    {notification.dueDate && (
+                      <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium text-gray-600">
+                        {formatDueDate(notification.dueDate)}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* View Task Button */}
+                  <button
+                    onClick={() => {
+                      window.dispatchEvent(new Event('navigate-to-tasks'));
+                      removeNotification(notification.id);
+                    }}
+                    className="w-full py-2.5 bg-[#0f2a71] text-white text-xs font-semibold rounded-lg hover:bg-[#1c3b8d] transition flex items-center justify-center gap-1.5 shadow-sm"
+                  >
+                    <CheckSquare size={14} />
+                    View in Tasks
+                  </button>
+                </div>
               </div>
-
-              <p className="text-xs text-gray-600 mb-1">
-                <span className="font-semibold">{notification.personName}</span>
-              </p>
-
-              <p className="text-sm text-gray-800 mb-2 line-clamp-2">
-                {notification.taskText}
-              </p>
-
-              {/* Metadata */}
-              <div className="flex flex-wrap gap-2 text-xs">
-                {notification.priority && (
-                  <span className={`px-2 py-0.5 rounded-full font-semibold ${
-                    notification.priority === 'High' ? 'bg-red-100 text-red-800' :
-                    notification.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {notification.priority}
-                  </span>
-                )}
-                {notification.category && (
-                  <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-semibold">
-                    {notification.category}
-                  </span>
-                )}
-                {notification.dueDate && (
-                  <span className="text-gray-600">
-                    {formatDueDate(notification.dueDate)}
-                  </span>
-                )}
-              </div>
-
-              {/* View Task Button */}
-              <button
-                onClick={() => {
-                  window.dispatchEvent(new Event('navigate-to-tasks'));
-                  removeNotification(notification.id);
-                }}
-                className="mt-3 w-full py-2 bg-[#0f2a71] text-white text-xs font-semibold rounded-lg hover:bg-blue-800 transition flex items-center justify-center gap-1"
-              >
-                <CheckSquare size={14} />
-                View in Tasks
-              </button>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       <style>{`
         @keyframes slide-in-right {
@@ -233,7 +268,7 @@ export default function TaskAssignmentNotification() {
           }
         }
         .animate-slide-in-right {
-          animation: slide-in-right 0.4s ease-out;
+          animation: slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .line-clamp-2 {
           display: -webkit-box;

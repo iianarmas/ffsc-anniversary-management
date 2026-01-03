@@ -3,6 +3,8 @@ import { X, StickyNote, Trash2, Edit2, Plus, Square, CalendarDays, Hash, AlertCi
 import { fetchNotesForPerson, createNote, updateNote, deleteNote, toggleTaskComplete, getUsersForTaskAssignment } from '../services/api';
 import { useAuth } from './auth/AuthProvider';
 import ConfirmDialog from './ConfirmDialog';
+import SuccessDialog from './SuccessDialog';
+import ErrorDialog from './ErrorDialog';
 
 export default function NotesDialog({ person, isOpen, onClose }) {
   const [notes, setNotes] = useState([]);
@@ -25,6 +27,8 @@ export default function NotesDialog({ person, isOpen, onClose }) {
   // Editing task states
   const [editingTaskData, setEditingTaskData] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, noteId: null, isTask: false });
+  const [successDialog, setSuccessDialog] = useState({ isOpen: false, title: '', message: '' });
+  const [errorDialog, setErrorDialog] = useState({ isOpen: false, title: '', message: '' });
 
   useEffect(() => {
     if (isOpen && person) {
@@ -85,8 +89,23 @@ export default function NotesDialog({ person, isOpen, onClose }) {
       
       // Notify other components that a task was created
       window.dispatchEvent(new Event('taskUpdated'));
+      
+      // Show success dialog
+      setSuccessDialog({
+        isOpen: true,
+        title: isTask ? 'Task Created!' : 'Note Added!',
+        message: isTask 
+          ? `Task has been successfully created and assigned to ${availableUsers.find(u => u.id === taskAssignedToUser)?.full_name || 'the team member'}.`
+          : 'Your note has been successfully saved.'
+      });
     } catch (error) {
       console.error('Failed to add note:', error);
+      // Show error dialog
+      setErrorDialog({
+        isOpen: true,
+        title: isTask ? 'Failed to Create Task' : 'Failed to Add Note',
+        message: 'There was an error saving your note. Please try again.'
+      });
     }
     setLoading(false);
   };
@@ -648,6 +667,22 @@ export default function NotesDialog({ person, isOpen, onClose }) {
         message={`Are you sure you want to delete this ${deleteConfirm.isTask ? 'task' : 'note'}? This action cannot be undone.`}
         confirmText={deleteConfirm.isTask ? "Delete Task" : "Delete Note"}
         type="danger"
+      />
+
+      {/* Success Dialog */}
+      <SuccessDialog
+        isOpen={successDialog.isOpen}
+        onClose={() => setSuccessDialog({ isOpen: false, title: '', message: '' })}
+        title={successDialog.title}
+        message={successDialog.message}
+      />
+
+      {/* Error Dialog */}
+      <ErrorDialog
+        isOpen={errorDialog.isOpen}
+        onClose={() => setErrorDialog({ isOpen: false, title: '', message: '' })}
+        title={errorDialog.title}
+        message={errorDialog.message}
       />
 
       <style>{`

@@ -553,7 +553,7 @@ export default function ShirtManagementView({
                 <tbody>
                   {currentItems.length > 0 ? (
                     currentItems.map((person, index) => (
-                      <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''} border-t-0`}>
+                      <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''} border-t-0 group`}>
                         <td className="px-4 border-l border-r py-3 text-left">
                           <div className="font-medium text-gray-900 flex items-center justify-between gap-2">
                             <button
@@ -639,7 +639,7 @@ export default function ShirtManagementView({
                                     className="p-1 hover:bg-blue-50 rounded transition group relative"
                                     aria-label="View notes"
                                   >
-                                    <StickyNote size={14} className="text-gray-400 hover:text-[#0f2a71] transition" />
+                                    <StickyNote size={14} className="text-blue-600 hover:text-blue-700 transition" fill="currentColor" />
                                     <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
                                       {taskInfo.notesCount} note{taskInfo.notesCount > 1 ? 's' : ''}
                                     </span>
@@ -647,7 +647,23 @@ export default function ShirtManagementView({
                                 );
                               }
                               
-                              return null;
+                              // ALWAYS show a button to add notes/tasks (visible on row hover)
+                              return (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenNotes(person);
+                                  }}
+                                  className="p-1 hover:bg-blue-50 rounded transition opacity-0 group-hover:opacity-100 relative"
+                                  style={{ transition: 'opacity 0.2s' }}
+                                  aria-label="Add note or task"
+                                >
+                                  <StickyNote size={14} className="text-gray-300 hover:text-[#0f2a71] transition" />
+                                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
+                                    Add note or task
+                                  </span>
+                                </button>
+                              );
                             })()}
                           </div>
                         </td>

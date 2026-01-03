@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, Bell, LogOut, UserCircle } from 'lucide-react';
 import Avatar from './Avatar';
 import TaskNotificationDropdown from './TaskNotificationDropdown';
@@ -17,6 +18,9 @@ export default function Header({
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const bellButtonRef = useRef(null);
+  const profileButtonRef = useRef(null);
+  const [profileMenuPosition, setProfileMenuPosition] = useState({ top: 0, right: 0 });
 
   useEffect(() => {
     // Only load if profile is available
@@ -47,12 +51,34 @@ export default function Header({
   // Close profile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (showProfileMenu && !e.target.closest('.profile-menu-container')) {
+      if (showProfileMenu && profileButtonRef.current && !profileButtonRef.current.contains(e.target) && !e.target.closest('.profile-dropdown-portal')) {
         setShowProfileMenu(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showProfileMenu]);
+
+  // Update profile menu position
+  useEffect(() => {
+    if (showProfileMenu && profileButtonRef.current) {
+      const updatePosition = () => {
+        const rect = profileButtonRef.current.getBoundingClientRect();
+        setProfileMenuPosition({
+          top: rect.bottom + 8,
+          right: window.innerWidth - rect.right
+        });
+      };
+      
+      updatePosition();
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+      
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
   }, [showProfileMenu]);
 
   const loadNotificationCount = async () => {
@@ -139,6 +165,7 @@ export default function Header({
             {/* Bell Icon with Notification Badge */}
             <div className="relative">
               <button
+                ref={bellButtonRef}
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition relative"
                 aria-label="Task notifications"
@@ -155,12 +182,14 @@ export default function Header({
                 isOpen={showNotifications}
                 onClose={() => setShowNotifications(false)}
                 onTaskClick={handleTaskClick}
+                buttonRef={bellButtonRef}
               />
             </div>
 
             {/* User Profile Section */}
-            <div className="relative profile-menu-container">
+            <div className="relative">
               <button
+                ref={profileButtonRef}
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center gap-3 hover:bg-gray-100 rounded-lg px-3 py-2 transition"
               >
@@ -179,9 +208,15 @@ export default function Header({
                 />
               </button>
 
-              {/* Profile Dropdown Menu */}
-              {showProfileMenu && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+              {/* Profile Dropdown Menu - Using Portal */}
+              {showProfileMenu && createPortal(
+                <div 
+                  className="profile-dropdown-portal fixed w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[9999]"
+                  style={{
+                    top: `${profileMenuPosition.top}px`,
+                    right: `${profileMenuPosition.right}px`
+                  }}
+                >
                   {/* User Info Section */}
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="text-sm font-semibold text-gray-900">
@@ -219,7 +254,8 @@ export default function Header({
                       Sign Out
                     </button>
                   </div>
-                </div>
+                </div>,
+                document.body
               )}
             </div>
           </div>

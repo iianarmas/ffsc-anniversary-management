@@ -4,6 +4,8 @@ import { fetchNotesForPerson, createNote, updateNote, deleteNote, deletePerson, 
 import { useAuth } from './auth/AuthProvider';
 import shirtMale from '../assets/images/shirt-male.png';
 import shirtFemale from '../assets/images/shirt-female.png';
+import SuccessDialog from './SuccessDialog';
+import ErrorDialog from './ErrorDialog';
 
 export default function AccountSidebar({ person, open, onClose, onNotesUpdate }) {
   const [notes, setNotes] = useState([]);
@@ -12,6 +14,8 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
   const [editingNoteText, setEditingNoteText] = useState('');
   const [isLoadingNotes, setIsLoadingNotes] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [successDialog, setSuccessDialog] = useState({ isOpen: false, title: '', message: '' });
+  const [errorDialog, setErrorDialog] = useState({ isOpen: false, title: '', message: '' });
   
   // Task-related states
   const [isTask, setIsTask] = useState(false);
@@ -103,8 +107,23 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
       if (onNotesUpdate) {
         onNotesUpdate();
       }
+      
+      // Show success dialog
+      setSuccessDialog({
+        isOpen: true,
+        title: isTask ? 'Task Created!' : 'Note Added!',
+        message: isTask 
+          ? `Task has been successfully created and assigned to ${availableUsers.find(u => u.id === assignedToUser)?.full_name || 'the team member'}.`
+          : 'Your note has been successfully saved.'
+      });
     } catch (error) {
-      alert('Failed to add note');
+      console.error('Failed to add note:', error);
+      // Show error dialog
+      setErrorDialog({
+        isOpen: true,
+        title: isTask ? 'Failed to Create Task' : 'Failed to Add Note',
+        message: 'There was an error saving your note. Please try again.'
+      });
     }
   };
 
@@ -743,6 +762,21 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
           </div>
         </div>
       )}
+    {/* Success Dialog */}
+      <SuccessDialog
+        isOpen={successDialog.isOpen}
+        onClose={() => setSuccessDialog({ isOpen: false, title: '', message: '' })}
+        title={successDialog.title}
+        message={successDialog.message}
+      />
+
+      {/* Error Dialog */}
+      <ErrorDialog
+        isOpen={errorDialog.isOpen}
+        onClose={() => setErrorDialog({ isOpen: false, title: '', message: '' })}
+        title={errorDialog.title}
+        message={errorDialog.message}
+      />
     </>
   );
 }
