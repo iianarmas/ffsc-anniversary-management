@@ -35,13 +35,8 @@ export default function MobileTasksView({ onTaskUpdate }) {
   // Load available users for assignment filter
   useEffect(() => {
     const loadUsers = async () => {
-      try {
-        const users = await getUsersForTaskAssignment();
-        console.log('Loaded users:', users); // Debug log
-        setAvailableUsers(users);
-      } catch (error) {
-        console.error('Error loading users:', error);
-      }
+      const users = await getUsersForTaskAssignment();
+      setAvailableUsers(users);
     };
     loadUsers();
   }, []);
@@ -70,31 +65,8 @@ export default function MobileTasksView({ onTaskUpdate }) {
 
   const filteredAndSortedTasks = React.useMemo(() => {
     let filtered = tasks.filter(task => {
-      // Filter by assigned user
-      const matchesAssignedTo = filterAssignedTo === 'All' || 
-        (filterAssignedTo === 'me' && task.assigned_to_user === profile?.id) ||
-        task.assigned_to_user === filterAssignedTo;
-      
-      // Debug logging
-      if (filterCreatedBy !== 'All') {
-        console.log('Filter CreatedBy:', filterCreatedBy);
-        console.log('Task created_by_user:', task.created_by_user);
-        console.log('Task created_by:', task.created_by);
-        console.log('Profile ID:', profile?.id);
-      }
-      
-      const matchesCreatedBy = filterCreatedBy === 'All' || 
-        (filterCreatedBy === 'me' && task.created_by_user === profile?.id) ||
-        (filterCreatedBy === 'unknown' && task.created_by_user === null) ||
-        (filterCreatedBy !== 'me' && filterCreatedBy !== 'All' && filterCreatedBy !== 'unknown' && (
-          task.created_by_user === filterCreatedBy || 
-          // Fallback to name matching for old tasks without created_by_user
-          (task.created_by_user === null && 
-           availableUsers.find(u => u.id === filterCreatedBy)?.full_name === task.created_by)
-        ));
-      
       const matchesSearch = searchTerm === '' || 
-        `${task.people.first_name} ${task.people.last_name} ${task.note_text}`.toLowerCase().includes(searchTerm.toLowerCase());
+        `${task.person_first_name} ${task.person_last_name} ${task.note_text}`.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = filterStatus === 'All' || 
         (filterStatus === 'Incomplete' && task.status === 'incomplete') ||
@@ -103,6 +75,13 @@ export default function MobileTasksView({ onTaskUpdate }) {
       
       const matchesPriority = filterPriority === 'All' || task.priority === filterPriority;
       const matchesCategory = filterCategory === 'All' || task.category === filterCategory;
+      const matchesAssignedTo = filterAssignedTo === 'All' || 
+        (filterAssignedTo === 'me' && task.assigned_to_user === profile?.id) ||
+        task.assigned_to_user === filterAssignedTo;
+      
+      const matchesCreatedBy = filterCreatedBy === 'All' || 
+        (filterCreatedBy === 'me' && task.created_by_user === profile?.id) ||
+        task.created_by_user === filterCreatedBy;
       
       let matchesDueDate = true;
       if (filterDueDate !== 'All') {
@@ -124,7 +103,7 @@ export default function MobileTasksView({ onTaskUpdate }) {
         }
       }
       
-      return matchesAssignedTo && matchesCreatedBy && matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesDueDate;
+      return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesDueDate && matchesAssignedTo && matchesCreatedBy;
     });
 
     // Sort: Overdue first, then by due date
@@ -139,7 +118,7 @@ export default function MobileTasksView({ onTaskUpdate }) {
     });
 
     return filtered;
-  }, [tasks, searchTerm, filterStatus, filterPriority, filterCategory, filterDueDate, filterAssignedTo, profile?.id]);
+  }, [tasks, searchTerm, filterStatus, filterPriority, filterCategory, filterDueDate, filterAssignedTo, filterCreatedBy, availableUsers, profile?.id]);
 
   const stats = React.useMemo(() => {
     // Calculate stats based on FILTERED tasks (user-specific)
@@ -464,7 +443,6 @@ export default function MobileTasksView({ onTaskUpdate }) {
                   >
                     <option value="All">All Users</option>
                     <option value="me">Created by Me</option>
-                    <option value="unknown">Unknown/Legacy</option>
                     {availableUsers
                       .filter(user => user.id !== profile?.id)
                       .map(user => (
