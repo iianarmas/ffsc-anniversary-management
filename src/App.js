@@ -70,6 +70,7 @@ function AppContent() {
   const [shirtFilterPayment, setShirtFilterPayment] = useState('All');
   const [shirtFilterDistribution, setShirtFilterDistribution] = useState('All');
   const [shirtFilterPrint, setShirtFilterPrint] = useState('All');
+  const [shirtFilterAttendance, setShirtFilterAttendance] = useState('All');
   const [shirtFilterSize, setShirtFilterSize] = useState('All');
   const [currentView, setCurrentView] = useState('home'); // Always start with 'home' initially
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -409,10 +410,8 @@ useEffect(() => {
       const matchesLocation = filterLocation === 'All' || person.location === filterLocation;
       const matchesStatus = filterStatus === 'All' || 
         (filterStatus === 'Registered' ? person.registered : !person.registered);
-      
       // Attendance status filter
-      const matchesAttendance = filterAttendance === 'All' ||
-        (filterAttendance === 'Attending' ? person.attendanceStatus === 'attending' : person.attendanceStatus === 'shirt_only');
+      const matchesAttendance = filterAttendance === 'All' || person.attendanceStatus === filterAttendance;
       
       return matchesSearch && matchesAge && matchesLocation && matchesStatus && matchesAttendance;
     });
@@ -425,7 +424,7 @@ useEffect(() => {
     });
 
     return filtered;
-  }, [people, searchTerm, filterAge, filterLocation, filterStatus]);
+  }, [people, searchTerm, filterAge, filterLocation, filterStatus, filterAttendance]);
 
   const filteredAndSortedShirts = useMemo(() => {
     let filtered = people.filter(person => {
@@ -445,8 +444,9 @@ useEffect(() => {
             : person.shirtSize === shirtFilterSize;
       const matchesPrint = shirtFilterPrint === 'All' || 
         (shirtFilterPrint === 'With Print' ? person.hasPrint : !person.hasPrint);
+      const matchesAttendance = shirtFilterAttendance === 'All' || person.attendanceStatus === shirtFilterAttendance;
             
-            return matchesSearch && matchesAge && matchesLocation && matchesPayment && matchesDistribution && matchesSize && matchesPrint;
+            return matchesSearch && matchesAge && matchesLocation && matchesPayment && matchesDistribution && matchesSize && matchesPrint && matchesAttendance;
           });
 
     // Always sort alphabetically by first name
@@ -457,49 +457,42 @@ useEffect(() => {
     });
 
     return filtered;
-  }, [people, shirtSearchTerm, shirtFilterAge, shirtFilterLocation, shirtFilterPayment, shirtFilterDistribution, shirtFilterSize, shirtFilterPrint]);
+  }, [people, shirtSearchTerm, shirtFilterAge, shirtFilterLocation, shirtFilterPayment, shirtFilterDistribution, shirtFilterSize, shirtFilterPrint, shirtFilterAttendance]);
   
   const stats = useMemo(() => {
-    // Separate attending people from shirt-only orders
+    // Filter people attending the event (not shirt-only)
     const attendingPeople = people.filter(p => p.attendanceStatus === 'attending');
     const shirtOnlyPeople = people.filter(p => p.attendanceStatus === 'shirt_only');
     
-    // Event attendance counts (only 'attending' people)
+    // Registered attendees (checked in, attending event)
     const registeredAll = attendingPeople.filter(p => p.registered);
     const registeredCounted = registeredAll.filter(p => p.ageBracket !== 'Toddler'); // Exclude toddlers from capacity count
     const toddlersCount = registeredAll.filter(p => p.ageBracket === 'Toddler').length;
     
     const registered = registeredAll.length;
-    const registeredCapacity = registeredCounted.length; // Count toward venue capacity (excludes toddlers)
+    const registeredCapacity = registeredCounted.length; // Count toward venue capacity
     const preRegistered = attendingPeople.filter(p => !p.registered).length;
     
-    // Shirt counts (includes BOTH attending and shirt-only)
+    // Shirt counts (includes both attending AND shirt-only)
     const paid = people.filter(p => p.paid).length;
     const unpaid = people.filter(p => !p.paid).length;
     const shirtsGiven = people.filter(p => p.shirtGiven).length;
     const shirtsPending = people.filter(p => !p.shirtGiven).length;
-    
-    // Additional stats
     const maxCapacity = 230;
-    const totalShirtOrders = people.length; // All people (attending + shirt-only)
-    const shirtOnlyCount = shirtOnlyPeople.length;
     
     return { 
-      // Event attendance stats
       registered, 
       registeredCapacity, 
       toddlersCount,
       maxCapacity,
-      preRegistered,
-      attendingTotal: attendingPeople.length, // Total people attending (registered + pre-registered)
-      
-      // Shirt order stats
-      total: totalShirtOrders, // Total shirt orders
+      preRegistered, 
+      total: people.length,
+      attendingCount: attendingPeople.length,
+      shirtOnlyCount: shirtOnlyPeople.length,
       paid, 
       unpaid, 
       shirtsGiven, 
-      shirtsPending,
-      shirtOnlyCount // People ordering shirts but not attending
+      shirtsPending 
     };
   }, [people]);
 
@@ -519,6 +512,7 @@ useEffect(() => {
     setShirtFilterDistribution('All');
     setShirtFilterSize('All');
     setShirtFilterPrint('All');
+    setShirtFilterAttendance('All');
   };
 
   const handleSelectPerson = (id) => {
@@ -744,6 +738,8 @@ useEffect(() => {
               setShirtFilterDistribution={setShirtFilterDistribution}
               shirtFilterSize={shirtFilterSize}
               setShirtFilterSize={setShirtFilterSize}
+              shirtFilterAttendance={shirtFilterAttendance}
+              setShirtFilterAttendance={setShirtFilterAttendance}
               shirtFilterPrint={shirtFilterPrint}
               setShirtFilterPrint={setShirtFilterPrint}
               onResetFilters={handleResetShirtFilters}
@@ -769,6 +765,8 @@ useEffect(() => {
               setShirtFilterDistribution={setShirtFilterDistribution}
               shirtFilterSize={shirtFilterSize}
               setShirtFilterSize={setShirtFilterSize}
+              shirtFilterAttendance={shirtFilterAttendance}
+              setShirtFilterAttendance={setShirtFilterAttendance}
               shirtFilterPrint={shirtFilterPrint}
               setShirtFilterPrint={setShirtFilterPrint}
               onResetFilters={handleResetShirtFilters}

@@ -28,22 +28,22 @@ export const fetchAllPeople = async () => {
 
     // Transform the data to match our app structure
     const transformed = data.map(person => ({
-    id: person.id,
-    firstName: person.first_name,
-    lastName: person.last_name,
-    age: person.age,
-    gender: person.gender,
-    ageBracket: getAgeBracket(person.age),
-    location: person.location === 'GUEST' ? 'Guest' : person.location,
-    contactNumber: person.contact_number,
-    attendanceStatus: person.attendance_status || 'attending',
-    registered: person.registrations?.[0]?.registered || false,
-    registeredAt: person.registrations?.[0]?.registered_at || null,
-    shirtSize: person.shirts?.[0]?.shirt_size || '',
-    paid: person.shirts?.[0]?.paid || false,
-    shirtGiven: person.shirts?.[0]?.shirt_given || false,
-    hasPrint: person.shirts?.[0]?.has_print ?? true,
-  }));
+      id: person.id,
+      firstName: person.first_name,
+      lastName: person.last_name,
+      age: person.age,
+      gender: person.gender,
+      ageBracket: getAgeBracket(person.age),
+      location: person.location === 'GUEST' ? 'Guest' : person.location,
+      contactNumber: person.contact_number,
+      attendanceStatus: person.attendance_status || 'attending',
+      registered: person.registrations?.[0]?.registered || false,
+      registeredAt: person.registrations?.[0]?.registered_at || null,
+      shirtSize: person.shirts?.[0]?.shirt_size || '',
+      paid: person.shirts?.[0]?.paid || false,
+      shirtGiven: person.shirts?.[0]?.shirt_given || false,
+      hasPrint: person.shirts?.[0]?.has_print ?? true,
+    }));
 
     return transformed;
   } catch (error) {
@@ -810,6 +810,22 @@ export async function deletePerson(personId) {
   if (error) {
     console.error('Error deleting person:', error);
     throw error;
+  }
+}
+
+// Update attendance status
+export async function updateAttendanceStatus(personId, status) {
+  try {
+    const { error } = await supabase
+      .from('people')
+      .update({ attendance_status: status })
+      .eq('id', personId);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating attendance status:', error);
+    return { success: false, error };
   }
 }
 

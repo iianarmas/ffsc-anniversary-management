@@ -193,7 +193,8 @@ useEffect(() => {
             {filterAge !== 'All' && ` | Age: ${filterAge}`}
             {filterLocation !== 'All' && ` | Location: ${filterLocation}`}
             {filterStatus !== 'All' && ` | Status: ${filterStatus === 'Registered' ? 'Checked In' : 'Pending'}`}
-            {!searchTerm && filterAge === 'All' && filterLocation === 'All' && filterStatus === 'All' && ' None'}
+            {filterAttendance !== 'All' && ` | Attendance: ${filterAttendance === 'attending' ? 'Attending Event' : 'Shirt Only'}`}
+            {!searchTerm && filterAge === 'All' && filterLocation === 'All' && filterStatus === 'All' && filterAttendance === 'All' && ' None'}
           </div>
           
           <p className="mb-6 text-sm">
@@ -294,7 +295,7 @@ useEffect(() => {
                   handleBulkRemove={canRegister ? handleBulkRemove : null}
                   handlePrint={handlePrint}
                   handleDeselectAll={() => selectedPeople.forEach(id => handleSelectPerson(id))}
-                  hasActiveFilters={filterAge !== 'All' || filterLocation !== 'All' || filterStatus !== 'All' || searchTerm.trim() !== ''}
+                  hasActiveFilters={filterAge !== 'All' || filterLocation !== 'All' || filterStatus !== 'All' || filterAttendance !== 'All' || searchTerm.trim() !== ''}
                   onResetFilters={onResetFilters}
                   stats={[
                     { Icon: Users, label: 'Total', value: people.length },

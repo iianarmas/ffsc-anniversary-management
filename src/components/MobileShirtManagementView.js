@@ -22,6 +22,8 @@ export default function MobileShirtManagementView({
   setShirtFilterDistribution,
   shirtFilterSize,
   setShirtFilterSize,
+  shirtFilterAttendance,
+  setShirtFilterAttendance,
   onResetFilters,
   shirtFilterPrint,
   setShirtFilterPrint,
@@ -39,7 +41,8 @@ export default function MobileShirtManagementView({
     shirtFilterPayment,
     shirtFilterDistribution,
     shirtFilterSize,
-    shirtFilterPrint
+    shirtFilterPrint,
+    shirtFilterAttendance
   ].filter(f => f !== 'All').length;
 
   const shirtSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12', 'TS', 'XS', 'S', 'M', 'L', 'XL', '2XL', 'None yet'];
@@ -262,6 +265,18 @@ export default function MobileShirtManagementView({
                   <option value="All">All Print Status</option>
                   <option value="With Print">With Print</option>
                   <option value="No Print">Plain (No Print)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Attendance</label>
+                <select
+                  value={shirtFilterAttendance}
+                  onChange={(e) => setShirtFilterAttendance(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                >
+                  <option value="All">All</option>
+                  <option value="attending">Attending Event</option>
+                  <option value="shirt_only">Shirt Only</option>
                 </select>
               </div>
 
@@ -530,11 +545,21 @@ export default function MobileShirtManagementView({
                     })()}
                   </div>
                   
-                  {/* Age and Shirt Size */}
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-sm text-gray-600">{person.age} years old</span>
+                  {/* Age, Age Bracket, Location, Attendance, and Shirt Size */}
+                  <div className="flex items-center gap-1.5 mt-1.5 text-sm text-gray-600 flex-wrap">
+                    <span>{person.age} years old</span>
                     <span className="text-gray-300">•</span>
-                    <span className="text-sm font-semibold text-[#001740]">
+                    <span>{person.ageBracket}</span>
+                    <span className="text-gray-300">•</span>
+                    <span>{person.location}</span>
+                    {person.attendanceStatus === 'shirt_only' && (
+                      <>
+                        <span className="text-gray-300">•</span>
+                        <span className="text-purple-700 font-medium">Shirt Only</span>
+                      </>
+                    )}
+                    <span className="text-gray-300">•</span>
+                    <span className="font-semibold text-[#001740]">
                       {person.shirtSize || 'No size set'}
                     </span>
                   </div>

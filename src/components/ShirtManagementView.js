@@ -30,6 +30,8 @@ export default function ShirtManagementView({
   setShirtFilterDistribution,
   shirtFilterSize,
   setShirtFilterSize,
+  shirtFilterAttendance,
+  setShirtFilterAttendance,
   onResetFilters,
   shirtFilterPrint,
   setShirtFilterPrint
@@ -337,7 +339,8 @@ export default function ShirtManagementView({
             {shirtFilterPrint !== 'All' && ` | Print: ${shirtFilterPrint}`}
             {shirtFilterPayment !== 'All' && ` | Payment: ${shirtFilterPayment}`}
             {shirtFilterDistribution !== 'All' && ` | Distribution: ${shirtFilterDistribution}`}
-            {!shirtSearchTerm && shirtFilterAge === 'All' && shirtFilterLocation === 'All' && shirtFilterSize === 'All' && shirtFilterPrint === 'All' && shirtFilterPayment === 'All' && shirtFilterDistribution === 'All' && ' None'}
+            {shirtFilterAttendance !== 'All' && ` | Attendance: ${shirtFilterAttendance === 'attending' ? 'Attending Event' : 'Shirt Only'}`}
+            {!shirtSearchTerm && shirtFilterAge === 'All' && shirtFilterLocation === 'All' && shirtFilterSize === 'All' && shirtFilterPrint === 'All' && shirtFilterPayment === 'All' && shirtFilterDistribution === 'All' && shirtFilterAttendance === 'All' && ' None'}
           </div>
           
           <p className="mb-6 text-sm">Total: {people.length} {people.length === 1 ? 'person' : 'people'}</p>
@@ -422,7 +425,8 @@ export default function ShirtManagementView({
                   shirtFilterPayment !== 'All' || 
                   shirtFilterDistribution !== 'All' || 
                   shirtFilterSize !== 'All' ||
-                  shirtFilterPrint !== 'All'
+                  shirtFilterPrint !== 'All' ||
+                  shirtFilterAttendance !== 'All'
                 }
                 onResetFilters={onResetFilters}
                 stats={[
@@ -553,12 +557,27 @@ export default function ShirtManagementView({
                         />
                       </div>
                     </th>
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
+                      <div className="flex items-center justify-between">
+                        <span>Attendance</span>
+                        <FilterDropdown 
+                          column="attendance"
+                          options={[
+                            { value: 'All', label: 'All' },
+                            { value: 'attending', label: 'Attending Event' },
+                            { value: 'shirt_only', label: 'Shirt Only' }
+                          ]}
+                          value={shirtFilterAttendance}
+                          onChange={setShirtFilterAttendance}
+                        />
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentItems.length > 0 ? (
                     currentItems.map((person, index) => (
-                      <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''} border-t-0 group`}>
+                      <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''} border-t-0`}>
                         <td className="px-4 border-l border-r py-3 text-left">
                           <div className="font-medium text-gray-900 flex items-center justify-between gap-2">
                             <button
@@ -652,15 +671,14 @@ export default function ShirtManagementView({
                                 );
                               }
                               
-                              // ALWAYS show a button to add notes/tasks (visible on row hover)
+                              // ALWAYS show a button to add notes/tasks (visible on icon hover only)
                               return (
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleOpenNotes(person);
                                   }}
-                                  className="p-1 hover:bg-blue-50 rounded transition opacity-0 group-hover:opacity-100 relative"
-                                  style={{ transition: 'opacity 0.2s' }}
+                                  className="p-1 hover:bg-blue-50 rounded transition group relative"
                                   aria-label="Add note or task"
                                 >
                                   <StickyNote size={14} className="text-gray-300 hover:text-[#0f2a71] transition" />
@@ -743,11 +761,16 @@ export default function ShirtManagementView({
                             {person.shirtGiven ? 'Given' : 'Pending'}
                           </button>
                         </td>
+                        <td className="px-4 py-3 border-r text-center">
+                          <div className="text-sm text-gray-700">
+                            {person.attendanceStatus === 'shirt_only' ? 'Shirt Only' : 'Attending'}
+                          </div>
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={8} className="text-center py-12 text-gray-500">
+                      <td colSpan={9} className="text-center py-12 text-gray-500">
                         No people found matching your search criteria
                       </td>
                     </tr>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, Plus, Edit2, Trash2, Save, XCircle, AlertTriangle, CalendarDays, Hash, Circle, RotateCw, User, Lock } from 'lucide-react';
-import { fetchNotesForPerson, createNote, updateNote, deleteNote, deletePerson, getUsersForTaskAssignment, supabase } from '../services/api';
+import { fetchNotesForPerson, createNote, updateNote, deleteNote, deletePerson, getUsersForTaskAssignment, supabase, updateAttendanceStatus } from '../services/api';
 import { useAuth } from './auth/AuthProvider';
 import shirtMale from '../assets/images/shirt-male.png';
 import shirtFemale from '../assets/images/shirt-female.png';
@@ -8,6 +8,14 @@ import SuccessDialog from './SuccessDialog';
 import ErrorDialog from './ErrorDialog';
 
 export default function AccountSidebar({ person, open, onClose, onNotesUpdate }) {
+  const [localAttendanceStatus, setLocalAttendanceStatus] = useState(person?.attendanceStatus || 'attending');
+  
+  // Update local state when person prop changes
+  useEffect(() => {
+    if (person?.attendanceStatus) {
+      setLocalAttendanceStatus(person.attendanceStatus);
+    }
+  }, [person?.attendanceStatus]);
   const [notes, setNotes] = useState([]);
   const [newNoteText, setNewNoteText] = useState('');
   const [editingNoteId, setEditingNoteId] = useState(null);
@@ -418,6 +426,65 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
                   <div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Location</div>
                     <div className="text-sm text-gray-900 font-medium">{person?.location || '—'}</div>
+                  </div>
+
+                  <div className="col-span-2">
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Attendance Status</div>
+                    <div className="space-y-2">
+                      <label className={`flex items-center gap-3 p-3 border-2 rounded-lg transition ${
+                        localAttendanceStatus === 'attending'
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      } ${(profile?.role === 'viewer' || profile?.role === 'encoder') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                        <input
+                          type="radio"
+                          name="attendanceStatus"
+                          value="attending"
+                          checked={localAttendanceStatus === 'attending'}
+                          onChange={async (e) => {
+                            if (profile?.role === 'viewer' || profile?.role === 'encoder') return;
+                            setLocalAttendanceStatus('attending');
+                            const result = await updateAttendanceStatus(person.id, 'attending');
+                            if (result.success) {
+                              window.dispatchEvent(new Event('registrationUpdated'));
+                            }
+                          }}
+                          disabled={profile?.role === 'viewer' || profile?.role === 'encoder'}
+                          className="w-4 h-4 accent-green-600 cursor-pointer disabled:cursor-not-allowed"
+                        />
+                        <div className="flex-1">
+                          <div className="text-sm font-semibold text-gray-900">Attending Event</div>
+                          <div className="text-xs text-gray-500">Will be present at the event</div>
+                        </div>
+                      </label>
+                      
+                      <label className={`flex items-center gap-3 p-3 border-2 rounded-lg transition ${
+                        localAttendanceStatus === 'shirt_only'
+                          ? 'border-purple-500 bg-purple-50'
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      } ${(profile?.role === 'viewer' || profile?.role === 'encoder') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                        <input
+                          type="radio"
+                          name="attendanceStatus"
+                          value="shirt_only"
+                          checked={localAttendanceStatus === 'shirt_only'}
+                          onChange={async (e) => {
+                            if (profile?.role === 'viewer' || profile?.role === 'encoder') return;
+                            setLocalAttendanceStatus('shirt_only');
+                            const result = await updateAttendanceStatus(person.id, 'shirt_only');
+                            if (result.success) {
+                              window.dispatchEvent(new Event('registrationUpdated'));
+                            }
+                          }}
+                          disabled={profile?.role === 'viewer' || profile?.role === 'encoder'}
+                          className="w-4 h-4 accent-purple-600 cursor-pointer disabled:cursor-not-allowed"
+                        />
+                        <div className="flex-1">
+                          <div className="text-sm font-semibold text-gray-900">Shirt Order Only</div>
+                          <div className="text-xs text-gray-500">Not attending the event</div>
+                        </div>
+                      </label>
+                    </div>
                   </div>
 
                   <div>

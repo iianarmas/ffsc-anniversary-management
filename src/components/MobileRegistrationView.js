@@ -50,19 +50,6 @@ export default function MobileRegistrationView({
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [notesDialogPerson, setNotesDialogPerson] = useState(null);
 
-  const ageColors = {
-    Toddler: 'bg-pink-100 text-pink-800',
-    Kid: 'bg-blue-100 text-blue-800',
-    Youth: 'bg-purple-100 text-purple-800',
-    Adult: 'bg-green-100 text-green-800'
-  };
-
-  const locationColors = {
-    Main: 'bg-orange-100 text-orange-800',
-    Cobol: 'bg-teal-100 text-teal-800',
-    Malacañang: 'bg-pink-100 text-pink-800',
-    Guest: 'bg-gray-100 text-gray-800'
-  };
 
   const activeFiltersCount = [filterAge, filterLocation, filterStatus, filterAttendance].filter(f => f !== 'All').length;
 
@@ -440,9 +427,19 @@ export default function MobileRegistrationView({
                     })()}
                   </div>
                     
-                    {/* Age */}
-                    <p className="text-sm text-gray-600 mt-1">
-                      {person.age} years old
+                    {/* Age, Location, and Attendance */}
+                    <p className="text-sm text-gray-600 mt-1 flex items-center gap-1.5 flex-wrap">
+                      <span>{person.age} years old</span>
+                      <span className="text-gray-400">•</span>
+                      <span>{person.ageBracket}</span>
+                      <span className="text-gray-400">•</span>
+                      <span>{person.location}</span>
+                      {person.attendanceStatus === 'shirt_only' && (
+                        <>
+                          <span className="text-gray-400">•</span>
+                          <span className="text-purple-700 font-medium">Shirt Only</span>
+                        </>
+                      )}
                     </p>
                     
                     {/* Check-in timestamp */}
@@ -455,16 +452,6 @@ export default function MobileRegistrationView({
                     
                     {/* Badges */}
                     <div className="flex flex-wrap gap-1.5 mt-2.5">
-                      {/* Age Bracket Badge */}
-                      <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full ${ageColors[person.ageBracket]}`}>
-                        {person.ageBracket}
-                      </span>
-                      
-                      {/* Location Badge */}
-                      <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full ${locationColors[person.location]}`}>
-                        {person.location}
-                      </span>
-                      
                       {/* Status Badge */}
                       {person.registered ? (
                         <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-green-700 text-white">
@@ -475,9 +462,9 @@ export default function MobileRegistrationView({
                           Pending
                         </span>
                       )}
-                      {/* Attendance Badge */}
+                      {/* Attendance Status - Only show if shirt only */}
                       {person.attendanceStatus === 'shirt_only' && (
-                        <span className="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">
+                        <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">
                           Shirt Only
                         </span>
                       )}
