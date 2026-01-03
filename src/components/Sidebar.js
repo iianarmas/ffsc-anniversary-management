@@ -3,6 +3,7 @@ import { Users, Shirt, Menu, X, BarChart3, ChevronRight, Plus, CheckSquare, Shie
 
 export default function Sidebar({ currentView, setCurrentView, onAddPersonClick, taskStats, userProfile }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState(null);
 
   const menuItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -36,26 +37,42 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
             const isActive = currentView === item.id;
             return (
               <React.Fragment key={item.id}>
-                <button
-                  onClick={() => {
-                    setCurrentView(item.id);
-                    sessionStorage.setItem('currentView', item.id);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  title={item.label}
-                  className={`w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 relative ${
-                    isActive
-                      ? 'bg-[#e2e8f8] text-[#0f204e]'
-                      : 'text-gray-500 hover:bg-[#e2e8f8]'
-                  }`}
-                >
-                  <Icon size={18} />
-                  {item.badge > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                      {item.badge > 99 ? '99+' : item.badge}
-                    </span>
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      setCurrentView(item.id);
+                      sessionStorage.setItem('currentView', item.id);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    onMouseEnter={() => setHoveredItem(item.id)}
+                    onMouseLeave={() => setHoveredItem(null)}
+                    className={`w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 relative ${
+                      isActive
+                        ? 'bg-[#e2e8f8] text-[#0f204e]'
+                        : 'text-gray-500 hover:bg-[#e2e8f8]'
+                    }`}
+                  >
+                    <Icon size={18} />
+                    {item.badge > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                        {item.badge > 99 ? '99+' : item.badge}
+                      </span>
+                    )}
+                  </button>
+                  
+                  {/* Modern Tooltip */}
+                  {hoveredItem === item.id && (
+                    <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 z-50 pointer-events-none">
+                      <div className="bg-[#001740] text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap shadow-lg animate-slide-in">
+                        {item.label}
+                        {/* Tooltip arrow */}
+                        <div className="absolute right-full top-1/2 transform -translate-y-1/2">
+                          <div className="w-0 h-0 border-t-4 border-t-transparent border-r-4 border-r-[#001740] border-b-4 border-b-transparent"></div>
+                        </div>
+                      </div>
+                    </div>
                   )}
-                </button>
+                </div>
                 {item.showDividerAfter && (
                   <div className="border-b border-dashed border-gray-300 mx-2 my-2" />
                 )}
@@ -66,16 +83,31 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
 
         {/* Add Person Button */}
         <div className="absolute bottom-4 w-full px-2">
-          <button
-            onClick={() => {
-              onAddPersonClick();
-              // Don't change view when adding person
-            }}
-            title="Add Person"
-            className="w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 text-gray-500 hover:bg-[#e2e8f8]"
-          >
-            <Plus size={18} />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => {
+                onAddPersonClick();
+              }}
+              onMouseEnter={() => setHoveredItem('add-person')}
+              onMouseLeave={() => setHoveredItem(null)}
+              className="w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 text-gray-500 hover:bg-[#e2e8f8]"
+            >
+              <Plus size={18} />
+            </button>
+            
+            {/* Modern Tooltip */}
+            {hoveredItem === 'add-person' && (
+              <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 z-50 pointer-events-none">
+                <div className="bg-[#001740] text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap shadow-lg animate-slide-in">
+                  Add Person
+                  {/* Tooltip arrow */}
+                  <div className="absolute right-full top-1/2 transform -translate-y-1/2">
+                    <div className="w-0 h-0 border-t-4 border-t-transparent border-r-4 border-r-[#001740] border-b-4 border-b-transparent"></div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -86,6 +118,22 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
           className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
         />
       )}
+
+      <style>{`
+        @keyframes slide-in {
+          from {
+            opacity: 0;
+            transform: translateX(-8px) translateY(-50%);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0) translateY(-50%);
+          }
+        }
+        .animate-slide-in {
+          animation: slide-in 0.2s ease-out;
+        }
+      `}</style>
     </>
   );
 }

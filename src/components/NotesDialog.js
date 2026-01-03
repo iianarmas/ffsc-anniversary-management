@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, StickyNote, Trash2, Edit2, Plus, Square, CalendarDays, Hash, AlertCircle, RotateCw, Clock, User } from 'lucide-react';
 import { fetchNotesForPerson, createNote, updateNote, deleteNote, toggleTaskComplete, getUsersForTaskAssignment } from '../services/api';
 import { useAuth } from './auth/AuthProvider';
+import ConfirmDialog from './ConfirmDialog';
 
 export default function NotesDialog({ person, isOpen, onClose }) {
   const [notes, setNotes] = useState([]);
@@ -23,6 +24,7 @@ export default function NotesDialog({ person, isOpen, onClose }) {
   
   // Editing task states
   const [editingTaskData, setEditingTaskData] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, noteId: null, isTask: false });
 
   useEffect(() => {
     if (isOpen && person) {
@@ -105,11 +107,10 @@ export default function NotesDialog({ person, isOpen, onClose }) {
     setLoading(false);
   };
 
-  const handleDeleteNote = async (noteId) => {
-    if (!window.confirm('Are you sure you want to delete this note?')) return;
+  const handleDeleteNote = async () => {
     setLoading(true);
     try {
-      await deleteNote(noteId);
+      await deleteNote(deleteConfirm.noteId);
       await loadNotes();
       
       // Notify other components that a task was updated/deleted
@@ -458,7 +459,11 @@ export default function NotesDialog({ person, isOpen, onClose }) {
                             <Edit2 size={14} className="text-gray-500" />
                           </button>
                           <button
-                            onClick={() => handleDeleteNote(note.id)}
+                            onClick={() => setDeleteConfirm({ 
+                              isOpen: true, 
+                              noteId: note.id, 
+                              isTask: note.is_task 
+                            })}
                             className="p-1.5 hover:bg-white rounded transition"
                             aria-label="Delete note"
                           >
@@ -638,6 +643,17 @@ export default function NotesDialog({ person, isOpen, onClose }) {
           </div>
         </div>
       </div>
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, noteId: null, isTask: false })}
+        onConfirm={handleDeleteNote}
+        title={deleteConfirm.isTask ? "Delete Task?" : "Delete Note?"}
+        message={`Are you sure you want to delete this ${deleteConfirm.isTask ? 'task' : 'note'}? This action cannot be undone.`}
+        confirmText={deleteConfirm.isTask ? "Delete Task" : "Delete Note"}
+        type="danger"
+      />
 
       <style>{`
         @keyframes scale-in {

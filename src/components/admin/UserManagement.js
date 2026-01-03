@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Search, Shield, Eye, ChevronDown, Key, Plus, X, AlertTriangle, Trash2 } from 'lucide-react';
 import Header from '../Header';
+import ConfirmDialog from '../ConfirmDialog';
 import { 
   getAllUsers, 
   updateUserRole, 
@@ -25,6 +26,8 @@ export default function UserManagement() {
   const [showNewCodeForm, setShowNewCodeForm] = useState(false);
   const [newCode, setNewCode] = useState('');
   const [newCodeDescription, setNewCodeDescription] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, userId: null, userName: '' });
+  const [deleteCodeConfirm, setDeleteCodeConfirm] = useState({ isOpen: false, codeId: null, code: '' });
 
   useEffect(() => {
     loadData();
@@ -76,24 +79,19 @@ export default function UserManagement() {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (!window.confirm('Are you sure you want to delete this user? They will be permanently suspended and cannot log in anymore.')) return;
-    
-    const result = await deleteUser(userId);
+  const handleDeleteUser = async () => {
+    const result = await deleteUser(deleteConfirm.userId);
     if (result.success) {
-      // Remove from local state immediately
-      setUsers(prev => prev.filter(u => u.id !== userId));
+      setUsers(prev => prev.filter(u => u.id !== deleteConfirm.userId));
     } else {
       alert(`Failed to delete user: ${result.error || 'Unknown error'}`);
     }
   };
 
-  const handleDeleteCode = async (codeId) => {
-    if (!window.confirm('Are you sure you want to delete this registration code?')) return;
-    
-    const result = await deleteRegistrationCode(codeId);
+  const handleDeleteCode = async () => {
+    const result = await deleteRegistrationCode(deleteCodeConfirm.codeId);
     if (result.success) {
-      setCodes(prev => prev.filter(c => c.id !== codeId));
+      setCodes(prev => prev.filter(c => c.id !== deleteCodeConfirm.codeId));
     }
   };
 
@@ -314,7 +312,11 @@ export default function UserManagement() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
-                          onClick={() => handleDeleteUser(user.id)}
+                          onClick={() => setDeleteConfirm({ 
+                            isOpen: true, 
+                            userId: user.id, 
+                            userName: user.full_name || user.email 
+                          })}
                           disabled={user.id === profile.id}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition disabled:cursor-not-allowed disabled:opacity-50 group relative"
                           title="Delete user"
@@ -454,7 +456,11 @@ export default function UserManagement() {
                       {code.is_active ? 'Deactivate' : 'Activate'}
                     </button>
                     <button
-                      onClick={() => handleDeleteCode(code.id)}
+                      onClick={() => setDeleteCodeConfirm({ 
+                        isOpen: true, 
+                        codeId: code.id, 
+                        code: code.code 
+                      })}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
                       title="Delete code"
                     >
@@ -477,6 +483,26 @@ export default function UserManagement() {
       )}
         </div>
       </div>
+      {/* Confirm Dialogs */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, userId: null, userName: '' })}
+        onConfirm={handleDeleteUser}
+        title="Delete User?"
+        message={`Are you sure you want to delete ${deleteConfirm.userName}? They will be permanently suspended and cannot log in anymore.`}
+        confirmText="Delete User"
+        type="danger"
+      />
+
+      <ConfirmDialog
+        isOpen={deleteCodeConfirm.isOpen}
+        onClose={() => setDeleteCodeConfirm({ isOpen: false, codeId: null, code: '' })}
+        onConfirm={handleDeleteCode}
+        title="Delete Registration Code?"
+        message={`Are you sure you want to delete the code "${deleteCodeConfirm.code}"?`}
+        confirmText="Delete Code"
+        type="danger"
+      />
     </>
   );
 }

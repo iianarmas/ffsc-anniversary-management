@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signUp, verifyRegistrationCode } from '../../services/supabase';
 import { UserPlus, Lock } from 'lucide-react';
+import SuccessDialog from '../SuccessDialog';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ export default function RegisterPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -62,9 +64,8 @@ export default function RegisterPage() {
       }
 
       if (data?.user) {
-        alert('Registration successful! Please check your email to confirm your account.');
         setLoading(false);
-        navigate('/login');
+        setShowSuccess(true);
       } else {
         setError('Registration failed. Please try again.');
         setLoading(false);
@@ -201,6 +202,17 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
+      {/* Success Dialog */}
+      <SuccessDialog
+        isOpen={showSuccess}
+        onClose={() => {
+          setShowSuccess(false);
+          navigate('/login');
+        }}
+        title="Account Created!"
+        message="Please check your email to confirm your account before signing in."
+        buttonText="Go to Sign In"
+      />
     </div>
   );
 }
