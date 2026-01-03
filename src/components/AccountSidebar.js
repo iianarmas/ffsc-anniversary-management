@@ -532,15 +532,15 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
                   <p className="text-sm text-gray-500 text-center py-4">No notes yet. Add one above!</p>
                 ) : (
                   notes.map(note => (
-                    <div key={note.id} className={`rounded-lg p-3 border ${
+                    <div key={note.id} className={`rounded-lg p-3 bg-white ${
                       note.is_task 
                         ? note.priority === 'High' 
-                          ? 'bg-red-50 border-l-4 border-l-red-500 border-red-200' 
+                          ? 'border-l-4 border-l-red-600' 
                           : note.priority === 'Medium'
-                            ? 'bg-yellow-50 border-l-4 border-l-yellow-500 border-yellow-200'
-                            : 'bg-green-50 border-l-4 border-l-green-500 border-green-200'
-                        : 'bg-gray-50 border-gray-200'
-                    }`}>
+                            ? 'border-l-4 border-l-orange-500'
+                            : 'border-l-4 border-l-green-600'
+                        : 'border-l-4 border-l-gray-400'
+                    } shadow-sm`}>
                       {editingNoteId === note.id ? (
                         // Edit Mode
                         <div className="space-y-2">

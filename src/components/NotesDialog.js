@@ -166,32 +166,23 @@ export default function NotesDialog({ person, isOpen, onClose }) {
     return due < today;
   };
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'High': return 'border-red-500 bg-red-50';
-      case 'Medium': return 'border-yellow-500 bg-yellow-50';
-      case 'Low': return 'border-green-500 bg-green-50';
-      default: return 'border-gray-300';
-    }
-  };
-
   const getPriorityBadgeColor = (priority) => {
     switch (priority) {
-      case 'High': return 'bg-red-100 text-red-800 border-red-300';
-      case 'Medium': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'Low': return 'bg-green-100 text-green-800 border-green-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'High': return 'bg-red-600 text-white';
+      case 'Medium': return 'bg-orange-500 text-white';
+      case 'Low': return 'bg-green-600 text-white';
+      default: return 'bg-gray-500 text-white';
     }
   };
 
   const getCategoryBadgeColor = (category) => {
     switch (category) {
-      case 'Follow-up': return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'Shirt Payment': return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'Shirt Distribution': return 'bg-indigo-100 text-indigo-800 border-indigo-300';
-      case 'Shirt Print Request': return 'bg-pink-100 text-pink-800 border-pink-300';
-      case 'General': return 'bg-gray-100 text-gray-800 border-gray-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'Follow-up': return 'bg-blue-100 text-blue-800';
+      case 'Shirt Payment': return 'bg-purple-100 text-purple-800';
+      case 'Shirt Distribution': return 'bg-indigo-100 text-indigo-800';
+      case 'Shirt Print Request': return 'bg-pink-100 text-pink-800';
+      case 'General': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -279,11 +270,15 @@ export default function NotesDialog({ person, isOpen, onClose }) {
               {notes.map((note) => (
                 <div 
                   key={note.id} 
-                  className={`rounded-lg p-4 border-l-4 transition group ${
+                  className={`rounded-lg p-4 border-l-4 transition group bg-white shadow-sm hover:shadow-md ${
                     note.is_task 
-                      ? `${getPriorityColor(note.priority)} ${isOverdue(note.due_date, note.status) ? 'bg-red-50' : ''} ${note.status === 'complete' ? 'bg-gray-100' : ''}`
-                      : 'bg-gray-50 border-l-gray-300 border-l-4'
-                  } border border-gray-200 hover:border-gray-300`}
+                      ? note.priority === 'High' 
+                        ? 'border-l-red-600' 
+                        : note.priority === 'Medium'
+                          ? 'border-l-orange-500'
+                          : 'border-l-green-600'
+                      : 'border-l-gray-400'
+                  } ${note.status === 'complete' ? 'opacity-60' : ''}`}
                 >
                   {editingNoteId === note.id ? (
                     <div className="space-y-3">
@@ -413,10 +408,10 @@ export default function NotesDialog({ person, isOpen, onClose }) {
                             <div className="flex flex-wrap gap-2 mt-2">
                               {/* Due date badge */}
                               {note.due_date && (
-                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium border ${
+                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
                                   isOverdue(note.due_date, note.status)
-                                    ? 'bg-red-100 text-red-800 border-red-300'
-                                    : 'bg-blue-100 text-blue-800 border-blue-300'
+                                    ? 'bg-red-100 text-red-800'
+                                    : 'bg-gray-100 text-gray-700'
                                 }`}>
                                   <CalendarDays size={12} />
                                   {formatDueDate(note.due_date)}
@@ -425,15 +420,15 @@ export default function NotesDialog({ person, isOpen, onClose }) {
                               
                               {/* Priority badge */}
                               {note.priority && (
-                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium border ${getPriorityBadgeColor(note.priority)}`}>
-                                  <AlertCircle size={12} />
+                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${getPriorityBadgeColor(note.priority)}`}>
+                                  <span className="h-2 w-2 bg-white rounded-full inline-block"></span>
                                   {note.priority}
                                 </span>
                               )}
                               
                               {/* Category badge */}
                               {note.category && (
-                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium border ${getCategoryBadgeColor(note.category)}`}>
+                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getCategoryBadgeColor(note.category)}`}>
                                   <Hash size={12} />
                                   {note.category}
                                 </span>
@@ -441,7 +436,7 @@ export default function NotesDialog({ person, isOpen, onClose }) {
                               
                               {/* Recurrence badge */}
                               {note.recurrence && note.recurrence !== 'none' && (
-                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium border bg-indigo-100 text-indigo-800 border-indigo-300">
+                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                   <RotateCw size={12} />
                                   Repeats {note.recurrence}
                                 </span>

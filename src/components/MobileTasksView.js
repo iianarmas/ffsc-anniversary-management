@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, X, ChevronUp, Calendar, Tag, AlertCircle, CheckCircle, Clock, CheckSquare, ChevronRight, Users } from 'lucide-react';
+import { Search, Filter, X, ChevronUp, Calendar, Hash, AlertCircle, CheckCircle, Clock, CheckSquare, ChevronRight, Users } from 'lucide-react';
 import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
 import { fetchAllTasks, toggleTaskComplete, getUsersForTaskAssignment } from '../services/api';
@@ -198,29 +198,20 @@ export default function MobileTasksView({ onTaskUpdate }) {
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'High': return 'bg-red-100 text-red-800 border-red-300';
-      case 'Medium': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'Low': return 'bg-green-100 text-green-800 border-green-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'High': return 'bg-red-600 text-white';
+      case 'Medium': return 'bg-orange-500 text-white';
+      case 'Low': return 'bg-green-600 text-white';
+      default: return 'bg-gray-500 text-white';
     }
   };
 
-  const getPriorityIcon = (priority) => {
-    switch (priority) {
-      case 'High': return '🔴';
-      case 'Medium': return '🟡';
-      case 'Low': return '🟢';
-      default: return '⚪';
-    }
-  };
-
-  const getCardBackgroundColor = (task) => {
-    if (task.status === 'complete') return 'bg-gray-50';
+  const getCardBorderColor = (task) => {
+    if (task.status === 'complete') return 'border-gray-400';
     const isOverdue = new Date(task.due_date) < new Date();
-    if (isOverdue) return 'bg-red-50';
+    if (isOverdue) return 'border-red-600';
     const isToday = formatDate(task.due_date) === 'Today';
-    if (isToday) return 'bg-yellow-50';
-    return 'bg-white';
+    if (isToday) return 'border-orange-500';
+    return 'border-blue-500';
   };
 
   return (
@@ -513,21 +504,12 @@ export default function MobileTasksView({ onTaskUpdate }) {
             </div>
           ) : (
             filteredAndSortedTasks.map((task) => {
-              const isOverdue = new Date(task.due_date) < new Date() && task.status === 'incomplete';
-              const isDueToday = formatDate(task.due_date) === 'Today';
-              
               return (
                 <div
                   key={task.id}
-                  className={`rounded-xl shadow-sm p-4 border-l-4 transition-all ${
-                    task.status === 'complete' 
-                      ? 'bg-gray-50 border-gray-400' 
-                      : isOverdue 
-                        ? 'bg-red-50 border-red-500' 
-                        : isDueToday 
-                          ? 'bg-yellow-50 border-yellow-500' 
-                          : 'bg-white border-blue-400'
-                  }`}
+                  className={`rounded-xl shadow-sm hover:shadow-md p-4 border-l-4 transition-all bg-white ${
+                    getCardBorderColor(task)
+                  } ${task.status === 'complete' ? 'opacity-60' : ''}`}
                   style={{ minHeight: '44px' }}
                 >
                 {/* Task Text */}
@@ -580,14 +562,14 @@ export default function MobileTasksView({ onTaskUpdate }) {
                   </div>
 
                   {/* Priority */}
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full border ${getPriorityColor(task.priority)}`}>
-                    <span>{getPriorityIcon(task.priority)}</span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(task.priority)}`}>
+                    <span className="h-2 w-2 bg-white rounded-full inline-block"></span>
                     {task.priority}
                   </span>
 
                   {/* Category */}
-                  <span className="inline-flex items-center gap-1 text-xs text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full">
-                    <Tag size={12} className="text-gray-400" />
+                  <span className="inline-flex items-center gap-1 text-xs text-gray-700 bg-gray-100 px-2 py-1 rounded-full">
+                    <Hash size={12} className="text-gray-500" />
                     {task.category}
                   </span>
                 </div>
@@ -595,10 +577,10 @@ export default function MobileTasksView({ onTaskUpdate }) {
                 {/* Status Toggle Button */}
                   <button
                     onClick={() => handleToggleComplete(task.id, task.status)}
-                    className={`w-full px-4 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full px-4 py-3.5 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
                       task.status === 'complete'
-                        ? 'bg-green-100 text-green-800 border-2 border-green-300 hover:bg-green-200'
-                        : 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300 hover:bg-yellow-200'
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-yellow-500 text-white hover:bg-yellow-600'
                     }`}
                     style={{ minHeight: '48px' }}
                   >
