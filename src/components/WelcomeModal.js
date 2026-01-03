@@ -20,7 +20,7 @@ export default function WelcomeModal({ isOpen, onClose, userName }) {
           </div>
 
           <h2 className="text-3xl font-bold text-gray-900 mb-3">
-            Welcome to FFSC Anniversary!
+            Welcome to FFSC Management App!
           </h2>
           
           <p className="text-xl text-gray-700 mb-4">
