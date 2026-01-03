@@ -1,15 +1,26 @@
 import React from 'react';
-import { Home, Users, ShoppingBag, CheckSquare, UserCircle } from 'lucide-react';
+import { Home, Users, ShoppingBag, CheckSquare, UserCircle, Shield } from 'lucide-react';
+import { useAuth } from './auth/AuthProvider';
 
 
-export default function MobileBottomNav({ currentView, setCurrentView, taskCount = 0 }) {
-  const navItems = [
+export default function MobileBottomNav({ currentView, setCurrentView, taskCount = 0, roleRequestCount = 0 }) {
+  const { profile } = useAuth();
+  const baseNavItems = [
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'registration', icon: Users, label: 'Registration' },
     { id: 'shirts', icon: ShoppingBag, label: 'Shirts' },
     { id: 'tasks', icon: CheckSquare, label: 'Tasks', badge: taskCount },
     { id: 'profile', icon: UserCircle, label: 'Profile' }
   ];
+
+  // Add Users tab for admin with badge
+  const navItems = profile?.role === 'admin' 
+    ? [
+        ...baseNavItems.slice(0, 4),
+        { id: 'users', icon: Shield, label: 'Users', badge: roleRequestCount },
+        baseNavItems[4]
+      ]
+    : baseNavItems;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-bottom z-30">

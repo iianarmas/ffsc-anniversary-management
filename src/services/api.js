@@ -746,7 +746,7 @@ export async function getAllPeopleTaskInfo() {
 }
 
 // Create new person with shirt and registration
-export const createPerson = async (personData) => {
+export const createPerson = async (personData, createdBy = null) => {
   try {
     // 1. Insert person
     const { data: person, error: personError } = await supabase
@@ -757,7 +757,8 @@ export const createPerson = async (personData) => {
         age: personData.age || null,
         gender: personData.gender || null,
         location: personData.location,
-        contact_number: personData.contactNumber || null
+        contact_number: personData.contactNumber || null,
+        created_by: createdBy
       })
       .select()
       .single();

@@ -21,6 +21,9 @@ import HomePage from './components/HomePage';
 import WelcomeModal from './components/WelcomeModal';
 import MobileBottomNav from './components/MobileBottomNav';
 import TaskAssignmentNotification from './components/TaskAssignmentNotification';
+import { Plus } from 'lucide-react';
+import RoleRequestDialog from './components/RoleRequestDialog';
+
 
 
 import { 
@@ -34,7 +37,8 @@ import {
   getAgeBracket,
   createPerson,
   getTaskStats,
-  getAllPeopleTaskInfo
+  getAllPeopleTaskInfo,
+  getPendingRoleRequests
 } from './services/api';
 import { supabase } from './services/supabase';
 
@@ -79,11 +83,14 @@ function AppContent() {
     byPriority: { High: 0, Medium: 0, Low: 0 }
   });
   const [peopleTaskInfo, setPeopleTaskInfo] = useState({});
+
   const [myTaskStats, setMyTaskStats] = useState({
     incomplete: 0,
     overdue: 0,
     dueToday: 0
   });
+  const [pendingRoleRequestCount, setPendingRoleRequestCount] = useState(0);
+  const [roleRequestResult, setRoleRequestResult] = useState({ show: false, status: '' });
 
   // Update status bar color based on current view
   useEffect(() => {
@@ -214,6 +221,32 @@ useEffect(() => {
 }, [profile?.id]);
 
 
+// Listen for realtime role request updates for current user
+useEffect(() => {
+  if (!profile?.id) return;
+  
+  const channel = supabase
+    .channel('user-role-request-updates')
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'role_change_requests',
+      filter: `user_id=eq.${profile.id}`
+    }, (payload) => {
+      if (payload.new.status !== 'pending') {
+        setRoleRequestResult({
+          show: true,
+          status: payload.new.status
+        });
+      }
+    })
+    .subscribe();
+  
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [profile?.id]);
+
 
 
 
@@ -240,14 +273,20 @@ useEffect(() => {
       setCurrentView('home');
     };
 
+    const handleNavigateToUsers = () => {
+      setCurrentView('users');
+    };
+
     window.addEventListener('navigate-to-tasks', handleNavigateToTasks);
     window.addEventListener('navigate-to-profile', handleNavigateToProfile);
     window.addEventListener('navigate-to-home', handleNavigateToHome);
+    window.addEventListener('navigate-to-users', handleNavigateToUsers);
     
     return () => {
       window.removeEventListener('navigate-to-tasks', handleNavigateToTasks);
       window.removeEventListener('navigate-to-profile', handleNavigateToProfile);
       window.removeEventListener('navigate-to-home', handleNavigateToHome);
+      window.removeEventListener('navigate-to-users', handleNavigateToUsers);
     };
   }, []);
 
@@ -316,6 +355,12 @@ useEffect(() => {
         
         setMyTaskStats({ incomplete, overdue, dueToday });
       }
+    }
+
+    // Load pending role requests for admin
+    if (profile?.role === 'admin') {
+      const requests = await getPendingRoleRequests();
+      setPendingRoleRequestCount(requests.length);
     }
   };
 
@@ -507,7 +552,7 @@ useEffect(() => {
   };
 
   const handleAddPerson = async (formData) => {
-    await createPerson(formData);
+    await createPerson(formData, profile?.id);
     await loadData(true);
   };
 
@@ -563,6 +608,17 @@ useEffect(() => {
             profile={profile}
             setCurrentView={setCurrentView}
           />
+        )}
+
+        {/* Mobile Add Person Button - Floating Action Button */}
+        {isMobile && profile?.role !== 'viewer' && currentView !== 'home' && currentView !== 'profile' && (
+          <button
+            onClick={() => setIsAddPersonOpen(true)}
+            className="fixed bottom-20 right-6 z-40 w-14 h-14 bg-[#001740] hover:bg-[#0f2a71] text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 active:scale-95"
+            aria-label="Add person"
+          >
+            <Plus size={24} />
+          </button>
         )}
 
         {currentView === 'registration' && (
@@ -702,11 +758,19 @@ useEffect(() => {
           currentView={currentView}
           setCurrentView={setCurrentView}
           taskCount={myTaskStats.incomplete}
+          roleRequestCount={pendingRoleRequestCount}
         />
       )}
 
       {/* Task Assignment Notifications */}
       <TaskAssignmentNotification />
+
+      {/* Role Request Result Dialog */}
+      <RoleRequestDialog
+        isOpen={roleRequestResult.show}
+        status={roleRequestResult.status}
+        onClose={() => setRoleRequestResult({ show: false, status: '' })}
+      />
 
       <style>{`
         /* Remove any default gradients */

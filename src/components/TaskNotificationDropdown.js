@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, CheckSquare, AlertTriangle } from 'lucide-react';
-import { fetchOverdueTasks, fetchTasksDueToday, toggleTaskComplete } from '../services/api';
+import { X, CheckSquare, AlertTriangle, Shield } from 'lucide-react';
+import { fetchOverdueTasks, fetchTasksDueToday, toggleTaskComplete, getPendingRoleRequests } from '../services/api';
 import { useAuth } from './auth/AuthProvider';
 
 export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick, buttonRef }) {
   const { profile } = useAuth();
   const [overdueTasks, setOverdueTasks] = useState([]);
   const [todayTasks, setTodayTasks] = useState([]);
+  const [roleRequests, setRoleRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
@@ -58,10 +59,19 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick,
     if (!profile?.id) return;
     
     setLoading(true);
-    const [overdue, today] = await Promise.all([
+    
+    // Load role requests if user is admin
+    const promises = [
       fetchOverdueTasks(),
       fetchTasksDueToday()
-    ]);
+    ];
+    
+    if (profile.role === 'admin') {
+      promises.push(getPendingRoleRequests());
+    }
+    
+    const results = await Promise.all(promises);
+    const [overdue, today, requests] = results;
     
     // Filter to only show tasks assigned to current user
     const myOverdue = overdue.filter(task => task.assigned_to_user === profile.id);
@@ -71,11 +81,21 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick,
     console.log('My today tasks:', myToday);
     setOverdueTasks(myOverdue);
     setTodayTasks(myToday);
+    
+    // Set role requests if admin
+    if (profile.role === 'admin' && requests) {
+      setRoleRequests(requests);
+    }
     setLoading(false);
     
     // Notify parent that tasks were loaded
+    const roleRequestCount = (profile.role === 'admin' && requests) ? requests.length : 0;
     window.dispatchEvent(new CustomEvent('tasksLoaded', { 
-      detail: { overdueCount: myOverdue.length, todayCount: myToday.length }
+      detail: { 
+        overdueCount: myOverdue.length, 
+        todayCount: myToday.length,
+        roleRequestCount 
+      }
     }));
   };
 
@@ -120,7 +140,7 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick,
 
   if (!isOpen) return null;
 
-  const totalCount = overdueTasks.length + todayTasks.length;
+  const totalCount = overdueTasks.length + todayTasks.length + (profile.role === 'admin' ? roleRequests.length : 0);
 
   return createPortal(
     <div
@@ -263,6 +283,45 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick,
                               </span>
                             </div>
                           )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Role Change Requests (Admin Only) */}
+            {profile.role === 'admin' && roleRequests.length > 0 && (
+              <div className="bg-blue-50 border-b border-blue-100">
+                <div className="px-4 py-2 flex items-center gap-2 bg-blue-100">
+                  <Shield size={16} className="text-blue-600" />
+                  <h4 className="font-semibold text-blue-900 text-sm">
+                    Role Change Requests ({roleRequests.length})
+                  </h4>
+                </div>
+                <div className="divide-y divide-blue-100">
+                  {roleRequests.map((request) => (
+                    <div
+                      key={request.id}
+                      onClick={() => {
+                        onClose();
+                        window.dispatchEvent(new CustomEvent('navigate-to-users'));
+                      }}
+                      className="px-4 py-3 hover:bg-blue-100 cursor-pointer transition"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900">
+                            {request.profiles?.full_name || 'Unknown User'}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1 text-xs text-gray-600">
+                            <span>Viewer → Committee</span>
+                            <span>•</span>
+                            <span className="text-blue-700 font-medium">
+                              Requested {new Date(request.requested_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
