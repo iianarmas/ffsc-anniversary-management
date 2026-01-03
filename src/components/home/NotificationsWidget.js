@@ -9,10 +9,9 @@ export default function NotificationsWidget({ taskStats, capacity }) {
       count: taskStats?.overdue || 0,
       label: 'Overdue Tasks',
       show: (taskStats?.overdue || 0) > 0,
-      bgColor: 'bg-red-50',
-      textColor: 'text-red-700',
-      iconColor: 'text-red-600',
-      borderColor: 'border-red-100'
+      bgColor: 'bg-red-600',
+      textColor: 'text-white',
+      iconColor: 'text-white'
     },
     {
       id: 2,
@@ -20,10 +19,9 @@ export default function NotificationsWidget({ taskStats, capacity }) {
       count: taskStats?.dueToday || 0,
       label: 'Due Today',
       show: (taskStats?.dueToday || 0) > 0,
-      bgColor: 'bg-orange-50',
-      textColor: 'text-orange-700',
-      iconColor: 'text-orange-600',
-      borderColor: 'border-orange-100'
+      bgColor: 'bg-orange-500',
+      textColor: 'text-white',
+      iconColor: 'text-white'
     },
     {
       id: 3,
@@ -31,10 +29,9 @@ export default function NotificationsWidget({ taskStats, capacity }) {
       count: capacity.max - capacity.current,
       label: 'Slots Remaining',
       show: true,
-      bgColor: capacity.current >= 200 ? 'bg-orange-50' : 'bg-blue-50',
-      textColor: capacity.current >= 200 ? 'text-orange-700' : 'text-blue-700',
-      iconColor: capacity.current >= 200 ? 'text-orange-600' : 'text-blue-600',
-      borderColor: capacity.current >= 200 ? 'border-orange-100' : 'border-blue-100'
+      bgColor: 'bg-sky-500',
+      textColor: 'text-white',
+      iconColor: 'text-white'
     }
   ];
 
@@ -56,7 +53,7 @@ export default function NotificationsWidget({ taskStats, capacity }) {
           activeNotifications.map(notification => (
             <div
               key={notification.id}
-              className={`p-3 rounded-lg border ${notification.bgColor} ${notification.borderColor}`}
+              className={`p-3 rounded-lg ${notification.bgColor}`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <notification.icon size={16} className={notification.iconColor} />

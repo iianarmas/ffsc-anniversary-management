@@ -75,45 +75,11 @@ export default function MobileShirtManagementView({
             </h1>
             <p className="text-xs text-gray-500">Shirt Management</p>
           </div>
-      </div>
-
-      {/* Compact Stats Row */}
-      <div className="bg-white px-4 py-3 border-b border-gray-100">
-        <div className="grid grid-cols-4 gap-2">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-1">
-              <DollarSign size={16} className="text-green-600" />
-            </div>
-            <div className="text-lg font-bold text-green-600">{stats.paid}</div>
-            <div className="text-xs text-gray-500">Paid</div>
-          </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-1">
-              <AlertCircle size={16} className="text-red-600" />
-            </div>
-            <div className="text-lg font-bold text-red-600">{stats.unpaid}</div>
-            <div className="text-xs text-gray-500">Unpaid</div>
-          </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-1">
-              <Package size={16} className="text-blue-600" />
-            </div>
-            <div className="text-lg font-bold text-blue-600">{stats.shirtsGiven}</div>
-            <div className="text-xs text-gray-500">Given</div>
-          </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-1">
-              <Shirt size={16} className="text-yellow-600" />
-            </div>
-            <div className="text-lg font-bold text-yellow-600">{stats.shirtsPending}</div>
-            <div className="text-xs text-gray-500">Pending</div>
-          </div>
         </div>
-      </div>
-
-      {/* Sticky Header - Search, Filter, Counter Only */}
-      <div className="sticky top-0 bg-white shadow-md z-20 p-4">
-        {/* Search Bar */}
+        
+        {/* Search and Filter Section */}
+        <div className="px-4 pb-3 pt-2">
+          {/* Search Bar */}
           <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
@@ -168,6 +134,28 @@ export default function MobileShirtManagementView({
               </button>
             </div>
           )}
+        </div>
+        
+        {/* Compact Stats Row */}
+        <div className="bg-white px-4 py-3 border-b border-gray-100">
+          <div className="grid grid-cols-4 gap-2">
+            <div className="text-center">
+              <div className="text-lg font-bold text-green-600">{stats.paid}</div>
+              <div className="text-xs text-gray-500">Paid</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-red-600">{stats.unpaid}</div>
+              <div className="text-xs text-gray-500">Unpaid</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-blue-600">{stats.shirtsGiven}</div>
+              <div className="text-xs text-gray-500">Given</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-yellow-600">{stats.shirtsPending}</div>
+              <div className="text-xs text-gray-500">Pending</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -597,7 +585,6 @@ export default function MobileShirtManagementView({
           onClose={() => setNotesDialogPerson(null)}
         />
       )}
-
     </div>
   );
 }

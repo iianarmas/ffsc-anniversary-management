@@ -236,38 +236,9 @@ export default function MobileTasksView({ onTaskUpdate }) {
               <p className="text-xs text-gray-500">Task Management</p>
             </div>
           </div>
-
-          {/* Stats and Search Section */}
-          <div className="px-4 py-3">
-            {/* Compact Stats Row */}
-            <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
-              <div className="flex items-center gap-4 text-xs">
-              <div className="flex items-center gap-1">
-                <CheckCircle size={14} className="text-gray-400" />
-                <span className="font-semibold text-gray-900">{stats.total}</span>
-                <span className="text-gray-500">Total</span>
-              </div>
-              <span className="text-gray-300">|</span>
-              <div className="flex items-center gap-1">
-                <Clock size={14} className="text-yellow-500" />
-                <span className="font-semibold text-gray-900">{stats.incomplete}</span>
-                <span className="text-gray-500">Todo</span>
-              </div>
-              <span className="text-gray-300">|</span>
-              <div className="flex items-center gap-1">
-                <CheckCircle size={14} className="text-green-600" />
-                <span className="font-semibold text-gray-900">{stats.complete}</span>
-                <span className="text-gray-500">Done</span>
-              </div>
-              <span className="text-gray-300">|</span>
-              <div className="flex items-center gap-1">
-                <AlertCircle size={14} className="text-red-600" />
-                <span className="font-semibold text-gray-900">{stats.overdue}</span>
-                <span className="text-gray-500">Overdue</span>
-              </div>
-            </div>
-            </div>
-
+          
+          {/* Search and Filter Section */}
+          <div className="px-4 pb-3 pt-2">
             {/* Search Bar */}
           <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -324,6 +295,28 @@ export default function MobileTasksView({ onTaskUpdate }) {
               </button>
             </div>
           )}
+          </div>
+          
+          {/* Compact Stats Row */}
+          <div className="bg-white px-4 py-3 border-b border-gray-100">
+            <div className="grid grid-cols-4 gap-2">
+              <div className="text-center">
+                <div className="text-lg font-bold text-[#001740]">{stats.total}</div>
+                <div className="text-xs text-gray-500">Total</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-yellow-600">{stats.incomplete}</div>
+                <div className="text-xs text-gray-500">Todo</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-green-600">{stats.complete}</div>
+                <div className="text-xs text-gray-500">Done</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-red-600">{stats.overdue}</div>
+                <div className="text-xs text-gray-500">Overdue</div>
+              </div>
+            </div>
           </div>
         </div>
 

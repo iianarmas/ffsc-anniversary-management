@@ -37,10 +37,10 @@ export default function MyTasksWidget({ userId, onTaskUpdate }) {
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'High': return 'text-red-600 bg-red-50';
-      case 'Medium': return 'text-yellow-600 bg-yellow-50';
-      case 'Low': return 'text-green-600 bg-green-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case 'High': return 'bg-red-600 text-white';
+      case 'Medium': return 'bg-orange-500 text-white';
+      case 'Low': return 'bg-green-600 text-white';
+      default: return 'bg-gray-500 text-white';
     }
   };
 
@@ -52,7 +52,7 @@ export default function MyTasksWidget({ userId, onTaskUpdate }) {
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     
     if (diffHours < 0) {
-      return <span className="text-red-600 font-semibold">Overdue</span>;
+      return <span className="px-2 py-1 rounded-full text-xs font-semibold bg-red-600 text-white">Overdue</span>;
     } else if (diffHours < 24) {
       return <span className="text-orange-600 font-semibold">Today</span>;
     } else {

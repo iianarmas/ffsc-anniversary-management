@@ -154,32 +154,32 @@ export default function MobileRegistrationView({
             </div>
           )}
         </div>
-      </div>
-
-      {/* Compact Stats Row */}
-      <div className="bg-white px-4 py-3 border-b border-gray-100">
-        <div className="grid grid-cols-4 gap-2">
-          <div className="text-center">
-            <div className="text-lg font-bold text-[#001740]">{people.length}</div>
-            <div className="text-xs text-gray-500">Total</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-bold text-green-600">
-              {people.filter(p => p.registered).length}
+        
+        {/* Compact Stats Row - Now inside sticky header */}
+        <div className="bg-white px-4 py-3 border-b border-gray-100">
+          <div className="grid grid-cols-4 gap-2">
+            <div className="text-center">
+              <div className="text-lg font-bold text-[#001740]">{people.length}</div>
+              <div className="text-xs text-gray-500">Total</div>
             </div>
-            <div className="text-xs text-gray-500">Checked</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-bold text-yellow-600">
-              {people.filter(p => !p.registered).length}
+            <div className="text-center">
+              <div className="text-lg font-bold text-green-600">
+                {people.filter(p => p.registered).length}
+              </div>
+              <div className="text-xs text-gray-500">Checked</div>
             </div>
-            <div className="text-xs text-gray-500">Pending</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-bold text-blue-600">
-              {Math.round((people.filter(p => p.registered && p.ageBracket !== 'Toddler').length / 230) * 100)}%
+            <div className="text-center">
+              <div className="text-lg font-bold text-yellow-600">
+                {people.filter(p => !p.registered).length}
+              </div>
+              <div className="text-xs text-gray-500">Pending</div>
             </div>
-            <div className="text-xs text-gray-500">Capacity</div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-blue-600">
+                {Math.round((people.filter(p => p.registered && p.ageBracket !== 'Toddler').length / 230) * 100)}%
+              </div>
+              <div className="text-xs text-gray-500">Capacity</div>
+            </div>
           </div>
         </div>
       </div>
@@ -441,13 +441,11 @@ export default function MobileRegistrationView({
                       
                       {/* Status Badge */}
                       {person.registered ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
-                          <CheckCircle size={12} />
+                        <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-green-700 text-white">
                           Checked In
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">
-                          <Clock size={12} />
+                        <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-yellow-500 text-white">
                           Pending
                         </span>
                       )}
