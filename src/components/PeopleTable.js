@@ -212,7 +212,7 @@ export default function PeopleTable({
                   style={{ accentColor: '#0f2a71' }}
                 />
               </th>
-              <th className="px- py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
+              <th className="px-4 py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
                 <div className="flex items-center">
                   <span>Name</span>
                 </div>

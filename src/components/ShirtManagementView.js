@@ -12,7 +12,7 @@ import NotesDialog from './NotesDialog';
 import { getAllPeopleTaskInfo } from '../services/api';
 
 export default function ShirtManagementView({ 
-  people, 
+  people,
   stats, 
   updateShirtSize, 
   toggleShirtPayment, 
