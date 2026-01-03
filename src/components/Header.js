@@ -135,11 +135,24 @@ export default function Header({
             <img 
               src="/church-logo.svg" 
               alt="FFSC Logo" 
-              className="w-10 h-10 object-contain flex-shrink-0"
+              className="w-10 h-10 object-contain flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => {
+                const event = new CustomEvent('navigate-to-home');
+                window.dispatchEvent(event);
+              }}
             />
             <div className="min-w-0 flex items-center gap-4">
               <div>
-                <h1 style={{ fontFamily: 'Moderniz, sans-serif' }} className="text-sm text-[#001740]">FFSC20</h1>
+                <h1 
+                  style={{ fontFamily: 'Moderniz, sans-serif' }} 
+                  className="text-sm text-[#001740] cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => {
+                    const event = new CustomEvent('navigate-to-home');
+                    window.dispatchEvent(event);
+                  }}
+                >
+                  FFSC20
+                </h1>
               </div>
 
               {/* Move search next to the title on larger screens */}

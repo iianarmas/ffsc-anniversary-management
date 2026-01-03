@@ -236,12 +236,18 @@ useEffect(() => {
       setCurrentView('profile');
     };
 
+    const handleNavigateToHome = () => {
+      setCurrentView('home');
+    };
+
     window.addEventListener('navigate-to-tasks', handleNavigateToTasks);
     window.addEventListener('navigate-to-profile', handleNavigateToProfile);
+    window.addEventListener('navigate-to-home', handleNavigateToHome);
     
     return () => {
       window.removeEventListener('navigate-to-tasks', handleNavigateToTasks);
       window.removeEventListener('navigate-to-profile', handleNavigateToProfile);
+      window.removeEventListener('navigate-to-home', handleNavigateToHome);
     };
   }, []);
 

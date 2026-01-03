@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+export { supabase };
 
 // Helper function to convert numeric age to age bracket
 export const getAgeBracket = (age) => {
@@ -1196,5 +1197,215 @@ export async function getUsersForTaskAssignment() {
   } catch (error) {
     console.error('Error fetching users for assignment:', error);
     return [];
+  }
+}
+
+// ============================================
+// ROLE CHANGE REQUEST FUNCTIONS
+// ============================================
+
+// Check if user can request role change (cooldown check)
+export async function canRequestRoleChange(userId) {
+  try {
+    // Check if user has pending request
+    const { data: pendingRequest, error: pendingError } = await supabase
+      .from('role_change_requests')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'pending')
+      .single();
+
+    if (pendingError && pendingError.code !== 'PGRST116') throw pendingError;
+
+    if (pendingRequest) {
+      return { 
+        canRequest: false, 
+        reason: 'You already have a pending role change request.' 
+      };
+    }
+
+    // Check for cooldown (3 days after rejection)
+    const { data: recentRejection, error: rejectionError } = await supabase
+      .from('role_change_requests')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'rejected')
+      .order('last_rejected_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (rejectionError && rejectionError.code !== 'PGRST116') throw rejectionError;
+
+    if (recentRejection && recentRejection.last_rejected_at) {
+      const lastRejected = new Date(recentRejection.last_rejected_at);
+      const now = new Date();
+      const daysSinceRejection = (now - lastRejected) / (1000 * 60 * 60 * 24);
+
+      if (daysSinceRejection < 3) {
+        const daysRemaining = Math.ceil(3 - daysSinceRejection);
+        return { 
+          canRequest: false, 
+          reason: `You can request again in ${daysRemaining} day${daysRemaining > 1 ? 's' : ''}.`,
+          daysRemaining 
+        };
+      }
+    }
+
+    return { canRequest: true };
+  } catch (error) {
+    console.error('Error checking request eligibility:', error);
+    return { canRequest: false, reason: 'Error checking eligibility' };
+  }
+}
+
+// Submit role change request
+export async function requestRoleChange(userId) {
+  try {
+    // First check if can request
+    const eligibility = await canRequestRoleChange(userId);
+    if (!eligibility.canRequest) {
+      return { success: false, error: eligibility.reason };
+    }
+
+    const { data, error } = await supabase
+      .from('role_change_requests')
+      .insert({
+        user_id: userId,
+        requested_role: 'committee',
+        status: 'pending'
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error requesting role change:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Get all pending role change requests (Admin only)
+export async function getPendingRoleRequests() {
+  try {
+    const { data, error } = await supabase
+      .from('role_change_requests')
+      .select(`
+        *,
+        profiles:user_id (
+          id,
+          full_name,
+          email,
+          role
+        )
+      `)
+      .eq('status', 'pending')
+      .order('requested_at', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching pending requests:', error);
+    return [];
+  }
+}
+
+// Approve role change request (Admin only)
+export async function approveRoleRequest(requestId, adminId) {
+  try {
+    // Get the request details
+    const { data: request, error: fetchError } = await supabase
+      .from('role_change_requests')
+      .select('*, profiles:user_id(id, full_name)')
+      .eq('id', requestId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Update user's role in profiles table
+    const { error: roleError } = await supabase
+      .from('profiles')
+      .update({ 
+        role: request.requested_role,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', request.user_id);
+
+    if (roleError) throw roleError;
+
+    // Update request status
+    const { data, error: updateError } = await supabase
+      .from('role_change_requests')
+      .update({
+        status: 'approved',
+        reviewed_by: adminId,
+        reviewed_at: new Date().toISOString()
+      })
+      .eq('id', requestId)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error approving request:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Reject role change request (Admin only)
+export async function rejectRoleRequest(requestId, adminId) {
+  try {
+    // Get current rejection count
+    const { data: request, error: fetchError } = await supabase
+      .from('role_change_requests')
+      .select('rejection_count')
+      .eq('id', requestId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Update request status
+    const { data, error: updateError } = await supabase
+      .from('role_change_requests')
+      .update({
+        status: 'rejected',
+        reviewed_by: adminId,
+        reviewed_at: new Date().toISOString(),
+        rejection_count: (request.rejection_count || 0) + 1,
+        last_rejected_at: new Date().toISOString()
+      })
+      .eq('id', requestId)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error rejecting request:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Get user's role change request status
+export async function getMyRoleRequestStatus(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('role_change_requests')
+      .select('*')
+      .eq('user_id', userId)
+      .order('requested_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+
+    return data || null;
+  } catch (error) {
+    console.error('Error fetching role request status:', error);
+    return null;
   }
 }

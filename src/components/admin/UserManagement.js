@@ -10,8 +10,12 @@ import {
   getRegistrationCodes,
   createRegistrationCode,
   toggleRegistrationCodeStatus,
-  deleteRegistrationCode
+  deleteRegistrationCode,
+  getPendingRoleRequests,
+  approveRoleRequest,
+  rejectRoleRequest
 } from '../../services/api';
+import { supabase } from '../../services/supabase';
 import { useAuth } from '../auth/AuthProvider';
 
 export default function UserManagement() {
@@ -19,6 +23,8 @@ export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [codes, setCodes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [processingRequest, setProcessingRequest] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -33,15 +39,42 @@ export default function UserManagement() {
     loadData();
   }, []);
 
+  // Listen for realtime updates on role requests
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-role-requests')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'role_change_requests'
+      }, (payload) => {
+        console.log('Role request change detected:', payload);
+        // Reload pending requests when any change occurs
+        getPendingRoleRequests().then((data) => {
+          console.log('Loaded pending requests:', data);
+          setPendingRequests(data);
+        });
+      })
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const loadData = async () => {
     setLoading(true);
-    const [usersData, codesData] = await Promise.all([
+    const [usersData, codesData, requestsData] = await Promise.all([
       getAllUsers(),
-      getRegistrationCodes()
+      getRegistrationCodes(),
+      getPendingRoleRequests()
     ]);
     // Filter out deleted users from the list
     setUsers(usersData.filter(user => user.status !== 'deleted'));
     setCodes(codesData);
+    setPendingRequests(requestsData);
     setLoading(false);
   };
 
@@ -90,8 +123,41 @@ export default function UserManagement() {
 
   const handleDeleteCode = async () => {
     const result = await deleteRegistrationCode(deleteCodeConfirm.codeId);
-    if (result.success) {
-      setCodes(prev => prev.filter(c => c.id !== deleteCodeConfirm.codeId));
+      if (result.success) {
+        setCodes(prev => prev.filter(c => c.id !== deleteCodeConfirm.codeId));
+      }
+    };
+
+    const handleApproveRequest = async (requestId) => {
+    setProcessingRequest(requestId);
+    try {
+      const result = await approveRoleRequest(requestId, profile.id);
+      if (result.success) {
+        setPendingRequests(prev => prev.filter(r => r.id !== requestId));
+        // Refresh users list to show updated role
+        const usersData = await getAllUsers();
+        setUsers(usersData.filter(user => user.status !== 'deleted'));
+      }
+    } catch (error) {
+      console.error('Error approving request:', error);
+      alert('Failed to approve request');
+    } finally {
+      setProcessingRequest(null);
+    }
+  };
+
+  const handleRejectRequest = async (requestId) => {
+    setProcessingRequest(requestId);
+    try {
+      const result = await rejectRoleRequest(requestId, profile.id);
+      if (result.success) {
+        setPendingRequests(prev => prev.filter(r => r.id !== requestId));
+      }
+    } catch (error) {
+      console.error('Error rejecting request:', error);
+      alert('Failed to reject request');
+    } finally {
+      setProcessingRequest(null);
     }
   };
 
@@ -161,6 +227,100 @@ export default function UserManagement() {
           {showCodeManager ? 'Show Users' : 'Manage Codes'}
         </button>
       </div>
+
+      {/* Pending Role Requests Banner */}
+      {pendingRequests.length > 0 && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-r-lg">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <AlertTriangle className="h-5 w-5 text-yellow-400" />
+            </div>
+            <div className="ml-3 flex-1">
+              <h3 className="text-sm font-medium text-yellow-800">
+                {pendingRequests.length} Pending Role Change Request{pendingRequests.length > 1 ? 's' : ''}
+              </h3>
+              <div className="mt-2 text-sm text-yellow-700">
+                <p>Users are waiting for role change approval.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pending Role Requests Section */}
+      {pendingRequests.length > 0 && (
+        <div className="bg-white rounded-lg border border-yellow-300 overflow-hidden mb-6">
+          <div className="bg-yellow-50 px-6 py-3 border-b border-yellow-200">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <Shield size={20} className="text-yellow-600" />
+              Pending Role Change Requests ({pendingRequests.length})
+            </h2>
+          </div>
+          <div className="divide-y divide-gray-200">
+            {pendingRequests.map(request => (
+              <div key={request.id} className="p-6 hover:bg-gray-50 transition">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="flex-shrink-0 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span className="text-blue-600 font-semibold text-lg">
+                          {request.profiles?.full_name?.charAt(0).toUpperCase() || 'U'}
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="text-base font-semibold text-gray-900">
+                          {request.profiles?.full_name || 'Unknown User'}
+                        </h3>
+                        <p className="text-sm text-gray-600">{request.profiles?.email}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="ml-15 space-y-1">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-gray-600">Current Role:</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+                          {request.profiles?.role?.charAt(0).toUpperCase() + request.profiles?.role?.slice(1)}
+                        </span>
+                        <span className="text-gray-400">→</span>
+                        <span className="text-gray-600">Requested:</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                          Committee
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Requested {new Date(request.requested_at).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 ml-4">
+                    <button
+                      onClick={() => handleApproveRequest(request.id)}
+                      disabled={processingRequest === request.id}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    >
+                      {processingRequest === request.id ? 'Approving...' : 'Approve'}
+                    </button>
+                    <button
+                      onClick={() => handleRejectRequest(request.id)}
+                      disabled={processingRequest === request.id}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    >
+                      {processingRequest === request.id ? 'Rejecting...' : 'Reject'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {!showCodeManager ? (
         <>

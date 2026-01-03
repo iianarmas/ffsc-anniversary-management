@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, Plus, Edit2, Trash2, Save, XCircle, AlertTriangle, CalendarDays, Hash, Circle, RotateCw, User, Lock } from 'lucide-react';
-import { fetchNotesForPerson, createNote, updateNote, deleteNote, deletePerson, getUsersForTaskAssignment } from '../services/api';
+import { fetchNotesForPerson, createNote, updateNote, deleteNote, deletePerson, getUsersForTaskAssignment, supabase } from '../services/api';
 import { useAuth } from './auth/AuthProvider';
 import shirtMale from '../assets/images/shirt-male.png';
 import shirtFemale from '../assets/images/shirt-female.png';
@@ -14,6 +14,8 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
   const [editingNoteText, setEditingNoteText] = useState('');
   const [isLoadingNotes, setIsLoadingNotes] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [createdByName, setCreatedByName] = useState('');
+  const [createdAt, setCreatedAt] = useState('');
   const [successDialog, setSuccessDialog] = useState({ isOpen: false, title: '', message: '' });
   const [errorDialog, setErrorDialog] = useState({ isOpen: false, title: '', message: '' });
   
@@ -64,6 +66,41 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
   useEffect(() => {
     if (open && person?.id) {
       loadNotes();
+    }
+  }, [open, person?.id]);
+
+  // Load creator information when sidebar opens
+  useEffect(() => {
+    const loadCreatorInfo = async () => {
+      if (!person?.id) return;
+      
+      try {
+        // Fetch person with creator info
+        const { data, error } = await supabase
+          .from('people')
+          .select(`
+            created_at,
+            created_by,
+            profiles:created_by (
+              full_name
+            )
+          `)
+          .eq('id', person.id)
+          .single();
+        
+        if (error) throw error;
+        
+        if (data) {
+          setCreatedAt(data.created_at);
+          setCreatedByName(data.profiles?.full_name || 'Unknown');
+        }
+      } catch (error) {
+        console.error('Error loading creator info:', error);
+      }
+    };
+    
+    if (open && person?.id) {
+      loadCreatorInfo();
     }
   }, [open, person?.id]);
 
@@ -283,13 +320,29 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
           </div>
           
           {/* Delete Person Button */}
-          <button
-            onClick={() => setShowDeleteDialog(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#0f2a71] hover:bg-[#1c3b8d] text-white rounded-lg font-medium transition text-sm"
-          >
-            <Trash2 size={16} />
-            Delete
-          </button>
+          {profile?.role === 'admin' ? (
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition text-sm"
+            >
+              <Trash2 size={16} />
+              Delete Account
+            </button>
+          ) : (
+            <div className="relative group">
+              <button
+                disabled
+                className="flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-500 rounded-lg font-medium text-sm cursor-not-allowed"
+              >
+                <Trash2 size={16} />
+                Delete Account
+              </button>
+              <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block w-64 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg z-10">
+                Only administrators can delete accounts. Please contact an admin if you need to delete this account.
+                <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="overflow-y-auto" style={{ height: 'calc(100vh - 80px)' }}>
@@ -397,6 +450,24 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
                 </div>
                 <div className="mt-2 text-xs text-gray-500 text-center">
                   {person?.gender ? `${person.gender} shirt design` : 'Shirt preview'}
+                </div>
+              </div>
+            </div>
+            {/* Account Creation Info */}
+            <div className="pt-4 border-t border-gray-100">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="text-xs text-blue-900 font-semibold mb-2">Account Information</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="text-xs text-blue-700">Created by</div>
+                    <div className="text-sm text-blue-900 font-medium">{createdByName || '—'}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-blue-700">Created on</div>
+                    <div className="text-sm text-blue-900 font-medium">
+                      {createdAt ? formatDate(createdAt) : '—'}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

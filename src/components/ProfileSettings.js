@@ -1,12 +1,15 @@
 import React, { useState, useRef } from 'react';
 import Header from './Header';
 import { useAuth } from './auth/AuthProvider';
-import { User, Mail, Shield, Calendar, Save, Lock, X, Camera, Trash2, Upload } from 'lucide-react';
+import { User, Mail, Shield, Calendar, Save, Lock, X, Camera, Trash2, Upload, LogOut } from 'lucide-react';
 import { supabase, uploadAvatar, deleteAvatar } from '../services/supabase';
 import Avatar from './Avatar';
+import ConfirmDialog from './ConfirmDialog';
+import RoleRequestDialog from './RoleRequestDialog';
+import { canRequestRoleChange, requestRoleChange, getMyRoleRequestStatus } from '../services/api';
 
 export default function ProfileSettings() {
-  const { profile, refreshProfile } = useAuth();
+  const { profile, refreshProfile, signOut } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -17,6 +20,51 @@ export default function ProfileSettings() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Load role request status on mount
+React.useEffect(() => {
+  const loadRoleRequestData = async () => {
+    if (!profile?.id) return;
+    
+    const status = await getMyRoleRequestStatus(profile.id);
+    setRoleRequestStatus(status);
+    
+    if (profile.role === 'viewer') {
+      const eligibility = await canRequestRoleChange(profile.id);
+      setRequestEligibility(eligibility);
+    }
+  };
+  
+  loadRoleRequestData();
+}, [profile?.id, profile?.role]);
+
+// Listen for realtime role request updates
+React.useEffect(() => {
+  if (!profile?.id) return;
+  
+  const channel = supabase
+    .channel('role-request-updates')
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'role_change_requests',
+      filter: `user_id=eq.${profile.id}`
+    }, (payload) => {
+      if (payload.new.status !== 'pending') {
+        setShowRoleRequestDialog({
+          show: true,
+          status: payload.new.status
+        });
+        setRoleRequestStatus(payload.new);
+      }
+    })
+    .subscribe();
+  
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [profile?.id]);
+
   const [fullName, setFullName] = useState(profile?.full_name || '');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
@@ -26,6 +74,11 @@ export default function ProfileSettings() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
   const fileInputRef = useRef(null);
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
+  const [roleRequestStatus, setRoleRequestStatus] = useState(null);
+  const [requestEligibility, setRequestEligibility] = useState({ canRequest: false, reason: '' });
+  const [showRoleRequestDialog, setShowRoleRequestDialog] = useState({ show: false, status: '' });
+  const [requestingRole, setRequestingRole] = useState(false);
 
   const handleSaveName = async () => {
     if (!fullName.trim()) {
@@ -183,6 +236,37 @@ export default function ProfileSettings() {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    window.location.href = '/login';
+  };
+
+  const handleRequestRoleChange = async () => {
+    setRequestingRole(true);
+    try {
+      const result = await requestRoleChange(profile.id);
+      
+      if (result.success) {
+        setMessage({ type: 'success', text: 'Role change request submitted successfully!' });
+        
+        // Reload status
+        const status = await getMyRoleRequestStatus(profile.id);
+        setRoleRequestStatus(status);
+        const eligibility = await canRequestRoleChange(profile.id);
+        setRequestEligibility(eligibility);
+      } else {
+        setMessage({ type: 'error', text: result.error || 'Failed to submit request' });
+      }
+      
+      setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+    } catch (error) {
+      console.error('Error requesting role change:', error);
+      setMessage({ type: 'error', text: 'An error occurred' });
+    } finally {
+      setRequestingRole(false);
+    }
   };
 
   return (
@@ -381,16 +465,64 @@ export default function ProfileSettings() {
               <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
             </div>
 
-            {/* Role Section (Read-only) */}
+            {/* Role Section */}
             <div className="border-b border-gray-200 pb-6">
               <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
                 <Shield size={18} />
                 Account Role
               </label>
-              <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${getRoleBadgeColor(profile?.role)}`}>
-                {getRoleDisplayName(profile?.role)}
-              </span>
-              <p className="text-xs text-gray-500 mt-2">Contact an administrator to change your role</p>
+              <div className="flex items-center gap-3 mb-3">
+                <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${getRoleBadgeColor(profile?.role)}`}>
+                  {getRoleDisplayName(profile?.role)}
+                </span>
+                
+                {/* Show pending badge if request exists */}
+                {roleRequestStatus?.status === 'pending' && (
+                  <span className="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800">
+                    Request Pending
+                  </span>
+                )}
+              </div>
+              
+              {/* Request Role Change Button - Only for Viewers */}
+              {profile?.role === 'viewer' && (
+                <>
+                  {roleRequestStatus?.status === 'pending' ? (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-sm text-blue-900 font-medium mb-1">
+                        Request Pending
+                      </p>
+                      <p className="text-xs text-blue-700">
+                        Your role change request is awaiting admin approval.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={handleRequestRoleChange}
+                        disabled={!requestEligibility.canRequest || requestingRole}
+                        className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
+                          requestEligibility.canRequest && !requestingRole
+                            ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
+                      >
+                        {requestingRole ? 'Submitting...' : 'Request Committee Access'}
+                      </button>
+                      
+                      {!requestEligibility.canRequest && (
+                        <p className="text-xs text-red-600 mt-2">
+                          {requestEligibility.reason}
+                        </p>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+              
+              {profile?.role !== 'viewer' && (
+                <p className="text-xs text-gray-500 mt-2">Contact an administrator to change your role</p>
+              )}
             </div>
 
             {/* Account Created Date */}
@@ -469,6 +601,38 @@ export default function ProfileSettings() {
             </div>
           </div>
         </div>
+
+        {/* Sign Out Button - Mobile Only */}
+        {isMobile && (
+          <div className="mt-6 mb-6">
+            <button
+              onClick={() => setShowSignOutDialog(true)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+            >
+              <LogOut size={20} />
+              Sign Out
+            </button>
+          </div>
+        )}
+
+        {/* Sign Out Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={showSignOutDialog}
+          onClose={() => setShowSignOutDialog(false)}
+          onConfirm={handleSignOut}
+          title="Sign Out?"
+          message="Are you sure you want to sign out of your account?"
+          confirmText="Sign Out"
+          cancelText="Cancel"
+          type="danger"
+        />
+
+        {/* Role Request Result Dialog */}
+        <RoleRequestDialog
+          isOpen={showRoleRequestDialog.show}
+          status={showRoleRequestDialog.status}
+          onClose={() => setShowRoleRequestDialog({ show: false, status: '' })}
+        />
         
       </div>
       
