@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, X, ChevronUp, Calendar, Tag, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Search, Filter, X, ChevronUp, Calendar, Tag, AlertCircle, CheckCircle, Clock, CheckSquare, ChevronRight } from 'lucide-react';
 import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
 import { fetchAllTasks, toggleTaskComplete } from '../services/api';
@@ -199,16 +199,29 @@ export default function MobileTasksView({ onTaskUpdate }) {
 
   return (
     <>
-      <div className="pb-20">
-        {/* Fixed Header */}
-        <div className="sticky top-0 bg-white shadow-md z-20 p-4">
-          {/* Title & Stats */}
-          <div className="mb-3">
-            <h2 className="text-xl font-bold text-gray-900">Task Management</h2>
-            <p className="text-sm text-gray-600 mt-1">Track and manage all tasks</p>
-            
-            {/* Stats Row */}
-            <div className="flex items-center gap-3 mt-3 text-xs">
+      <div className="pb-24 bg-[#f9fafa]">
+        {/* Fixed Header with Branding */}
+        <div className="sticky top-0 bg-white shadow-md z-20">
+          {/* Logo and Brand Section */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+            <img 
+              src="/church-logo.svg" 
+              alt="FFSC Logo" 
+              className="w-8 h-8 object-contain flex-shrink-0"
+            />
+            <div>
+              <h1 style={{ fontFamily: 'Moderniz, sans-serif' }} className="text-lg font-bold text-[#001740]">
+                FFSC20
+              </h1>
+              <p className="text-xs text-gray-500">Task Management</p>
+            </div>
+          </div>
+
+          {/* Stats and Search Section */}
+          <div className="px-4 py-3">
+            {/* Compact Stats Row */}
+            <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-1">
                 <CheckCircle size={14} className="text-gray-400" />
                 <span className="font-semibold text-gray-900">{stats.total}</span>
@@ -233,9 +246,8 @@ export default function MobileTasksView({ onTaskUpdate }) {
                 <span className="text-gray-500">Overdue</span>
               </div>
             </div>
-          </div>
 
-          {/* Search Bar */}
+            {/* Search Bar */}
           <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
@@ -248,32 +260,57 @@ export default function MobileTasksView({ onTaskUpdate }) {
           </div>
 
           {/* Filter Button & Counter */}
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg"
-            >
-              <Filter size={18} />
-              Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
-            </button>
-            <div className="text-sm font-semibold text-gray-700">
-              {filteredAndSortedTasks.length} / {tasks.length}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
+                  activeFiltersCount > 0 
+                    ? 'bg-[#001740] text-white' 
+                    : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                <Filter size={18} />
+                <span>Filters</span>
+                {activeFiltersCount > 0 && (
+                  <span className="ml-1 bg-[#f4d642] text-[#001740] px-2 py-0.5 rounded-full text-xs font-bold">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </button>
+              <div className="flex-1 text-right">
+                <div className="text-sm font-semibold text-gray-900">
+                  {filteredAndSortedTasks.length}
+                  <span className="text-gray-400 font-normal"> / {tasks.length}</span>
+                </div>
+                <div className="text-xs text-gray-500">tasks</div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Filter Modal */}
         {showFilters && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-30" onClick={() => setShowFilters(false)}>
-            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-6 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold">Filters</h3>
-                <button onClick={() => setShowFilters(false)}>
-                  <X size={24} />
-                </button>
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-30 animate-fade-in" onClick={() => setShowFilters(false)}>
+            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
+              {/* Header */}
+              <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 rounded-t-3xl">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-xl font-bold text-[#001740]">Filters</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Refine your tasks</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowFilters(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X size={24} className="text-gray-600" />
+                  </button>
+                </div>
               </div>
 
-              <div className="space-y-4">
+              {/* Filter Content */}
+              <div className="p-6">
+                <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                   <select
@@ -333,21 +370,26 @@ export default function MobileTasksView({ onTaskUpdate }) {
                   </select>
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4">
+                <div className="flex gap-3">
                   <button
                     onClick={() => {
                       handleResetFilters();
                       setShowFilters(false);
                     }}
-                    className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium"
+                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
                   >
-                    Reset
+                    Reset All
                   </button>
                   <button
                     onClick={() => setShowFilters(false)}
-                    className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium"
+                    className="flex-1 px-4 py-3 bg-[#001740] text-white rounded-xl font-medium hover:bg-[#002255] transition-colors"
                   >
-                    Apply
+                    Apply Filters
                   </button>
                 </div>
               </div>
@@ -355,46 +397,81 @@ export default function MobileTasksView({ onTaskUpdate }) {
           </div>
         )}
 
+        {/* Animation Styles */}
+        <style>{`
+          @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes slide-up {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+          }
+          .animate-fade-in {
+            animation: fade-in 0.2s ease-out;
+          }
+          .animate-slide-up {
+            animation: slide-up 0.3s ease-out;
+          }
+        `}</style>
+
         {/* Task Cards */}
         <div className="p-4 space-y-3">
           {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="text-center py-16">
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#001740] border-t-transparent mx-auto"></div>
+              <p className="text-sm text-gray-500 mt-3">Loading tasks...</p>
             </div>
           ) : filteredAndSortedTasks.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              No tasks found matching your criteria
+            <div className="text-center py-16">
+              <CheckSquare size={48} className="text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 font-medium">No tasks found</p>
+              <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
             </div>
           ) : (
-            filteredAndSortedTasks.map((task) => (
-              <div
-                key={task.id}
-                className={`${getCardBackgroundColor(task)} rounded-lg shadow-md p-4 border-l-4 ${
-                  task.priority === 'High' ? 'border-red-500' :
-                  task.priority === 'Medium' ? 'border-yellow-500' :
-                  'border-green-500'
-                }`}
-              >
+            filteredAndSortedTasks.map((task) => {
+              const isOverdue = new Date(task.due_date) < new Date() && task.status === 'incomplete';
+              const isDueToday = formatDate(task.due_date) === 'Today';
+              
+              return (
+                <div
+                  key={task.id}
+                  className={`rounded-xl shadow-sm p-4 border-l-4 transition-all ${
+                    task.status === 'complete' 
+                      ? 'bg-gray-50 border-gray-400' 
+                      : isOverdue 
+                        ? 'bg-red-50 border-red-500' 
+                        : isDueToday 
+                          ? 'bg-yellow-50 border-yellow-500' 
+                          : 'bg-white border-blue-400'
+                  }`}
+                  style={{ minHeight: '44px' }}
+                >
                 {/* Task Text */}
-                <div 
-                  onClick={() => handleOpenNotesDialog(task)}
-                  className="mb-3"
-                >
-                  <p className={`font-semibold text-gray-900 ${task.status === 'complete' ? 'line-through text-gray-500' : ''}`}>
-                    {task.note_text}
-                  </p>
-                </div>
+                  <div 
+                    onClick={() => handleOpenNotesDialog(task)}
+                    className="mb-3"
+                  >
+                    <p className={`text-base font-bold leading-tight ${
+                      task.status === 'complete' 
+                        ? 'line-through text-gray-500' 
+                        : 'text-gray-900'
+                    }`}>
+                      {task.note_text}
+                    </p>
+                  </div>
 
-                {/* Person Name */}
-                <button
-                  onClick={() => handleOpenPerson(task)}
-                  className="text-sm text-blue-600 font-medium mb-3 hover:underline"
-                >
-                  {task.people.first_name} {task.people.last_name}
-                </button>
+                  {/* Person Name */}
+                  <button
+                    onClick={() => handleOpenPerson(task)}
+                    className="inline-flex items-center gap-1 text-sm text-[#001740] font-semibold mb-3 hover:underline"
+                  >
+                    <span>{task.people.first_name} {task.people.last_name}</span>
+                    <ChevronRight size={14} />
+                  </button>
 
-                {/* Tags Row */}
-                <div className="flex flex-wrap gap-2 mb-3">
+                  {/* Tags Row */}
+                  <div className="flex flex-wrap gap-2 mb-3">
                   {/* Due Date */}
                   <div className="flex items-center gap-1 text-xs text-gray-700">
                     <Calendar size={12} className="text-gray-400" />
@@ -415,18 +492,30 @@ export default function MobileTasksView({ onTaskUpdate }) {
                 </div>
 
                 {/* Status Toggle Button */}
-                <button
-                  onClick={() => handleToggleComplete(task.id, task.status)}
-                  className={`w-full px-3 py-2 rounded-lg text-sm font-semibold transition ${
-                    task.status === 'complete'
-                      ? 'bg-green-100 text-green-800 border border-green-300'
-                      : 'bg-yellow-100 text-yellow-800 border border-yellow-300'
-                  }`}
-                >
-                  {task.status === 'complete' ? '✓ Complete' : 'Mark as Complete'}
-                </button>
-              </div>
-            ))
+                  <button
+                    onClick={() => handleToggleComplete(task.id, task.status)}
+                    className={`w-full px-4 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                      task.status === 'complete'
+                        ? 'bg-green-100 text-green-800 border-2 border-green-300 hover:bg-green-200'
+                        : 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300 hover:bg-yellow-200'
+                    }`}
+                    style={{ minHeight: '48px' }}
+                  >
+                    {task.status === 'complete' ? (
+                      <>
+                        <CheckCircle size={18} />
+                        <span>✓ Complete</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock size={18} />
+                        <span>Mark as Complete</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              );
+            })
           )}
         </div>
 
@@ -434,7 +523,7 @@ export default function MobileTasksView({ onTaskUpdate }) {
         {showBackToTop && (
           <button
             onClick={scrollToTop}
-            className="fixed bottom-24 right-4 p-3 bg-blue-500 text-white rounded-full shadow-lg z-50"
+            className="fixed bottom-20 right-4 p-3 bg-[#001740] text-white rounded-full shadow-lg z-50 hover:bg-[#002255] transition-colors"
           >
             <ChevronUp />
           </button>

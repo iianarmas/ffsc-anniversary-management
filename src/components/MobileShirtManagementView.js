@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, X, ChevronRight, ChevronUp } from 'lucide-react';
+import { Search, Filter, X, ChevronRight, ChevronUp, Shirt, DollarSign, Package, AlertCircle } from 'lucide-react';
 
 export default function MobileShirtManagementView({
   people,
@@ -50,25 +50,54 @@ export default function MobileShirtManagementView({
 
 
   return (
-    <div className="pb-6">
-      {/* Non-sticky Stats */}
-      <div className="p-4">
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-blue-50 rounded-lg p-3 text-center">
-            <div className="text-xl font-bold text-blue-700">{stats.paid}</div>
-            <div className="text-xs text-blue-600">Paid</div>
+    <div className="pb-24 bg-[#f9fafa]">
+      {/* Fixed Header with Branding */}
+      <div className="sticky top-0 bg-white shadow-md z-20">
+        {/* Logo and Brand Section */}
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+          <img 
+            src="/church-logo.svg" 
+            alt="FFSC Logo" 
+            className="w-8 h-8 object-contain flex-shrink-0"
+          />
+          <div>
+            <h1 style={{ fontFamily: 'Moderniz, sans-serif' }} className="text-lg font-bold text-[#001740]">
+              FFSC20
+            </h1>
+            <p className="text-xs text-gray-500">Shirt Management</p>
           </div>
-          <div className="bg-red-50 rounded-lg p-3 text-center">
-            <div className="text-xl font-bold text-red-700">{stats.unpaid}</div>
-            <div className="text-xs text-red-600">Unpaid</div>
+      </div>
+
+      {/* Compact Stats Row */}
+      <div className="bg-white px-4 py-3 border-b border-gray-100">
+        <div className="grid grid-cols-4 gap-2">
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-1">
+              <DollarSign size={16} className="text-green-600" />
+            </div>
+            <div className="text-lg font-bold text-green-600">{stats.paid}</div>
+            <div className="text-xs text-gray-500">Paid</div>
           </div>
-          <div className="bg-green-50 rounded-lg p-3 text-center">
-            <div className="text-xl font-bold text-green-700">{stats.shirtsGiven}</div>
-            <div className="text-xs text-green-600">Given</div>
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-1">
+              <AlertCircle size={16} className="text-red-600" />
+            </div>
+            <div className="text-lg font-bold text-red-600">{stats.unpaid}</div>
+            <div className="text-xs text-gray-500">Unpaid</div>
           </div>
-          <div className="bg-orange-50 rounded-lg p-3 text-center">
-            <div className="text-xl font-bold text-orange-700">{stats.shirtsPending}</div>
-            <div className="text-xs text-orange-600">Pending</div>
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-1">
+              <Package size={16} className="text-blue-600" />
+            </div>
+            <div className="text-lg font-bold text-blue-600">{stats.shirtsGiven}</div>
+            <div className="text-xs text-gray-500">Given</div>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-1">
+              <Shirt size={16} className="text-yellow-600" />
+            </div>
+            <div className="text-lg font-bold text-yellow-600">{stats.shirtsPending}</div>
+            <div className="text-xs text-gray-500">Pending</div>
           </div>
         </div>
       </div>
@@ -76,44 +105,68 @@ export default function MobileShirtManagementView({
       {/* Sticky Header - Search, Filter, Counter Only */}
       <div className="sticky top-0 bg-white shadow-md z-20 p-4">
         {/* Search Bar */}
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-          <input
-            type="text"
-            placeholder="Search by name..."
-            value={shirtSearchTerm}
-            onChange={(e) => setShirtSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search by name..."
+              value={shirtSearchTerm}
+              onChange={(e) => setShirtSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-        {/* Filter Button & Counter */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg"
-          >
-            <Filter size={18} />
-            Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
-          </button>
-          <div className="text-sm font-semibold text-gray-700">
-            {people.length} people
+          {/* Filter Button & Counter */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
+                activeFiltersCount > 0 
+                  ? 'bg-[#001740] text-white' 
+                  : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              <Filter size={18} />
+              <span>Filters</span>
+              {activeFiltersCount > 0 && (
+                <span className="ml-1 bg-[#f4d642] text-[#001740] px-2 py-0.5 rounded-full text-xs font-bold">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </button>
+            <div className="flex-1 text-right">
+              <div className="text-sm font-semibold text-gray-900">
+                {people.length}
+              </div>
+              <div className="text-xs text-gray-500">people</div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Filter Modal */}
       {showFilters && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-30" onClick={() => setShowFilters(false)}>
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-6 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">Filters</h3>
-              <button onClick={() => setShowFilters(false)}>
-                <X size={24} />
-              </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-30 animate-fade-in" onClick={() => setShowFilters(false)}>
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 rounded-t-3xl">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-bold text-[#001740]">Filters</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">Refine your search</p>
+                </div>
+                <button 
+                  onClick={() => setShowFilters(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X size={24} className="text-gray-600" />
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-4">
+            {/* Filter Content */}
+            <div className="p-6">
+              <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Age Bracket</label>
                 <select
@@ -184,21 +237,26 @@ export default function MobileShirtManagementView({
                 </select>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4">
+              <div className="flex gap-3">
                 <button
                   onClick={() => {
                     onResetFilters();
                     setShowFilters(false);
                   }}
-                  className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium"
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
                 >
-                  Reset
+                  Reset All
                 </button>
                 <button
                   onClick={() => setShowFilters(false)}
-                  className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium"
+                  className="flex-1 px-4 py-3 bg-[#001740] text-white rounded-xl font-medium hover:bg-[#002255] transition-colors"
                 >
-                  Apply
+                  Apply Filters
                 </button>
               </div>
             </div>
@@ -206,18 +264,46 @@ export default function MobileShirtManagementView({
         </div>
       )}
 
+      {/* Animation Styles */}
+      <style>{`
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slide-up {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out;
+        }
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out;
+        }
+      `}</style>
+
       {/* Edit Person Modal */}
       {editingPerson && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-30" onClick={() => setEditingPerson(null)}>
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">{editingPerson.firstName} {editingPerson.lastName}</h3>
-              <button onClick={() => setEditingPerson(null)}>
-                <X size={24} />
-              </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-30 animate-fade-in" onClick={() => setEditingPerson(null)}>
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 rounded-t-3xl">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-bold text-[#001740]">{editingPerson.firstName} {editingPerson.lastName}</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">Edit shirt details</p>
+                </div>
+                <button 
+                  onClick={() => setEditingPerson(null)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X size={24} className="text-gray-600" />
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-4">
+            {/* Content */}
+            <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Shirt Size</label>
                 <select
@@ -235,38 +321,47 @@ export default function MobileShirtManagementView({
                 </select>
               </div>
 
-              <div className="flex gap-3">
+              {/* Toggle Buttons */}
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => {
                     toggleShirtPayment(editingPerson.id);
                     setEditingPerson({ ...editingPerson, paid: !editingPerson.paid });
                   }}
-                  className={`flex-1 py-3 rounded-lg font-medium ${
+                  className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                     editingPerson.paid
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
+                      ? 'bg-green-100 text-green-800 border-2 border-green-300'
+                      : 'bg-red-50 text-red-600 border-2 border-red-200'
                   }`}
+                  style={{ minHeight: '48px' }}
                 >
-                  {editingPerson.paid ? '✓ Paid' : 'Mark Paid'}
+                  <DollarSign size={18} />
+                  <span>{editingPerson.paid ? '✓ Paid' : 'Mark Paid'}</span>
                 </button>
                 <button
                   onClick={() => {
                     toggleShirtGiven(editingPerson.id);
                     setEditingPerson({ ...editingPerson, shirtGiven: !editingPerson.shirtGiven });
                   }}
-                  className={`flex-1 py-3 rounded-lg font-medium ${
+                  className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                     editingPerson.shirtGiven
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-yellow-100 text-yellow-800'
+                      ? 'bg-blue-100 text-blue-800 border-2 border-blue-300'
+                      : 'bg-yellow-50 text-yellow-600 border-2 border-yellow-200'
                   }`}
+                  style={{ minHeight: '48px' }}
                 >
-                  {editingPerson.shirtGiven ? '✓ Given' : 'Mark Given'}
+                  <Package size={18} />
+                  <span>{editingPerson.shirtGiven ? '✓ Given' : 'Mark Given'}</span>
                 </button>
               </div>
+            </div>
 
+            {/* Done Button */}
+            <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4">
               <button
                 onClick={() => setEditingPerson(null)}
-                className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium"
+                className="w-full py-3.5 bg-[#001740] text-white rounded-xl font-semibold hover:bg-[#002255] transition-colors"
+                style={{ minHeight: '48px' }}
               >
                 Done
               </button>
@@ -278,39 +373,68 @@ export default function MobileShirtManagementView({
       {/* People Cards */}
       <div className="p-4 space-y-3">
         {people.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            No people found
+          <div className="text-center py-16">
+            <Shirt size={48} className="text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500 font-medium">No people found</p>
+            <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
           </div>
         ) : (
           people.map((person) => (
             <div
               key={person.id}
-              className="bg-white rounded-lg shadow-md p-4"
+              className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 hover:border-[#001740] transition-all"
               onClick={() => setEditingPerson(person)}
+              style={{ minHeight: '44px' }}
             >
               <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">
+                <div className="flex-1 min-w-0">
+                  {/* Name */}
+                  <h3 className="text-base font-bold text-gray-900 leading-tight">
                     {person.firstName} {person.lastName}
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1">Age: {person.age}</p>
-                  <div className="flex items-center gap-2 mt-2 text-sm">
-                    <span className="px-2 py-1 bg-gray-100 rounded text-gray-700">
-                      {person.shirtSize || 'No size'}
-                    </span>
-                    <span className={`px-2 py-1 rounded ${
-                      person.paid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {person.paid ? 'Paid' : 'Unpaid'}
-                    </span>
-                    <span className={`px-2 py-1 rounded ${
-                      person.shirtGiven ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {person.shirtGiven ? 'Given' : 'Pending'}
+                  
+                  {/* Age and Shirt Size */}
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className="text-sm text-gray-600">{person.age} years old</span>
+                    <span className="text-gray-300">•</span>
+                    <span className="text-sm font-semibold text-[#001740]">
+                      {person.shirtSize || 'No size set'}
                     </span>
                   </div>
+                  
+                  {/* Status Badges */}
+                  <div className="flex flex-wrap gap-1.5 mt-2.5">
+                    {/* Payment Status */}
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full ${
+                      person.paid 
+                        ? 'bg-green-100 text-green-800 border border-green-200' 
+                        : 'bg-red-100 text-red-800 border border-red-200'
+                    }`}>
+                      <DollarSign size={12} />
+                      {person.paid ? 'Paid' : 'Unpaid'}
+                    </span>
+                    
+                    {/* Distribution Status */}
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full ${
+                      person.shirtGiven 
+                        ? 'bg-blue-100 text-blue-800 border border-blue-200' 
+                        : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                    }`}>
+                      <Package size={12} />
+                      {person.shirtGiven ? 'Given' : 'Pending'}
+                    </span>
+
+                    {/* Print Status */}
+                    {person.hasPrint !== undefined && !person.hasPrint && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                        No Print
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <ChevronRight size={20} className="text-gray-400" />
+                
+                {/* Chevron Icon */}
+                <ChevronRight size={20} className="text-gray-400 flex-shrink-0 ml-3" />
               </div>
             </div>
           ))
@@ -319,7 +443,7 @@ export default function MobileShirtManagementView({
       {showBackToTop && !editingPerson && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-4 right-4 p-3 bg-blue-500 text-white rounded-full shadow-lg z-50"
+          className="fixed bottom-20 right-4 p-3 bg-[#001740] text-white rounded-full shadow-lg z-50 hover:bg-[#002255] transition-colors"
         >
           <ChevronUp />
         </button>

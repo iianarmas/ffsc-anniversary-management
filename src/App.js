@@ -19,6 +19,7 @@ import UserManagement from './components/admin/UserManagement';
 import ProfileSettings from './components/ProfileSettings';
 import HomePage from './components/HomePage';
 import WelcomeModal from './components/WelcomeModal';
+import MobileBottomNav from './components/MobileBottomNav';
 
 
 import { 
@@ -643,6 +644,15 @@ useEffect(() => {
         {loading && <LoadingOverlay />}
         </div>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      {isMobile && (
+        <MobileBottomNav 
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+          taskCount={myTaskStats.incomplete}
+        />
+      )}
 
       <style>{`
         @media print {
