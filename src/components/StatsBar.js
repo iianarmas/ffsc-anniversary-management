@@ -14,6 +14,9 @@ export default function StatsBar({ items = [], className = '' }) {
             <div className="leading-tight">
               <div className="text-sm font-semibold text-gray-900">{it.value}</div>
               <div className="text-xs text-gray-500">{it.label}</div>
+              {it.subtitle && (
+                <div className="text-xs text-gray-400 mt-0.5">{it.subtitle}</div>
+              )}
             </div>
           </div>
         ))}

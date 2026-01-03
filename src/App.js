@@ -27,6 +27,7 @@ import {
   updateShirtSize as apiUpdateShirtSize,
   toggleShirtPayment as apiToggleShirtPayment,
   toggleShirtGiven as apiToggleShirtGiven,
+  toggleShirtPrint as apiToggleShirtPrint,
   getAgeBracket,
   createPerson,
   getTaskStats,
@@ -61,6 +62,7 @@ function AppContent() {
   const [shirtFilterLocation, setShirtFilterLocation] = useState('All');
   const [shirtFilterPayment, setShirtFilterPayment] = useState('All');
   const [shirtFilterDistribution, setShirtFilterDistribution] = useState('All');
+  const [shirtFilterPrint, setShirtFilterPrint] = useState('All');
   const [shirtFilterSize, setShirtFilterSize] = useState('All');
   const [currentView, setCurrentView] = useState(() => {
   // Try to get saved view from localStorage, default to 'home'
@@ -136,6 +138,7 @@ useEffect(() => {
           shirtSize: payload.new?.shirt_size || '',
           paid: payload.new?.paid || false,
           shirtGiven: payload.new?.shirt_given || false,
+          hasPrint: payload.new?.has_print ?? true,
         };
       } else if (table === 'registrations') {
         updatedFields = {
@@ -313,8 +316,10 @@ useEffect(() => {
           : shirtFilterSize === 'None yet'
             ? !person.shirtSize || person.shirtSize === 'Select Size'
             : person.shirtSize === shirtFilterSize;
+      const matchesPrint = shirtFilterPrint === 'All' || 
+        (shirtFilterPrint === 'With Print' ? person.hasPrint : !person.hasPrint);
             
-            return matchesSearch && matchesAge && matchesLocation && matchesPayment && matchesDistribution && matchesSize;
+            return matchesSearch && matchesAge && matchesLocation && matchesPayment && matchesDistribution && matchesSize && matchesPrint;
           });
 
     // Always sort alphabetically by first name
@@ -325,16 +330,34 @@ useEffect(() => {
     });
 
     return filtered;
-  }, [people, shirtSearchTerm, shirtFilterAge, shirtFilterLocation, shirtFilterPayment, shirtFilterDistribution, shirtFilterSize]);
+  }, [people, shirtSearchTerm, shirtFilterAge, shirtFilterLocation, shirtFilterPayment, shirtFilterDistribution, shirtFilterSize, shirtFilterPrint]);
   
   const stats = useMemo(() => {
-    const registered = people.filter(p => p.registered).length;
+    const registeredAll = people.filter(p => p.registered);
+    const registeredCounted = registeredAll.filter(p => p.ageBracket !== 'Toddler'); // Exclude toddlers from capacity count
+    const toddlersCount = registeredAll.filter(p => p.ageBracket === 'Toddler').length;
+    
+    const registered = registeredAll.length;
+    const registeredCapacity = registeredCounted.length; // Count toward venue capacity
     const preRegistered = people.filter(p => !p.registered).length;
     const paid = people.filter(p => p.paid).length;
     const unpaid = people.filter(p => !p.paid).length;
     const shirtsGiven = people.filter(p => p.shirtGiven).length;
     const shirtsPending = people.filter(p => !p.shirtGiven).length;
-    return { registered, preRegistered, total: people.length, paid, unpaid, shirtsGiven, shirtsPending };
+    const maxCapacity = 230;
+    
+    return { 
+      registered, 
+      registeredCapacity, 
+      toddlersCount,
+      maxCapacity,
+      preRegistered, 
+      total: people.length, 
+      paid, 
+      unpaid, 
+      shirtsGiven, 
+      shirtsPending 
+    };
   }, [people]);
 
   const handleResetRegistrationFilters = () => {
@@ -351,6 +374,7 @@ useEffect(() => {
     setShirtFilterPayment('All');
     setShirtFilterDistribution('All');
     setShirtFilterSize('All');
+    setShirtFilterPrint('All');
   };
 
   const handleSelectPerson = (id) => {
@@ -416,6 +440,16 @@ useEffect(() => {
     const person = people.find(p => p.id === id);
     if (person) {
       await apiToggleShirtGiven(id, person.shirtGiven);
+    }
+  };
+
+  const toggleShirtPrint = async (id) => {
+    setPeople(prev =>
+      prev.map(p => p.id === id ? { ...p, hasPrint: !p.hasPrint } : p)
+    );
+    const person = people.find(p => p.id === id);
+    if (person) {
+      await apiToggleShirtPrint(id, person.hasPrint);
     }
   };
 
@@ -498,6 +532,7 @@ useEffect(() => {
               handleSelectPerson={handleSelectPerson}
               people={people}
               peopleTaskInfo={peopleTaskInfo}
+              stats={stats}
             />
           )
         )}
@@ -522,6 +557,8 @@ useEffect(() => {
               setShirtFilterDistribution={setShirtFilterDistribution}
               shirtFilterSize={shirtFilterSize}
               setShirtFilterSize={setShirtFilterSize}
+              shirtFilterPrint={shirtFilterPrint}
+              setShirtFilterPrint={setShirtFilterPrint}
               onResetFilters={handleResetShirtFilters}
               peopleTaskInfo={peopleTaskInfo}
             />
@@ -532,6 +569,7 @@ useEffect(() => {
               updateShirtSize={updateShirtSize}
               toggleShirtPayment={toggleShirtPayment}
               toggleShirtGiven={toggleShirtGiven}
+              toggleShirtPrint={toggleShirtPrint}
               shirtSearchTerm={shirtSearchTerm}
               setShirtSearchTerm={setShirtSearchTerm}
               shirtFilterAge={shirtFilterAge}
@@ -544,6 +582,8 @@ useEffect(() => {
               setShirtFilterDistribution={setShirtFilterDistribution}
               shirtFilterSize={shirtFilterSize}
               setShirtFilterSize={setShirtFilterSize}
+              shirtFilterPrint={shirtFilterPrint}
+              setShirtFilterPrint={setShirtFilterPrint}
               onResetFilters={handleResetShirtFilters}
               peopleTaskInfo={peopleTaskInfo}
             />

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function StatCard({ title, value, Icon, variant = 'compact', ariaLabel, onClick, color = 'blue', trend }) {
+export default function StatCard({ title, value, Icon, variant = 'compact', ariaLabel, onClick, color = 'blue', trend, subtitle }) {
   const compact = variant === 'compact';
   
   const colorSchemes = {
@@ -66,6 +66,11 @@ export default function StatCard({ title, value, Icon, variant = 'compact', aria
           <div className={`text-4xl font-bold ${scheme.value} transition-colors duration-300`}>
             {value}
           </div>
+          {subtitle && (
+            <div className="text-xs text-gray-500 mt-1">
+              {subtitle}
+            </div>
+          )}
         </div>
         
         {Icon && (

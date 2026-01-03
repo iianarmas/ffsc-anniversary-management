@@ -17,6 +17,7 @@ export default function ShirtManagementView({
   updateShirtSize, 
   toggleShirtPayment, 
   toggleShirtGiven,
+  toggleShirtPrint,
   shirtSearchTerm,
   setShirtSearchTerm,
   shirtFilterAge,
@@ -29,7 +30,9 @@ export default function ShirtManagementView({
   setShirtFilterDistribution,
   shirtFilterSize,
   setShirtFilterSize,
-  onResetFilters
+  onResetFilters,
+  shirtFilterPrint,
+  setShirtFilterPrint
 }) {
 
   const { profile } = useAuth();
@@ -326,9 +329,10 @@ export default function ShirtManagementView({
             {shirtFilterAge !== 'All' && ` | Age: ${shirtFilterAge}`}
             {shirtFilterLocation !== 'All' && ` | Location: ${shirtFilterLocation}`}
             {shirtFilterSize !== 'All' && ` | Size: ${shirtFilterSize}`}
+            {shirtFilterPrint !== 'All' && ` | Print: ${shirtFilterPrint}`}
             {shirtFilterPayment !== 'All' && ` | Payment: ${shirtFilterPayment}`}
             {shirtFilterDistribution !== 'All' && ` | Distribution: ${shirtFilterDistribution}`}
-            {!shirtSearchTerm && shirtFilterAge === 'All' && shirtFilterLocation === 'All' && shirtFilterSize === 'All' && shirtFilterPayment === 'All' && shirtFilterDistribution === 'All' && ' None'}
+            {!shirtSearchTerm && shirtFilterAge === 'All' && shirtFilterLocation === 'All' && shirtFilterSize === 'All' && shirtFilterPrint === 'All' && shirtFilterPayment === 'All' && shirtFilterDistribution === 'All' && ' None'}
           </div>
           
           <p className="mb-6 text-sm">Total: {people.length} {people.length === 1 ? 'person' : 'people'}</p>
@@ -341,6 +345,7 @@ export default function ShirtManagementView({
                 <th className="border border-gray-300 px-4 py-2 text-left">Age Bracket</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Location</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Shirt Size</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Print Option</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Payment</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Distribution</th>
               </tr>
@@ -353,6 +358,7 @@ export default function ShirtManagementView({
                   <td className="border border-gray-300 px-4 py-2">{person.ageBracket}</td>
                   <td className="border border-gray-300 px-4 py-2">{person.location}</td>
                   <td className="border border-gray-300 px-4 py-2">{person.shirtSize || '—'}</td>
+                  <td className="border border-gray-300 px-4 py-2">{person.hasPrint ? 'With Print' : 'Plain'}</td>
                   <td className="border border-gray-300 px-4 py-2">{person.paid ? 'Paid' : 'Unpaid'}</td>
                   <td className="border border-gray-300 px-4 py-2">{person.shirtGiven ? 'Given' : 'Pending'}</td>
                 </tr>
@@ -410,7 +416,8 @@ export default function ShirtManagementView({
                   shirtFilterLocation !== 'All' || 
                   shirtFilterPayment !== 'All' || 
                   shirtFilterDistribution !== 'All' || 
-                  shirtFilterSize !== 'All'
+                  shirtFilterSize !== 'All' ||
+                  shirtFilterPrint !== 'All'
                 }
                 onResetFilters={onResetFilters}
                 stats={[
@@ -494,6 +501,21 @@ export default function ShirtManagementView({
                           ]}
                           value={shirtFilterSize}
                           onChange={setShirtFilterSize}
+                        />
+                      </div>
+                    </th>
+                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                      <div className="flex items-center justify-between">
+                        <span>Print Option</span>
+                        <FilterDropdown 
+                          column="printOption"
+                          options={[
+                            { value: 'All', label: 'All Options' },
+                            { value: 'With Print', label: 'With Print' },
+                            { value: 'Plain', label: 'Plain' }
+                          ]}
+                          value={shirtFilterPrint}
+                          onChange={setShirtFilterPrint}
                         />
                       </div>
                     </th>
@@ -664,6 +686,19 @@ export default function ShirtManagementView({
                         </td>
                         <td className="px-4 py-3">
                           <button
+                            onClick={() => canManage && toggleShirtPrint(person.id)}
+                            disabled={!canManage}
+                            className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
+                              person.hasPrint
+                                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                : 'bg-gray-400 text-white hover:bg-gray-500'
+                            } ${!canManage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {person.hasPrint ? 'With Print' : 'Plain'}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
                             onClick={() => canManage && toggleShirtPayment(person.id)}
                             disabled={!canManage}
                             className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
@@ -688,7 +723,6 @@ export default function ShirtManagementView({
                             {person.shirtGiven ? 'Given' : 'Pending'}
                           </button>
                         </td>
-                        <td className="px-4 py-3"></td>
                       </tr>
                     ))
                   ) : (

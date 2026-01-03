@@ -28,7 +28,8 @@ export default function RegistrationView({
   handleBulkRemove,
   handlePrint,
   handleSelectPerson,
-  people
+  people,
+  stats
 }) {
 
   const { profile } = useAuth();
@@ -193,7 +194,14 @@ useEffect(() => {
             {!searchTerm && filterAge === 'All' && filterLocation === 'All' && filterStatus === 'All' && ' None'}
           </div>
           
-          <p className="mb-6 text-sm">Total: {filteredAndSortedPeople.length} {filteredAndSortedPeople.length === 1 ? 'person' : 'people'}</p>
+          <p className="mb-6 text-sm">
+            Capacity Count: {stats.registeredCapacity || 0} / {stats.maxCapacity || 230}<br/>
+            {stats.registered !== stats.registeredCapacity && (
+              <span className="text-xs text-gray-600">
+                ({stats.registered} total including {stats.toddlersCount} {stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})
+              </span>
+            )}
+          </p>
           
           <table className="w-full border-collapse border border-gray-300">
             <thead>
@@ -288,8 +296,13 @@ useEffect(() => {
                   onResetFilters={onResetFilters}
                   stats={[
                     { Icon: Users, label: 'Total', value: people.length },
-                    { Icon: CheckCircle, label: 'Checked In', value: people.filter(p => p.registered).length },
-                    { Icon: Clock, label: 'Pending', value: people.filter(p => !p.registered).length }
+                    { 
+                      Icon: CheckCircle, 
+                      label: 'Checked In', 
+                      value: `${stats.registeredCapacity || 0} / ${stats.maxCapacity || 230}`,
+                      subtitle: stats.registered !== stats.registeredCapacity ? `(${stats.registered} total, ${stats.toddlersCount} ${stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})` : null
+                    },
+                    { Icon: Clock, label: 'Pending', value: stats.preRegistered || 0 }
                   ]}
                   readOnly={!canRegister}
                 

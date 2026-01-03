@@ -303,10 +303,12 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
                     <div className="text-sm text-gray-900 font-medium">{person?.gender || '—'}</div>
                   </div>
 
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Contact Number</div>
-                    <div className="text-sm text-gray-900 font-medium">{formatContactNumber(person?.contactNumber)}</div>
-                  </div>
+                  {profile?.role !== 'viewer' && (
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Contact Number</div>
+                      <div className="text-sm text-gray-900 font-medium">{formatContactNumber(person?.contactNumber)}</div>
+                    </div>
+                  )}
 
                   <div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Location</div>
@@ -321,6 +323,17 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
                   <div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Shirt size</div>
                     <div className="text-sm text-gray-900 font-medium">{person?.shirtSize || '—'}</div>
+                  </div>
+
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Print option</div>
+                    <div className="text-sm text-gray-900 font-medium">
+                      {person?.hasPrint ? (
+                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">With Print</span>
+                      ) : (
+                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Plain</span>
+                      )}
+                    </div>
                   </div>
 
                   <div>

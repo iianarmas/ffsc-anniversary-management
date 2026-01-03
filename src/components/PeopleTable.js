@@ -238,11 +238,13 @@ export default function PeopleTable({
                   <span>Gender</span>
                 </div>
               </th>
-              <th className="px-4 py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
-                <div className="flex items-center">
-                  <span>Contact Number</span>
-                </div>
-              </th>
+              {profile?.role !== 'viewer' && (
+                <th className="px-4 py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
+                  <div className="flex items-center">
+                    <span>Contact Number</span>
+                  </div>
+                </th>
+              )}
               <th className="px-4 py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
                 <div className="flex items-center justify-between">
                   <span>Location</span>
@@ -401,9 +403,11 @@ export default function PeopleTable({
                   <td className="px-4 py-3 text-left border-r">
                     <div className="text-sm text-gray-700">{person.gender}</div>
                   </td>
-                  <td className="px-4 py-3 text-left border-r">
-                    <div className="text-sm text-gray-700">{formatContactNumber(person.contactNumber)}</div>
-                  </td>
+                  {profile?.role !== 'viewer' && (
+                    <td className="px-4 py-3 text-left border-r">
+                      <div className="text-sm text-gray-700">{formatContactNumber(person.contactNumber)}</div>
+                    </td>
+                  )}
                   <td className="px-4 py-3 text-left border-r">
                     <div className="text-sm text-gray-700">{person.location}</div>
                   </td>

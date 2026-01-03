@@ -226,7 +226,8 @@ export default function Dashboard({ people = [], stats = {} }) {
           />
           <StatCard 
             title="Checked In" 
-            value={stats.registered || 0} 
+            value={`${stats.registeredCapacity || 0} / ${stats.maxCapacity || 230}`}
+            subtitle={stats.registered !== stats.registeredCapacity ? `(${stats.registered} total including ${stats.toddlersCount} ${stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})` : null}
             Icon={CheckCircle} 
             color="green"
             variant="expanded"

@@ -40,6 +40,7 @@ export const fetchAllPeople = async () => {
       shirtSize: person.shirts?.[0]?.shirt_size || '',
       paid: person.shirts?.[0]?.paid || false,
       shirtGiven: person.shirts?.[0]?.shirt_given || false,
+      hasPrint: person.shirts?.[0]?.has_print ?? true,
     }));
 
     return transformed;
@@ -186,6 +187,45 @@ export const toggleShirtGiven = async (personId, currentGiven) => {
     return true;
   } catch (error) {
     console.error('Error toggling shirt given:', error);
+    return false;
+  }
+};
+
+// Toggle shirt print preference
+export const toggleShirtPrint = async (personId, currentHasPrint) => {
+  try {
+    // Check if shirt record exists
+    const { data: existing } = await supabase
+      .from('shirts')
+      .select('*')
+      .eq('person_id', personId)
+      .single();
+
+    if (existing) {
+      // Update existing shirt
+      const { error } = await supabase
+        .from('shirts')
+        .update({ has_print: !currentHasPrint })
+        .eq('person_id', personId);
+
+      if (error) throw error;
+    } else {
+      // Insert new shirt record with print preference (default true if creating new)
+      const { error } = await supabase
+        .from('shirts')
+        .insert({
+          person_id: personId,
+          has_print: true,
+          paid: false,
+          shirt_given: false
+        });
+
+      if (error) throw error;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error toggling shirt print:', error);
     return false;
   }
 };
@@ -731,7 +771,8 @@ export const createPerson = async (personData) => {
           person_id: person.id,
           shirt_size: personData.shirtSize,
           paid: personData.paid || false,
-          shirt_given: personData.shirtGiven || false
+          shirt_given: personData.shirtGiven || false,
+          has_print: true
         });
 
       if (shirtError) throw shirtError;
