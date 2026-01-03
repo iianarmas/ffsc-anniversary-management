@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, X, ChevronRight, Check, ChevronUp, Users, CheckCircle, Clock } from 'lucide-react';
+import { Search, Filter, X, ChevronRight, Check, ChevronUp, Users, CheckCircle, Clock, StickyNote, CheckSquare, Lock } from 'lucide-react';
+import { useAuth } from './auth/AuthProvider';
+import NotesDialog from './NotesDialog';
 
 const formatPhilippineTime = (utcTimestamp) => {
   if (!utcTimestamp) return '—';
@@ -38,10 +40,13 @@ export default function MobileRegistrationView({
   handleBulkRemove,
   selectedPeople,
   handleSelectPerson,
-  people
+  people,
+  peopleTaskInfo = {}
 }) {
+  const { profile } = useAuth();
   const [showFilters, setShowFilters] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [notesDialogPerson, setNotesDialogPerson] = useState(null);
 
   const ageColors = {
     Toddler: 'bg-pink-100 text-pink-800',
@@ -313,20 +318,101 @@ export default function MobileRegistrationView({
               >
                 <div className="flex items-start gap-3">
                   {/* Selection Checkbox */}
-                  <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                    isSelected 
-                      ? 'bg-[#001740] border-[#001740]' 
-                      : 'border-gray-300'
-                  }`}>
+                  <div 
+                    className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                      isSelected 
+                        ? 'bg-[#001740] border-[#001740]' 
+                        : 'border-gray-300'
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelectPerson(person.id);
+                    }}
+                  >
                     {isSelected && <Check size={16} className="text-white" strokeWidth={3} />}
                   </div>
                   
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    {/* Name */}
-                    <h3 className="text-base font-bold text-gray-900 leading-tight">
-                      {person.firstName} {person.lastName}
-                    </h3>
+                    {/* Name with Notes/Tasks Indicator */}
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-base font-bold text-gray-900 leading-tight flex-1">
+                        {person.firstName} {person.lastName}
+                      </h3>
+                      
+                      {/* Notes/Task Indicators */}
+                      {(() => {
+                        const taskInfo = peopleTaskInfo[person.id];
+                        
+                        // Check if user is viewer
+                        if (profile?.role === 'viewer') {
+                          // Show locked indicator for viewers if there are notes/tasks
+                          if (taskInfo?.incompleteTasksCount > 0 || taskInfo?.hasOnlyCompletedTasks || taskInfo?.hasNotes) {
+                            return (
+                              <div className="flex-shrink-0 p-1.5 rounded">
+                                <Lock size={16} className="text-gray-400" />
+                              </div>
+                            );
+                          }
+                          return null;
+                        }
+                        
+                        // Show task indicator if person has incomplete tasks
+                        if (taskInfo?.incompleteTasksCount > 0) {
+                          const priorityColor = 
+                            taskInfo.highestPriority === 'High' ? 'text-red-600' :
+                            taskInfo.highestPriority === 'Medium' ? 'text-yellow-600' :
+                            'text-green-600';
+                          
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setNotesDialogPerson(person);
+                              }}
+                              className="flex-shrink-0 p-1.5 hover:bg-blue-50 rounded transition active:scale-95"
+                              aria-label="View tasks"
+                            >
+                              <CheckSquare size={16} className={`${priorityColor}`} />
+                            </button>
+                          );
+                        }
+                        
+                        // Show completed task indicator if person has only completed tasks
+                        if (taskInfo?.hasOnlyCompletedTasks) {
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setNotesDialogPerson(person);
+                              }}
+                              className="flex-shrink-0 p-1.5 hover:bg-blue-50 rounded transition active:scale-95"
+                              aria-label="View completed tasks"
+                            >
+                              <CheckCircle size={16} className="text-gray-400" />
+                            </button>
+                          );
+                        }
+                        
+                        // Show note indicator if person has only notes (no tasks)
+                        if (taskInfo?.hasNotes) {
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setNotesDialogPerson(person);
+                              }}
+                              className="flex-shrink-0 p-1.5 hover:bg-blue-50 rounded transition active:scale-95"
+                              aria-label="View notes"
+                            >
+                              <StickyNote size={16} className="text-gray-400" />
+                            </button>
+                          );
+                        }
+                        
+                        return null;
+                      })()}
+                    </div>
                     
                     {/* Age */}
                     <p className="text-sm text-gray-600 mt-1">
@@ -438,6 +524,15 @@ export default function MobileRegistrationView({
         >
           <ChevronUp />
         </button>
+      )}
+
+      {/* Notes Dialog */}
+      {notesDialogPerson && profile?.role !== 'viewer' && (
+        <NotesDialog
+          person={notesDialogPerson}
+          isOpen={!!notesDialogPerson}
+          onClose={() => setNotesDialogPerson(null)}
+        />
       )}
     </div>
   );

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, X, ChevronRight, ChevronUp, Shirt, DollarSign, Package, AlertCircle } from 'lucide-react';
+import { Search, Filter, X, ChevronRight, ChevronUp, Shirt, DollarSign, Package, AlertCircle, StickyNote, CheckSquare, CheckCircle, Lock } from 'lucide-react';
+import { useAuth } from './auth/AuthProvider';
+import NotesDialog from './NotesDialog';
 
 export default function MobileShirtManagementView({
   people,
@@ -23,10 +25,13 @@ export default function MobileShirtManagementView({
   onResetFilters,
   shirtFilterPrint,
   setShirtFilterPrint,
+  peopleTaskInfo = {}
 }) {
+  const { profile } = useAuth();
   const [showFilters, setShowFilters] = useState(false);
   const [editingPerson, setEditingPerson] = useState(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [notesDialogPerson, setNotesDialogPerson] = useState(null);
 
   const activeFiltersCount = [
     shirtFilterAge,
@@ -442,10 +447,88 @@ export default function MobileShirtManagementView({
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  {/* Name */}
-                  <h3 className="text-base font-bold text-gray-900 leading-tight">
-                    {person.firstName} {person.lastName}
-                  </h3>
+                  {/* Name with Notes/Tasks Indicator */}
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-base font-bold text-gray-900 leading-tight flex-1">
+                      {person.firstName} {person.lastName}
+                    </h3>
+                    
+                    {/* Notes/Task Indicators */}
+                    {(() => {
+                      const taskInfo = peopleTaskInfo[person.id];
+                      
+                      // Check if user is viewer
+                      if (profile?.role === 'viewer') {
+                        // Show locked indicator for viewers if there are notes/tasks
+                        if (taskInfo?.incompleteTasksCount > 0 || taskInfo?.hasOnlyCompletedTasks || taskInfo?.hasNotes) {
+                          return (
+                            <div 
+                              className="flex-shrink-0 p-1.5 rounded"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Lock size={16} className="text-gray-400" />
+                            </div>
+                          );
+                        }
+                        return null;
+                      }
+                      
+                      // Show task indicator if person has incomplete tasks
+                      if (taskInfo?.incompleteTasksCount > 0) {
+                        const priorityColor = 
+                          taskInfo.highestPriority === 'High' ? 'text-red-600' :
+                          taskInfo.highestPriority === 'Medium' ? 'text-yellow-600' :
+                          'text-green-600';
+                        
+                        return (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setNotesDialogPerson(person);
+                            }}
+                            className="flex-shrink-0 p-1.5 hover:bg-blue-50 rounded transition active:scale-95"
+                            aria-label="View tasks"
+                          >
+                            <CheckSquare size={16} className={`${priorityColor}`} />
+                          </button>
+                        );
+                      }
+                      
+                      // Show completed task indicator if person has only completed tasks
+                      if (taskInfo?.hasOnlyCompletedTasks) {
+                        return (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setNotesDialogPerson(person);
+                            }}
+                            className="flex-shrink-0 p-1.5 hover:bg-blue-50 rounded transition active:scale-95"
+                            aria-label="View completed tasks"
+                          >
+                            <CheckCircle size={16} className="text-gray-400" />
+                          </button>
+                        );
+                      }
+                      
+                      // Show note indicator if person has only notes (no tasks)
+                      if (taskInfo?.hasNotes) {
+                        return (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setNotesDialogPerson(person);
+                            }}
+                            className="flex-shrink-0 p-1.5 hover:bg-blue-50 rounded transition active:scale-95"
+                            aria-label="View notes"
+                          >
+                            <StickyNote size={16} className="text-gray-400" />
+                          </button>
+                        );
+                      }
+                      
+                      return null;
+                    })()}
+                  </div>
                   
                   {/* Age and Shirt Size */}
                   <div className="flex items-center gap-2 mt-1.5">
@@ -501,6 +584,15 @@ export default function MobileShirtManagementView({
         >
           <ChevronUp />
         </button>
+      )}
+
+      {/* Notes Dialog */}
+      {notesDialogPerson && profile?.role !== 'viewer' && (
+        <NotesDialog
+          person={notesDialogPerson}
+          isOpen={!!notesDialogPerson}
+          onClose={() => setNotesDialogPerson(null)}
+        />
       )}
 
     </div>

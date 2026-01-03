@@ -20,6 +20,7 @@ export default function MobileTasksView({ onTaskUpdate }) {
   const [filterDueDate, setFilterDueDate] = useState('All');
   const [filterAssignedTo, setFilterAssignedTo] = useState('me'); // Default to 'me'
   const [availableUsers, setAvailableUsers] = useState([]);
+  const [filterCreatedBy, setFilterCreatedBy] = useState('All');
   
   // Sidebar/Dialog states
   const [selectedPerson, setSelectedPerson] = useState(null);
@@ -74,6 +75,24 @@ export default function MobileTasksView({ onTaskUpdate }) {
         (filterAssignedTo === 'me' && task.assigned_to_user === profile?.id) ||
         task.assigned_to_user === filterAssignedTo;
       
+      // Debug logging
+      if (filterCreatedBy !== 'All') {
+        console.log('Filter CreatedBy:', filterCreatedBy);
+        console.log('Task created_by_user:', task.created_by_user);
+        console.log('Task created_by:', task.created_by);
+        console.log('Profile ID:', profile?.id);
+      }
+      
+      const matchesCreatedBy = filterCreatedBy === 'All' || 
+        (filterCreatedBy === 'me' && task.created_by_user === profile?.id) ||
+        (filterCreatedBy === 'unknown' && task.created_by_user === null) ||
+        (filterCreatedBy !== 'me' && filterCreatedBy !== 'All' && filterCreatedBy !== 'unknown' && (
+          task.created_by_user === filterCreatedBy || 
+          // Fallback to name matching for old tasks without created_by_user
+          (task.created_by_user === null && 
+           availableUsers.find(u => u.id === filterCreatedBy)?.full_name === task.created_by)
+        ));
+      
       const matchesSearch = searchTerm === '' || 
         `${task.people.first_name} ${task.people.last_name} ${task.note_text}`.toLowerCase().includes(searchTerm.toLowerCase());
       
@@ -105,7 +124,7 @@ export default function MobileTasksView({ onTaskUpdate }) {
         }
       }
       
-      return matchesAssignedTo && matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesDueDate;
+      return matchesAssignedTo && matchesCreatedBy && matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesDueDate;
     });
 
     // Sort: Overdue first, then by due date
@@ -131,7 +150,9 @@ export default function MobileTasksView({ onTaskUpdate }) {
     return { total, incomplete, complete, overdue };
   }, [filteredAndSortedTasks]);
 
-  const activeFiltersCount = [filterStatus, filterPriority, filterCategory, filterDueDate].filter(f => f !== 'All').length;
+  const activeFiltersCount = [filterStatus, filterPriority, filterCategory, filterDueDate].filter(f => f !== 'All').length + 
+    (filterAssignedTo !== 'me' ? 1 : 0) + 
+    (filterCreatedBy !== 'All' ? 1 : 0);
 
   const handleToggleComplete = async (taskId, currentStatus) => {
     setTasks(prev => prev.map(t => 
@@ -148,6 +169,7 @@ export default function MobileTasksView({ onTaskUpdate }) {
     setFilterCategory('All');
     setFilterDueDate('All');
     setFilterAssignedTo('me'); // Reset to default 'me'
+    setFilterCreatedBy('All');
   };
 
   const handleOpenPerson = (task) => {
@@ -313,7 +335,7 @@ export default function MobileTasksView({ onTaskUpdate }) {
           </div>
 
           {/* Active Filters Indicator & Reset */}
-          {(filterStatus !== 'All' || filterPriority !== 'All' || filterCategory !== 'All' || filterDueDate !== 'All' || filterAssignedTo !== 'me') && (
+          {(filterStatus !== 'All' || filterPriority !== 'All' || filterCategory !== 'All' || filterDueDate !== 'All' || filterAssignedTo !== 'me' || filterCreatedBy !== 'All') && (
             <div className="mt-3 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
               <div className="flex items-center gap-2">
                 <Filter size={14} className="text-blue-600" />
@@ -433,6 +455,26 @@ export default function MobileTasksView({ onTaskUpdate }) {
                   </select>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Created By</label>
+                  <select
+                    value={filterCreatedBy}
+                    onChange={(e) => setFilterCreatedBy(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                  >
+                    <option value="All">All Users</option>
+                    <option value="me">Created by Me</option>
+                    <option value="unknown">Unknown/Legacy</option>
+                    {availableUsers
+                      .filter(user => user.id !== profile?.id)
+                      .map(user => (
+                        <option key={user.id} value={user.id}>
+                          {user.full_name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
                 </div>
               </div>
 
@@ -532,6 +574,24 @@ export default function MobileTasksView({ onTaskUpdate }) {
                     <span>{task.people.first_name} {task.people.last_name}</span>
                     <ChevronRight size={14} />
                   </button>
+
+                  {/* Assigned To & Created By */}
+                  <div className="flex flex-wrap gap-3 mb-2 text-xs text-gray-600">
+                    {task.assigned_to && (
+                      <div className="flex items-center gap-1">
+                        <Users size={12} className="text-gray-400" />
+                        <span className="font-medium">Assigned to:</span>
+                        <span>{task.assigned_to}</span>
+                      </div>
+                    )}
+                    {task.created_by && (
+                      <div className="flex items-center gap-1">
+                        <Users size={12} className="text-gray-400" />
+                        <span className="font-medium">Created by:</span>
+                        <span>{task.created_by}</span>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Tags Row */}
                   <div className="flex flex-wrap gap-2 mb-3">

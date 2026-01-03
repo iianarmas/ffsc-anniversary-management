@@ -20,6 +20,7 @@ import ProfileSettings from './components/ProfileSettings';
 import HomePage from './components/HomePage';
 import WelcomeModal from './components/WelcomeModal';
 import MobileBottomNav from './components/MobileBottomNav';
+import TaskAssignmentNotification from './components/TaskAssignmentNotification';
 
 
 import { 
@@ -206,14 +207,23 @@ useEffect(() => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Listen for navigation events from bell notifications
+  // Listen for navigation events from bell notifications and profile menu
   useEffect(() => {
     const handleNavigateToTasks = () => {
       setCurrentView('tasks');
     };
 
+    const handleNavigateToProfile = () => {
+      setCurrentView('profile');
+    };
+
     window.addEventListener('navigate-to-tasks', handleNavigateToTasks);
-    return () => window.removeEventListener('navigate-to-tasks', handleNavigateToTasks);
+    window.addEventListener('navigate-to-profile', handleNavigateToProfile);
+    
+    return () => {
+      window.removeEventListener('navigate-to-tasks', handleNavigateToTasks);
+      window.removeEventListener('navigate-to-profile', handleNavigateToProfile);
+    };
   }, []);
 
   // Handle session management and view restoration
@@ -657,6 +667,9 @@ useEffect(() => {
           taskCount={myTaskStats.incomplete}
         />
       )}
+
+      {/* Task Assignment Notifications */}
+      <TaskAssignmentNotification />
 
       <style>{`
         /* Hide scrollbar on mobile */

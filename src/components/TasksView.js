@@ -23,6 +23,7 @@ export default function TasksView({ onTaskUpdate }) {
   const [filterDueDate, setFilterDueDate] = useState('All');
   const [filterAssignedTo, setFilterAssignedTo] = useState('me'); // Default to 'me'
   const [availableUsers, setAvailableUsers] = useState([]);
+  const [filterCreatedBy, setFilterCreatedBy] = useState('All');
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -115,6 +116,9 @@ export default function TasksView({ onTaskUpdate }) {
 
   // Filter and sort tasks
   const filteredAndSortedTasks = React.useMemo(() => {
+    console.log('🔄 useMemo running - filterCreatedBy:', filterCreatedBy);
+    console.log('Total tasks before filter:', tasks.length);
+    
     let filtered = tasks.filter(task => {
       const matchesSearch = searchTerm === '' || 
         `${task.person_first_name} ${task.person_last_name} ${task.note_text}`.toLowerCase().includes(searchTerm.toLowerCase());
@@ -130,12 +134,20 @@ export default function TasksView({ onTaskUpdate }) {
         (filterAssignedTo === 'me' && task.assigned_to_user === profile?.id) ||
         task.assigned_to_user === filterAssignedTo;
       
+      const matchesCreatedBy = filterCreatedBy === 'All' || 
+        (filterCreatedBy === 'me' && task.created_by_user === profile?.id) ||
+        (filterCreatedBy === 'unknown' && task.created_by_user === null) ||
+        (filterCreatedBy !== 'me' && filterCreatedBy !== 'All' && filterCreatedBy !== 'unknown' && (
+          task.created_by_user === filterCreatedBy || 
+          (task.created_by_user === null && 
+           availableUsers.find(u => u.id === filterCreatedBy)?.full_name === task.created_by)
+        ));
+      
       let matchesDueDate = true;
       if (filterDueDate !== 'All') {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
-        // Parse task date as UTC then convert to local date
         const taskDateObj = new Date(task.due_date);
         const taskDate = new Date(taskDateObj.getUTCFullYear(), taskDateObj.getUTCMonth(), taskDateObj.getUTCDate());
         
@@ -152,7 +164,13 @@ export default function TasksView({ onTaskUpdate }) {
         }
       }
       
-      return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesDueDate && matchesAssignedTo;
+      // Debug AFTER all variables are defined
+      if (filterCreatedBy === 'unknown' && task.created_by_user === null && task === tasks[0]) {
+        console.log('🐛 First unknown task debug:');
+        console.log('  matchesAssignedTo:', matchesAssignedTo, '- filterAssignedTo:', filterAssignedTo, ', task.assigned_to_user:', task.assigned_to_user);
+      }
+      
+      return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesDueDate && matchesAssignedTo && matchesCreatedBy;
     });
 
     // Sort: Overdue first, then by due date
@@ -174,8 +192,9 @@ export default function TasksView({ onTaskUpdate }) {
       return new Date(a.due_date) - new Date(b.due_date);
     });
 
+    console.log('✅ Filtered tasks count:', filtered.length);
     return filtered;
-  }, [tasks, searchTerm, filterStatus, filterPriority, filterCategory, filterDueDate, filterAssignedTo, profile?.id]);
+  }, [tasks, searchTerm, filterStatus, filterPriority, filterCategory, filterDueDate, filterAssignedTo, filterCreatedBy, profile?.id]);
 
   // Calculate stats based on FILTERED tasks (not all tasks)
   const stats = React.useMemo(() => {
@@ -276,6 +295,7 @@ export default function TasksView({ onTaskUpdate }) {
     setFilterCategory('All');
     setFilterDueDate('All');
     setFilterAssignedTo('me');
+    setFilterCreatedBy('All');
   };
 
   const handleOpenPerson = async (task) => {
@@ -484,7 +504,7 @@ export default function TasksView({ onTaskUpdate }) {
     );
   };
 
-  const hasActiveFilters = filterStatus !== 'All' || filterPriority !== 'All' || filterCategory !== 'All' || filterDueDate !== 'All' || filterAssignedTo !== 'me';
+  const hasActiveFilters = filterStatus !== 'All' || filterPriority !== 'All' || filterCategory !== 'All' || filterDueDate !== 'All' || filterAssignedTo !== 'me' || filterCreatedBy !== 'All';
 
   return (
     <>
@@ -693,6 +713,39 @@ export default function TasksView({ onTaskUpdate }) {
                         />
                       </div>
                     </th>
+                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                      <div className="flex items-center justify-between">
+                        <span>Created By</span>
+                        <FilterDropdown 
+                          column="createdBy"
+                          options={[
+                            { value: 'All', label: 'All Users' },
+                            { value: 'me', label: 'Created by Me' },
+                            { value: 'unknown', label: 'Unknown/Legacy' },
+                            ...availableUsers
+                              .filter(user => user.id !== profile?.id)
+                              .map(user => ({
+                                value: user.id,
+                                label: user.full_name
+                              }))
+                          ]}
+                          value={filterCreatedBy}
+                          onChange={(value) => {
+                            console.log('=== Created By filter changed ===');
+                            console.log('Selected value:', value);
+                            console.log('Available users:', availableUsers);
+                            console.log('Tasks sample:', tasks.slice(0, 3).map(t => ({
+                              text: t.note_text,
+                              created_by: t.created_by,
+                              created_by_user: t.created_by_user
+                            })));
+                            const selectedUser = availableUsers.find(u => u.id === value);
+                            console.log('Selected user object:', selectedUser);
+                            setFilterCreatedBy(value);
+                          }}
+                        />
+                      </div>
+                    </th>
                     <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Status</span>
@@ -714,7 +767,7 @@ export default function TasksView({ onTaskUpdate }) {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={8} className="text-center py-12">
+                      <td colSpan={9} className="text-center py-12">
                         <div className="flex items-center justify-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0f2a71]"></div>
                         </div>
@@ -776,6 +829,11 @@ export default function TasksView({ onTaskUpdate }) {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-left border-r">
+                          <span className="text-sm text-gray-500 italic">
+                            {task.created_by_user ? task.created_by : 'Unknown'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-left border-r">
                           <button
                             onClick={() => handleToggleComplete(task.id, task.status)}
                             className={`px-3 py-1 rounded-full text-xs font-semibold transition ${
@@ -791,7 +849,7 @@ export default function TasksView({ onTaskUpdate }) {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={8} className="text-center py-12 text-gray-500">
+                      <td colSpan={9} className="text-center py-12 text-gray-500">
                         No tasks found matching your criteria
                       </td>
                     </tr>
