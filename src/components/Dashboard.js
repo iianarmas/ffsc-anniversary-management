@@ -14,10 +14,15 @@ export default function Dashboard({ people = [], stats = {} }) {
   // Limit to first 230 people
   const limitedPeople = useMemo(() => people.slice(0, 230), [people]);
 
-  // State for selected date
+  // State for selected date - use Philippine time
   const [selectedDate, setSelectedDate] = React.useState(() => {
-    // Default to today's date
-    return new Date().toISOString().split('T')[0];
+    // Get today's date in Philippine time
+    const phDate = new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' });
+    const phDateObj = new Date(phDate);
+    const year = phDateObj.getFullYear();
+    const month = String(phDateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(phDateObj.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   });
   
   // Calculate age bracket distribution
@@ -79,23 +84,25 @@ export default function Dashboard({ people = [], stats = {} }) {
     const data = [];
     
     // Helper function to extract Philippine time components
-    const getPhilippineTime = (date) => {
-      // Ensure the timestamp has a timezone indicator
-      let timestamp = date;
-      if (typeof timestamp === 'string' && !timestamp.endsWith('Z') && !timestamp.includes('+') && !timestamp.includes('T00:00:00')) {
-        timestamp = timestamp + 'Z'; // Add UTC indicator if missing
+    const getPhilippineTime = (dateString) => {
+      // Ensure the timestamp has a timezone indicator (treat as UTC if missing)
+      let timestamp = dateString;
+      if (typeof timestamp === 'string' && !timestamp.includes('Z') && !timestamp.includes('+') && !timestamp.includes('-', 10)) {
+        timestamp = timestamp + 'Z';
       }
+      
+      const date = new Date(timestamp);
       
       const formatter = new Intl.DateTimeFormat('en-US', {
         timeZone: 'Asia/Manila',
         year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-        hour: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
         hour12: false
       });
       
-      const parts = formatter.formatToParts(new Date(timestamp));
+      const parts = formatter.formatToParts(date);
       const getValue = (type) => parseInt(parts.find(p => p.type === type)?.value || 0);
       
       return {
@@ -159,20 +166,23 @@ export default function Dashboard({ people = [], stats = {} }) {
   const selectedDateTotalRegistrations = useMemo(() => {
     const [selectedYear, selectedMonth, selectedDay] = selectedDate.split('-').map(Number);
     
-    const getPhilippineTime = (date) => {
-      let timestamp = date;
-      if (typeof timestamp === 'string' && !timestamp.endsWith('Z') && !timestamp.includes('+') && !timestamp.includes('T00:00:00')) {
+    const getPhilippineTime = (dateString) => {
+      // Ensure the timestamp has a timezone indicator (treat as UTC if missing)
+      let timestamp = dateString;
+      if (typeof timestamp === 'string' && !timestamp.includes('Z') && !timestamp.includes('+') && !timestamp.includes('-', 10)) {
         timestamp = timestamp + 'Z';
       }
+      
+      const date = new Date(timestamp);
       
       const formatter = new Intl.DateTimeFormat('en-US', {
         timeZone: 'Asia/Manila',
         year: 'numeric',
-        month: 'numeric',
-        day: 'numeric'
+        month: '2-digit',
+        day: '2-digit'
       });
       
-      const parts = formatter.formatToParts(new Date(timestamp));
+      const parts = formatter.formatToParts(date);
       const getValue = (type) => parseInt(parts.find(p => p.type === type)?.value || 0);
       
       return {

@@ -45,7 +45,14 @@ export default function HourlyTrendChart({ data, height = 300, selectedDate, onD
             type="date"
             value={selectedDate}
             onChange={(e) => onDateChange(e.target.value)}
-            max={new Date().toISOString().split('T')[0]}
+            max={(() => {
+              const phDate = new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' });
+              const phDateObj = new Date(phDate);
+              const year = phDateObj.getFullYear();
+              const month = String(phDateObj.getMonth() + 1).padStart(2, '0');
+              const day = String(phDateObj.getDate()).padStart(2, '0');
+              return `${year}-${month}-${day}`;
+            })()}
             className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
