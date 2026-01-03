@@ -660,7 +660,7 @@ export default function ShirtManagementView({
                         <td className="px-4 py-3 border-r">
                           <div className="text-sm text-gray-700">{person.location}</div>
                         </td>
-                        <td className="px-4 py-3 border-r">
+                        <td className="px-4 py-3 border-r text-center">
                           <select
                             value={person.shirtSize || ''}
                             onChange={(e) => canManage && updateShirtSize(person.id, e.target.value)}
@@ -683,7 +683,7 @@ export default function ShirtManagementView({
                             <option value="2XL">2XL</option>
                           </select>
                         </td>
-                        <td className="px-4 py-3 border-r">
+                        <td className="px-4 py-3 border-r text-center">
                           <button
                             onClick={() => canManage && toggleShirtPrint(person.id)}
                             disabled={!canManage}
@@ -696,7 +696,7 @@ export default function ShirtManagementView({
                             {person.hasPrint ? 'With Print' : 'Plain'}
                           </button>
                         </td>
-                        <td className="px-4 py-3 border-r">
+                        <td className="px-4 py-3 border-r text-center">
                           <button
                             onClick={() => canManage && toggleShirtPayment(person.id)}
                             disabled={!canManage}
@@ -709,7 +709,7 @@ export default function ShirtManagementView({
                             {person.paid ? 'Paid' : 'Unpaid'}
                           </button>
                         </td>
-                        <td className="px-4 py-3 border-r">
+                        <td className="px-4 py-3 border-r text-center">
                           <button
                             onClick={() => canManage && toggleShirtGiven(person.id)}
                             disabled={!canManage}

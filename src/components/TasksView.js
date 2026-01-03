@@ -829,7 +829,7 @@ export default function TasksView({ onTaskUpdate }) {
                             <span className="text-sm text-gray-700">{formatDate(task.due_date)}</span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-left border-r">
+                        <td className="px-4 py-3 text-center border-r">
                           <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full border ${getPriorityColor(task.priority)}`}>
                             <span>{getPriorityIcon(task.priority)}</span>
                             {task.priority}
@@ -851,7 +851,7 @@ export default function TasksView({ onTaskUpdate }) {
                             {task.created_by_user ? task.created_by : 'Unknown'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-left border-r">
+                        <td className="px-4 py-3 text-center border-r">
                           <button
                             onClick={() => handleToggleComplete(task.id, task.status)}
                             className={`px-3 py-1 rounded-full text-xs font-semibold transition ${

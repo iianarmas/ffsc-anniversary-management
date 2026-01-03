@@ -371,13 +371,13 @@ export default function MobileShirtManagementView({
                     }}
                     className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                       editingPerson.paid
-                        ? 'bg-green-100 text-green-800 border-2 border-green-300'
-                        : 'bg-red-50 text-red-600 border-2 border-red-200'
+                        ? 'bg-green-600 text-white hover:bg-green-500'
+                        : 'bg-red-600 text-white hover:bg-red-500'
                     }`}
                     style={{ minHeight: '48px' }}
                   >
                     <DollarSign size={18} />
-                    <span>{editingPerson.paid ? '✓ Paid' : 'Mark Paid'}</span>
+                    <span>{editingPerson.paid ? '✓ Paid' : 'Unpaid'}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -386,13 +386,13 @@ export default function MobileShirtManagementView({
                     }}
                     className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                       editingPerson.shirtGiven
-                        ? 'bg-blue-100 text-blue-800 border-2 border-blue-300'
-                        : 'bg-yellow-50 text-yellow-600 border-2 border-yellow-200'
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-yellow-500 text-white hover:bg-yellow-400'
                     }`}
                     style={{ minHeight: '48px' }}
                   >
                     <Package size={18} />
-                    <span>{editingPerson.shirtGiven ? '✓ Given' : 'Mark Given'}</span>
+                    <span>{editingPerson.shirtGiven ? '✓ Given' : 'Pending'}</span>
                   </button>
                 </div>
 
@@ -404,13 +404,13 @@ export default function MobileShirtManagementView({
                   }}
                   className={`w-full py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                     editingPerson.hasPrint
-                      ? 'bg-purple-100 text-purple-800 border-2 border-purple-300'
-                      : 'bg-gray-100 text-gray-800 border-2 border-gray-300'
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-400 text-white hover:bg-gray-500'
                   }`}
                   style={{ minHeight: '48px' }}
                 >
                   <Shirt size={18} />
-                  <span>{editingPerson.hasPrint ? '✓ With Print' : 'Plain (No Print)'}</span>
+                  <span>{editingPerson.hasPrint ? '✓ With Print' : 'Plain'}</span>
                 </button>
               </div>
             </div>
@@ -544,8 +544,8 @@ export default function MobileShirtManagementView({
                     {/* Payment Status */}
                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full ${
                       person.paid 
-                        ? 'bg-green-100 text-green-800 border border-green-200' 
-                        : 'bg-red-100 text-red-800 border border-red-200'
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-red-600 text-white'
                     }`}>
                       <DollarSign size={12} />
                       {person.paid ? 'Paid' : 'Unpaid'}
@@ -554,19 +554,22 @@ export default function MobileShirtManagementView({
                     {/* Distribution Status */}
                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full ${
                       person.shirtGiven 
-                        ? 'bg-blue-100 text-blue-800 border border-blue-200' 
-                        : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-yellow-500 text-white'
                     }`}>
                       <Package size={12} />
                       {person.shirtGiven ? 'Given' : 'Pending'}
                     </span>
 
                     {/* Print Status */}
-                    {person.hasPrint !== undefined && !person.hasPrint && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 border border-gray-200">
-                        Plain
-                      </span>
-                    )}
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full ${
+                      person.hasPrint
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-400 text-white'
+                    }`}>
+                      <Shirt size={12} />
+                      {person.hasPrint ? 'With Print' : 'Plain'}
+                    </span>
                   </div>
                 </div>
                 

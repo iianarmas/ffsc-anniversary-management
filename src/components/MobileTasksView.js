@@ -207,11 +207,14 @@ export default function MobileTasksView({ onTaskUpdate }) {
 
   const getCardBorderColor = (task) => {
     if (task.status === 'complete') return 'border-gray-400';
-    const isOverdue = new Date(task.due_date) < new Date();
-    if (isOverdue) return 'border-red-600';
-    const isToday = formatDate(task.due_date) === 'Today';
-    if (isToday) return 'border-orange-500';
-    return 'border-blue-500';
+    
+    // Match the border color to the priority tag color
+    switch (task.priority) {
+      case 'High': return 'border-red-600';
+      case 'Medium': return 'border-orange-500';
+      case 'Low': return 'border-green-600';
+      default: return 'border-gray-500';
+    }
   };
 
   return (
@@ -580,7 +583,7 @@ export default function MobileTasksView({ onTaskUpdate }) {
                     className={`w-full px-4 py-3.5 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
                       task.status === 'complete'
                         ? 'bg-green-600 text-white hover:bg-green-700'
-                        : 'bg-yellow-500 text-white hover:bg-yellow-600'
+                        : 'bg-[#001740] text-white hover:bg-[#002255]'
                     }`}
                     style={{ minHeight: '48px' }}
                   >

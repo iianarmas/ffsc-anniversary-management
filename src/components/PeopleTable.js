@@ -410,7 +410,7 @@ export default function PeopleTable({
                   <td className="px-4 py-3 text-left border-r">
                     <div className="text-sm text-gray-700">{person.location}</div>
                   </td>
-                  <td className="px-4 py-3 text-left border-r">
+                  <td className="px-4 py-3 text-center border-r">
                     {person.registered ? (
                       <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-green-700 text-white">
                         Checked In
