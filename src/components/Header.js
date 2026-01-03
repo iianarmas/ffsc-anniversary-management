@@ -107,7 +107,7 @@ export default function Header({
           {/* Left: Logo and Title */}
           <div className="flex items-center gap-4 min-w-0">
             <img 
-              src="/church-web-logo.svg" 
+              src="/church-logo.svg" 
               alt="FFSC Logo" 
               className="w-10 h-10 object-contain flex-shrink-0"
             />

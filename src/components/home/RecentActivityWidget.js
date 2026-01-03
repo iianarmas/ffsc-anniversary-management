@@ -65,25 +65,27 @@ export default function RecentActivityWidget({ userId }) {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm h-full">
-      <h3 className="font-semibold mb-4 flex items-center gap-2 text-gray-900">
-        <Activity size={18} className="text-blue-600" />
-        Recent Activity
-      </h3>
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-semibold text-[#001740]">Recent Activity</h3>
+        {activities.length > 0 && (
+          <span className="text-sm text-gray-500">{activities.length}</span>
+        )}
+      </div>
       
-      <div className="space-y-3 max-h-64 overflow-y-auto">
+      <div className="space-y-3 overflow-y-auto" style={{ maxHeight: '400px' }}>
         {activities.length > 0 ? (
           activities.map(activity => {
             const Icon = getActivityIcon(activity.type);
             return (
               <div
                 key={activity.id}
-                className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg transition"
+                className="flex items-start gap-2 p-2 hover:bg-gray-50 rounded-lg transition"
               >
-                <div className={`p-2 rounded-full flex-shrink-0 ${
-                  activity.type === 'registration' ? 'bg-green-100' : 'bg-blue-100'
+                <div className={`p-1.5 rounded flex-shrink-0 ${
+                  activity.type === 'registration' ? 'bg-green-50' : 'bg-blue-50'
                 }`}>
-                  <Icon size={16} className={
+                  <Icon size={14} className={
                     activity.type === 'registration' ? 'text-green-600' : 'text-blue-600'
                   } />
                 </div>

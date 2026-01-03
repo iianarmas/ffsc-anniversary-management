@@ -91,35 +91,32 @@ export default function CalendarWidget({ userId }) {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-full">
-      <h3 className="font-semibold mb-4 flex items-center gap-2 text-gray-900">
-        <Calendar size={18} className="text-blue-600" />
-        Calendar
-      </h3>
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+      <h3 className="text-sm font-semibold text-[#001740] mb-3">Calendar</h3>
       
       {/* Month navigation */}
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-3">
         <button
           onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
           className="p-1 hover:bg-gray-100 rounded transition"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={18} />
         </button>
-        <span className="font-semibold text-gray-900">
-          {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+        <span className="font-semibold text-sm text-gray-900">
+          {currentMonth.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
         </span>
         <button
           onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
           className="p-1 hover:bg-gray-100 rounded transition"
         >
-          <ChevronRight size={20} />
+          <ChevronRight size={18} />
         </button>
       </div>
       
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-1 mb-4">
-        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-          <div key={day} className="text-center text-xs text-gray-500 font-semibold py-1">
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+          <div key={i} className="text-center text-xs text-gray-500 font-semibold py-1">
             {day}
           </div>
         ))}
@@ -137,10 +134,10 @@ export default function CalendarWidget({ userId }) {
               key={date.toISOString()}
               onClick={() => setSelectedDate(date)}
               className={`
-                aspect-square p-1 text-sm rounded relative
-                hover:bg-gray-100 transition
-                ${today ? 'bg-blue-100 font-bold text-blue-900' : 'text-gray-700'}
-                ${selectedDate && selectedDate.toDateString() === date.toDateString() ? 'ring-2 ring-blue-500' : ''}
+                aspect-square p-1 text-xs rounded relative
+                hover:bg-gray-50 transition
+                ${today ? 'bg-[#001740] text-white font-bold' : 'text-gray-700'}
+                ${selectedDate && selectedDate.toDateString() === date.toDateString() ? 'ring-2 ring-[#f4d642]' : ''}
               `}
             >
               {date.getDate()}
@@ -166,22 +163,22 @@ export default function CalendarWidget({ userId }) {
       
       {/* Selected date tasks */}
       {selectedDate && (
-        <div className="border-t pt-3">
-          <p className="text-sm font-semibold mb-2 text-gray-900">
-            {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+        <div className="border-t pt-3 mt-3">
+          <p className="text-xs font-semibold mb-2 text-[#001740]">
+            {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
           </p>
-          <div className="space-y-2 max-h-32 overflow-y-auto">
+          <div className="space-y-2 max-h-40 overflow-y-auto">
             {getTasksForDate(selectedDate).length > 0 ? (
               getTasksForDate(selectedDate).map(task => (
-                <div key={task.id} className="text-xs p-2 bg-gray-50 rounded">
-                  <div className="font-medium text-gray-900 line-clamp-2">{task.noteText}</div>
+                <div key={task.id} className="text-xs p-2 bg-gray-50 rounded border border-gray-100">
+                  <div className="font-medium text-[#001740] line-clamp-2">{task.noteText}</div>
                   <div className="text-gray-500 text-[10px] mt-1">
                     {task.personFirstName} {task.personLastName}
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-gray-500">No tasks for this date</p>
+              <p className="text-xs text-gray-500 text-center py-2">No tasks</p>
             )}
           </div>
         </div>

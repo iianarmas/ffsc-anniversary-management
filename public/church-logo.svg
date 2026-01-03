@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 962.88 1024">
+  <defs>
+    <style>
+      .cls-1 {
+        filter: url(#drop-shadow-1);
+      }
+
+      .cls-1, .cls-2 {
+        fill: #245577;
+      }
+
+      .cls-3 {
+        fill: #3c77a0;
+        filter: url(#drop-shadow-3);
+      }
+
+      .cls-4 {
+        fill: #e5e27a;
+        filter: url(#drop-shadow-2);
+      }
+    </style>
+    <filter id="drop-shadow-1" x="252.48" y="145.08" width="710.4" height="269.28" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy="7"/>
+      <feGaussianBlur result="blur" stdDeviation="5"/>
+      <feFlood flood-color="#000" flood-opacity=".3"/>
+      <feComposite in2="blur" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="drop-shadow-2" x="387.12" y="421.8" width="411.6" height="164.16" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy="7"/>
+      <feGaussianBlur result="blur-2" stdDeviation="5"/>
+      <feFlood flood-color="#000" flood-opacity=".3"/>
+      <feComposite in2="blur-2" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="drop-shadow-3" x="0" y="136.68" width="648.24" height="286.08" filterUnits="userSpaceOnUse">
+      <feOffset dx="7" dy="7"/>
+      <feGaussianBlur result="blur-3" stdDeviation="5"/>
+      <feFlood flood-color="#000" flood-opacity=".3"/>
+      <feComposite in2="blur-3" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <polygon class="cls-2" points="606.03 0 366.85 0 366.85 303.63 606.03 542.81 606.03 0"/>
+  <polygon class="cls-2" points="366.85 303.63 366.85 783.34 606.03 1024 606.03 542.81 366.85 303.63"/>
+  <polygon class="cls-1" points="947.78 153.16 606.3 153.16 267.53 392.34 947.78 392.34 947.78 153.16"/>
+  <polygon class="cls-4" points="783.51 563.96 592.06 563.96 402.13 429.86 783.51 429.86 783.51 563.96"/>
+  <polygon class="cls-3" points="8.19 144.91 263.87 400.59 264.1 400.59 626.24 144.91 8.19 144.91"/>
+</svg>

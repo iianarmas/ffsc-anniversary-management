@@ -1,48 +1,80 @@
 import React from 'react';
-import { AlertCircle, Bell, Info } from 'lucide-react';
+import { AlertCircle, Bell, Info, CheckCircle2 } from 'lucide-react';
 
 export default function NotificationsWidget({ taskStats, capacity }) {
   const notifications = [
     {
       id: 1,
-      type: 'warning',
       icon: AlertCircle,
-      message: `${taskStats?.overdue || 0} overdue tasks`,
-      color: 'text-red-600 bg-red-50 border-red-200'
+      count: taskStats?.overdue || 0,
+      label: 'Overdue Tasks',
+      show: (taskStats?.overdue || 0) > 0,
+      bgColor: 'bg-red-50',
+      textColor: 'text-red-700',
+      iconColor: 'text-red-600',
+      borderColor: 'border-red-100'
     },
     {
       id: 2,
-      type: 'info',
       icon: Bell,
-      message: `${taskStats?.dueToday || 0} tasks due today`,
-      color: 'text-orange-600 bg-orange-50 border-orange-200'
+      count: taskStats?.dueToday || 0,
+      label: 'Due Today',
+      show: (taskStats?.dueToday || 0) > 0,
+      bgColor: 'bg-orange-50',
+      textColor: 'text-orange-700',
+      iconColor: 'text-orange-600',
+      borderColor: 'border-orange-100'
     },
     {
       id: 3,
-      type: 'info',
       icon: Info,
-      message: `${capacity.max - capacity.current} slots remaining (${capacity.current}/${capacity.max})`,
-      color: capacity.current >= 200 ? 'text-orange-600 bg-orange-50 border-orange-200' : 'text-blue-600 bg-blue-50 border-blue-200'
+      count: capacity.max - capacity.current,
+      label: 'Slots Remaining',
+      show: true,
+      bgColor: capacity.current >= 200 ? 'bg-orange-50' : 'bg-blue-50',
+      textColor: capacity.current >= 200 ? 'text-orange-700' : 'text-blue-700',
+      iconColor: capacity.current >= 200 ? 'text-orange-600' : 'text-blue-600',
+      borderColor: capacity.current >= 200 ? 'border-orange-100' : 'border-blue-100'
     }
   ];
 
+  const activeNotifications = notifications.filter(n => n.show);
+
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm h-full">
-      <h3 className="font-semibold mb-4 flex items-center gap-2 text-gray-900">
-        <Bell size={18} className="text-blue-600" />
-        Notifications
-      </h3>
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-[#001740]">Alerts</h3>
+        {activeNotifications.length > 0 && (
+          <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded">
+            {activeNotifications.length}
+          </span>
+        )}
+      </div>
       
-      <div className="space-y-3">
-        {notifications.map(notification => (
-          <div
-            key={notification.id}
-            className={`p-3 rounded-lg border ${notification.color} flex items-start gap-3`}
-          >
-            <notification.icon size={20} className="flex-shrink-0 mt-0.5" />
-            <p className="text-sm font-medium">{notification.message}</p>
+      <div className="space-y-2">
+        {activeNotifications.length > 0 ? (
+          activeNotifications.map(notification => (
+            <div
+              key={notification.id}
+              className={`p-3 rounded-lg border ${notification.bgColor} ${notification.borderColor}`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <notification.icon size={16} className={notification.iconColor} />
+                <span className={`text-xs font-semibold ${notification.textColor}`}>
+                  {notification.label}
+                </span>
+              </div>
+              <div className={`text-2xl font-bold ${notification.textColor}`}>
+                {notification.count}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-6">
+            <CheckCircle2 size={32} className="mx-auto mb-2 text-gray-300" />
+            <p className="text-xs text-gray-500">All clear!</p>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

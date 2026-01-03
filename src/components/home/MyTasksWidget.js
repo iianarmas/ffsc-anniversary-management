@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckSquare, Circle, CheckCircle2, Clock } from 'lucide-react';
+import { CheckSquare, Circle, CheckCircle2, Clock, Users } from 'lucide-react';
 import { getMyTasks, toggleTaskComplete } from '../../services/api';
 
 export default function MyTasksWidget({ userId, onTaskUpdate }) {
@@ -77,44 +77,43 @@ export default function MyTasksWidget({ userId, onTaskUpdate }) {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm h-full">
-      <h3 className="font-semibold mb-4 flex items-center gap-2 text-gray-900">
-        <CheckSquare size={18} className="text-blue-600" />
-        My Tasks ({tasks.length})
-      </h3>
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-semibold text-[#001740]">My Tasks</h3>
+        <span className="text-sm text-gray-500">{tasks.length}</span>
+      </div>
       
-      <div className="space-y-3 max-h-96 overflow-y-auto">
+      <div className="space-y-3 overflow-y-auto" style={{ maxHeight: '450px' }}>
         {tasks.length > 0 ? (
           tasks.map(task => (
             <div 
               key={task.id}
-              className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
             >
               <div className="flex items-start gap-3">
                 <button 
                   onClick={() => handleToggleComplete(task.id, task.status)}
-                  className="mt-1 hover:scale-110 transition"
+                  className="mt-1 hover:scale-110 transition flex-shrink-0"
                 >
                   {task.status === 'complete' ? (
                     <CheckCircle2 size={20} className="text-green-600" />
                   ) : (
-                    <Circle size={20} className="text-gray-400 hover:text-blue-600" />
+                    <Circle size={20} className="text-gray-400 hover:text-[#001740]" />
                   )}
                 </button>
                 
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 mb-1">
+                  <p className="text-sm font-medium text-[#001740] mb-2">
                     {task.noteText}
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-gray-600 flex-wrap">
-                    <span>
+                  <div className="flex items-center gap-3 text-xs text-gray-600 flex-wrap">
+                    <span className="flex items-center gap-1">
+                      <Users size={12} />
                       {task.personFirstName} {task.personLastName}
                     </span>
-                    <span>•</span>
-                    <span className={`px-2 py-0.5 rounded-full ${getPriorityColor(task.priority)}`}>
+                    <span className={`px-2 py-1 rounded-full font-medium ${getPriorityColor(task.priority)}`}>
                       {task.priority}
                     </span>
-                    <span>•</span>
                     <span className="flex items-center gap-1">
                       <Clock size={12} />
                       {formatDueDate(task.dueDate)}
@@ -127,8 +126,8 @@ export default function MyTasksWidget({ userId, onTaskUpdate }) {
         ) : (
           <div className="text-center py-12 text-gray-500">
             <CheckCircle2 size={48} className="mx-auto mb-3 text-gray-300" />
-            <p>No tasks assigned to you</p>
-            <p className="text-sm">You're all caught up! 🎉</p>
+            <p className="font-medium">No active tasks</p>
+            <p className="text-sm mt-1">You're all caught up!</p>
           </div>
         )}
       </div>
