@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Filter, StickyNote, CheckSquare, CheckCircle } from 'lucide-react';
+import { Filter, StickyNote, CheckSquare, CheckCircle, Lock } from 'lucide-react';
+import { useAuth } from './auth/AuthProvider';
 
 const formatPhilippineTime = (utcTimestamp) => {
   if (!utcTimestamp) return '—';
@@ -63,6 +64,7 @@ export default function PeopleTable({
   peopleTaskInfo = {}, // NEW: Task info for each person
   stickyTop = 60
 }) {
+  const { profile } = useAuth();
   // debug: show stickyTop in dev console
   if (process.env.NODE_ENV === 'development') {
     // eslint-disable-next-line no-console
@@ -305,6 +307,22 @@ export default function PeopleTable({
                       {/* Notes/Task Indicators */}
                       {(() => {
                         const taskInfo = peopleTaskInfo[person.id];
+                        
+                        // Check if user is viewer
+                        if (profile?.role === 'viewer') {
+                          // Show locked indicator for viewers if there are notes/tasks
+                          if (taskInfo?.incompleteTasksCount > 0 || taskInfo?.hasOnlyCompletedTasks || taskInfo?.hasNotes) {
+                            return (
+                              <div className="p-1 rounded transition group relative">
+                                <Lock size={14} className="text-gray-400" />
+                                <span className="fixed px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-[100]" style={{ bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '4px' }}>
+                                  Contact admin to view notes/tasks
+                                </span>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }
                         
                         // Show task indicator if person has incomplete tasks
                         if (taskInfo?.incompleteTasksCount > 0) {

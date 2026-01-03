@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronUp, Filter, Square, Circle, CalendarDays, Hash, Users, CheckCircle2, Clock, AlertTriangle, RotateCw, ClipboardList } from 'lucide-react';
+import { ChevronUp, Filter, Square, Circle, CalendarDays, Hash, Users, CheckCircle2, Clock, AlertTriangle, RotateCw, ClipboardList, Lock } from 'lucide-react';
 import Header from './Header';
 import Pagination from './Pagination';
 import AccountSidebar from './AccountSidebar';
@@ -390,6 +390,38 @@ export default function TasksView({ onTaskUpdate }) {
     if (isToday) return '';
     return '';
   };
+
+  // Check if user is viewer - show restricted message (after all hooks)
+  if (profile?.role === 'viewer') {
+    return (
+      <>
+        <Header
+          viewTitle="Task Management"
+          searchTerm=""
+          setSearchTerm={() => {}}
+          searchPlaceholder="Search tasks or people..."
+        />
+        
+        <div className="p-6 bg-white min-h-screen flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <div className="mb-6">
+              <Lock size={64} className="mx-auto text-gray-300" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">Access Restricted</h2>
+            <p className="text-gray-600 mb-6">
+              You don't have permission to view or manage tasks. This feature is only available to Committee members and Administrators.
+            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+              <p className="text-sm text-blue-900 font-medium mb-2">Need access?</p>
+              <p className="text-sm text-blue-800">
+                Contact your administrator to request Committee or Admin permissions.
+              </p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   const FilterDropdown = ({ column, options, value, onChange }) => {
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });

@@ -830,6 +830,20 @@ export async function updateUserStatus(userId, status) {
   }
 }
 
+// Delete user (admin only)
+export const deleteUser = async (userId) => {
+  try {
+    const { error } = await supabase.auth.admin.deleteUser(userId);
+    
+    if (error) throw error;
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 // Get all registration codes (Admin only)
 export async function getRegistrationCodes() {
   try {

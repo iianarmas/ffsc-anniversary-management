@@ -1,5 +1,6 @@
 import React from 'react';
-import { UserPlus, UserMinus, Printer, RotateCcw } from 'lucide-react';
+import { UserPlus, UserMinus, Printer, RotateCcw, Lock } from 'lucide-react';
+import { useAuth } from './auth/AuthProvider';
 
 export default function ActionButtons({ 
   handleSelectAll, 
@@ -14,6 +15,7 @@ export default function ActionButtons({
   stats = [],
   readOnly = false
 }) {
+  const { profile } = useAuth();
 
   // Debug logging
   console.log('ActionButtons - selectedPeople:', selectedPeople, 'length:', selectedPeople.length);
@@ -103,13 +105,28 @@ export default function ActionButtons({
           </button>
         )}
 
-        <button
-          onClick={handlePrint}
-          className="flex items-center gap-2 px-4 py-2 bg-[#0f2a71] hover:bg-[#1c3b8d] text-white rounded-lg font-medium transition text-sm"
-        >
-          <Printer size={16} />
-          Print
-        </button>
+        {profile?.role !== 'viewer' ? (
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 px-4 py-2 bg-[#0f2a71] hover:bg-[#1c3b8d] text-white rounded-lg font-medium transition text-sm"
+          >
+            <Printer size={16} />
+            Print
+          </button>
+        ) : (
+          <div className="group relative">
+            <button
+              disabled
+              className="flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-500 rounded-lg font-medium transition text-sm cursor-not-allowed"
+            >
+              <Lock size={16} />
+              Print
+            </button>
+            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none">
+              Contact admin for print access
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

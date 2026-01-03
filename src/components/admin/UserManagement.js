@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Shield, Eye, ChevronDown, Key, Plus, X, AlertTriangle } from 'lucide-react';
+import { Users, Search, Shield, Eye, ChevronDown, Key, Plus, X, AlertTriangle, Trash2 } from 'lucide-react';
 import Header from '../Header';
 import { 
   getAllUsers, 
   updateUserRole, 
   updateUserStatus,
+  deleteUser,
   getRegistrationCodes,
   createRegistrationCode,
   toggleRegistrationCodeStatus,
@@ -71,6 +72,15 @@ export default function UserManagement() {
     const result = await toggleRegistrationCodeStatus(codeId, currentStatus);
     if (result.success) {
       setCodes(prev => prev.map(c => c.id === codeId ? { ...c, is_active: !currentStatus } : c));
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+    
+    const result = await deleteUser(userId);
+    if (result.success) {
+      setUsers(prev => prev.filter(u => u.id !== userId));
     }
   };
 
@@ -236,6 +246,9 @@ export default function UserManagement() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Joined
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -294,6 +307,19 @@ export default function UserManagement() {
                           month: 'short',
                           day: 'numeric'
                         })}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          disabled={user.id === profile.id}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition disabled:cursor-not-allowed disabled:opacity-50 group relative"
+                          title="Delete user"
+                        >
+                          <Trash2 size={18} />
+                          <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none">
+                            Delete user
+                          </span>
+                        </button>
                       </td>
                     </tr>
                   ))}
