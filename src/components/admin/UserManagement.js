@@ -259,8 +259,8 @@ export default function UserManagement() {
           </div>
           <div className="divide-y divide-gray-200">
             {pendingRequests.map(request => (
-              <div key={request.id} className="p-6 hover:bg-gray-50 transition">
-                <div className="flex items-start justify-between">
+              <div key={request.id} className="p-4 md:p-6 hover:bg-gray-50 transition">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="flex-shrink-0 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
@@ -300,18 +300,18 @@ export default function UserManagement() {
                     </div>
                   </div>
                   
-                  <div className="flex gap-2 ml-4">
+                  <div className="flex gap-2 md:ml-4 w-full md:w-auto">
                     <button
                       onClick={() => handleApproveRequest(request.id)}
                       disabled={processingRequest === request.id}
-                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                      className="flex-1 md:flex-none px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                     >
                       {processingRequest === request.id ? 'Approving...' : 'Approve'}
                     </button>
                     <button
                       onClick={() => handleRejectRequest(request.id)}
                       disabled={processingRequest === request.id}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                      className="flex-1 md:flex-none px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                     >
                       {processingRequest === request.id ? 'Rejecting...' : 'Reject'}
                     </button>

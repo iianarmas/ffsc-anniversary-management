@@ -389,8 +389,10 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
         <div className="overflow-y-auto" style={{ height: 'calc(100vh - 80px)' }}>
           <div className="p-6 pb-24">
           <div className="flex flex-col gap-6">
-            <div className="flex gap-6 items-start">
-              <div className="flex-1">
+            {/* Main Content Area */}
+            <div className="flex flex-col lg:flex-row gap-6 items-start">
+              {/* Left Side - Person Details */}
+              <div className="flex-1 min-w-0">
                 <div className="grid grid-cols-2 gap-y-4 gap-x-6">
                   <div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">First name</div>
@@ -418,123 +420,22 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
 
                   {profile?.role !== 'viewer' && (
                     <div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Contact Number</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Number</div>
                       <div className="text-sm text-gray-900 font-medium">{formatContactNumber(person?.contactNumber)}</div>
                     </div>
                   )}
 
-                  <div>
+                  <div className="col-span-2">
                     <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Location</div>
                     <div className="text-sm text-gray-900 font-medium">{person?.location || '—'}</div>
-                  </div>
-
-                  <div className="col-span-2">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Attendance Status</div>
-                    <div className="space-y-2">
-                      <label className={`flex items-center gap-3 p-3 border-2 rounded-lg transition ${
-                        localAttendanceStatus === 'attending'
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-gray-200 bg-white hover:border-gray-300'
-                      } ${(profile?.role === 'viewer' || profile?.role === 'encoder') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
-                        <input
-                          type="radio"
-                          name="attendanceStatus"
-                          value="attending"
-                          checked={localAttendanceStatus === 'attending'}
-                          onChange={async (e) => {
-                            if (profile?.role === 'viewer' || profile?.role === 'encoder') return;
-                            setLocalAttendanceStatus('attending');
-                            const result = await updateAttendanceStatus(person.id, 'attending');
-                            if (result.success) {
-                              window.dispatchEvent(new Event('registrationUpdated'));
-                            }
-                          }}
-                          disabled={profile?.role === 'viewer' || profile?.role === 'encoder'}
-                          className="w-4 h-4 accent-green-600 cursor-pointer disabled:cursor-not-allowed"
-                        />
-                        <div className="flex-1">
-                          <div className="text-sm font-semibold text-gray-900">Attending Event</div>
-                          <div className="text-xs text-gray-500">Will be present at the event</div>
-                        </div>
-                      </label>
-                      
-                      <label className={`flex items-center gap-3 p-3 border-2 rounded-lg transition ${
-                        localAttendanceStatus === 'shirt_only'
-                          ? 'border-purple-500 bg-purple-50'
-                          : 'border-gray-200 bg-white hover:border-gray-300'
-                      } ${(profile?.role === 'viewer' || profile?.role === 'encoder') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
-                        <input
-                          type="radio"
-                          name="attendanceStatus"
-                          value="shirt_only"
-                          checked={localAttendanceStatus === 'shirt_only'}
-                          onChange={async (e) => {
-                            if (profile?.role === 'viewer' || profile?.role === 'encoder') return;
-                            setLocalAttendanceStatus('shirt_only');
-                            const result = await updateAttendanceStatus(person.id, 'shirt_only');
-                            if (result.success) {
-                              window.dispatchEvent(new Event('registrationUpdated'));
-                            }
-                          }}
-                          disabled={profile?.role === 'viewer' || profile?.role === 'encoder'}
-                          className="w-4 h-4 accent-purple-600 cursor-pointer disabled:cursor-not-allowed"
-                        />
-                        <div className="flex-1">
-                          <div className="text-sm font-semibold text-gray-900">Shirt Order Only</div>
-                          <div className="text-xs text-gray-500">Not attending the event</div>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Timestamp</div>
-                    <div className="text-sm text-gray-900 font-medium">{formatDate(person?.registeredAt || person?.createdAt || person?.timestamp)}</div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Shirt size</div>
-                    <div className="text-sm text-gray-900 font-medium">{person?.shirtSize || '—'}</div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Print option</div>
-                    <div className="text-sm text-gray-900 font-medium">
-                      {person?.hasPrint ? (
-                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">With Print</span>
-                      ) : (
-                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Plain</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Payment status</div>
-                    <div className="text-sm text-gray-900 font-medium">
-                      {person?.paid ? (
-                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Paid</span>
-                      ) : (
-                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Unpaid</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="col-span-2">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Distribution status</div>
-                    <div className="text-sm text-gray-900 font-medium">
-                      {person?.shirtGiven ? (
-                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Given</span>
-                      ) : (
-                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Pending</span>
-                      )}
-                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Shirt Image - Right Side */}
-              <div className="w-full max-w-[280px] flex-shrink-0">
-                <div className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden p-2">
+              {/* Right Side - Shirt Image with Details Box */}
+              <div className="w-full lg:w-auto lg:max-w-[240px] xl:max-w-[280px] flex-shrink-0">
+                {/* Shirt Image */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden p-2 mb-3">
                   {person?.gender ? (
                     <img 
                       src={person.gender === 'Male' ? shirtMale : shirtFemale}
@@ -548,11 +449,123 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
                     </div>
                   )}
                 </div>
-                <div className="mt-2 text-xs text-gray-500 text-center">
-                  {person?.gender ? `${person.gender} shirt design` : 'Shirt preview'}
+                
+                {/* Shirt Details Box */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                  <div className="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-2">Shirt Information</div>
+                  
+                  {person?.registered && person?.registeredAt && (
+                    <div className="flex items-center justify-between text-xs pb-2 border-b border-blue-200">
+                      <span className="text-blue-700">Registered:</span>
+                      <span className="text-blue-900 font-medium">
+                        {new Date(person?.registeredAt).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-blue-700">Size:</span>
+                    <span className="text-blue-900 font-semibold">
+                      {person?.shirtSize || 'Not set'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-blue-700">Print:</span>
+                    {person?.hasPrint ? (
+                      <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white">With Print</span>
+                    ) : (
+                      <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-gray-400 text-white">Plain</span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-blue-700">Payment:</span>
+                    {person?.paid ? (
+                      <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-green-600 text-white">Paid</span>
+                    ) : (
+                      <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-red-600 text-white">Unpaid</span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-blue-700">Status:</span>
+                    {person?.shirtGiven ? (
+                      <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-green-600 text-white">Given</span>
+                    ) : (
+                      <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-orange-500 text-white">Pending</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Attendance Status Section */}
+            <div className="pt-4 border-t border-gray-200">
+              <div className="text-xs text-gray-500 uppercase tracking-wide mb-3">Attendance Status</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className={`flex items-center gap-3 p-3 border-2 rounded-lg transition ${
+                  localAttendanceStatus === 'attending'
+                    ? 'border-green-500 bg-green-50'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                } ${(profile?.role === 'viewer' || profile?.role === 'encoder') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                  <input
+                    type="radio"
+                    name="attendanceStatus"
+                    value="attending"
+                    checked={localAttendanceStatus === 'attending'}
+                    onChange={async (e) => {
+                      if (profile?.role === 'viewer' || profile?.role === 'encoder') return;
+                      setLocalAttendanceStatus('attending');
+                      const result = await updateAttendanceStatus(person.id, 'attending');
+                      if (result.success) {
+                        window.dispatchEvent(new Event('registrationUpdated'));
+                      }
+                    }}
+                    disabled={profile?.role === 'viewer' || profile?.role === 'encoder'}
+                    className="w-4 h-4 accent-green-600 cursor-pointer disabled:cursor-not-allowed"
+                  />
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-gray-900">Attending Event</div>
+                    <div className="text-xs text-gray-500">Will be present at the event</div>
+                  </div>
+                </label>
+                
+                <label className={`flex items-center gap-3 p-3 border-2 rounded-lg transition ${
+                  localAttendanceStatus === 'shirt_only'
+                    ? 'border-purple-500 bg-purple-50'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                } ${(profile?.role === 'viewer' || profile?.role === 'encoder') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                  <input
+                    type="radio"
+                    name="attendanceStatus"
+                    value="shirt_only"
+                    checked={localAttendanceStatus === 'shirt_only'}
+                    onChange={async (e) => {
+                      if (profile?.role === 'viewer' || profile?.role === 'encoder') return;
+                      setLocalAttendanceStatus('shirt_only');
+                      const result = await updateAttendanceStatus(person.id, 'shirt_only');
+                      if (result.success) {
+                        window.dispatchEvent(new Event('registrationUpdated'));
+                      }
+                    }}
+                    disabled={profile?.role === 'viewer' || profile?.role === 'encoder'}
+                    className="w-4 h-4 accent-purple-600 cursor-pointer disabled:cursor-not-allowed"
+                  />
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-gray-900">Shirt Order Only</div>
+                    <div className="text-xs text-gray-500">Not attending the event</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             {/* Account Creation Info */}
             <div className="pt-4 border-t border-gray-100">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
@@ -572,6 +585,7 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
               </div>
             </div>
 
+            {/* Notes & Actions */}
             <div className="pt-4 border-t border-gray-100">
               <h4 className="text-sm font-semibold text-gray-900 mb-3">Notes & Actions</h4>
               

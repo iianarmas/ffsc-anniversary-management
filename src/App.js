@@ -239,7 +239,8 @@ useEffect(() => {
       if (payload.new.status !== 'pending') {
         setRoleRequestResult({
           show: true,
-          status: payload.new.status
+          status: payload.new.status,
+          isRequestResponse: true
         });
       }
     })
@@ -247,6 +248,28 @@ useEffect(() => {
   
   return () => {
     supabase.removeChannel(channel);
+  };
+}, [profile?.id]);
+
+// Listen for admin-initiated role changes
+useEffect(() => {
+  if (!profile?.id) return;
+
+  const handleRoleChange = (event) => {
+    const { oldRole, newRole } = event.detail;
+    setRoleRequestResult({
+      show: true,
+      status: 'admin_changed',
+      oldRole,
+      newRole,
+      isRequestResponse: false
+    });
+  };
+
+  window.addEventListener('roleChanged', handleRoleChange);
+
+  return () => {
+    window.removeEventListener('roleChanged', handleRoleChange);
   };
 }, [profile?.id]);
 
@@ -824,7 +847,10 @@ useEffect(() => {
       <RoleRequestDialog
         isOpen={roleRequestResult.show}
         status={roleRequestResult.status}
-        onClose={() => setRoleRequestResult({ show: false, status: '' })}
+        oldRole={roleRequestResult.oldRole}
+        newRole={roleRequestResult.newRole}
+        isRequestResponse={roleRequestResult.isRequestResponse}
+        onClose={() => setRoleRequestResult({ show: false, status: '', oldRole: null, newRole: null, isRequestResponse: true })}
       />
 
       <style>{`

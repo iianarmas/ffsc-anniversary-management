@@ -1,13 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, ShieldCheck, ShieldAlert } from 'lucide-react';
 
 export default function RoleRequestDialog({ 
   isOpen, 
-  status, // 'approved' or 'rejected'
-  onClose 
+  status, // 'approved', 'rejected', or 'admin_changed'
+  onClose,
+  oldRole = null,
+  newRole = null,
+  isRequestResponse = true
 }) {
   const [countdown, setCountdown] = useState(status === 'approved' ? 5 : 3);
   const [canDismiss, setCanDismiss] = useState(false);
+
+  // Determine admin change type
+  const isAdminChanged = status === 'admin_changed';
+  const isApproved = status === 'approved';
+  const isRejected = status === 'rejected';
+
+  // Get role display names
+  const getRoleDisplay = (role) => {
+    if (role === 'committee') return 'Committee Member';
+    if (role === 'viewer') return 'Viewer';
+    if (role === 'admin') return 'Administrator';
+    return role;
+  };
+
+  // Determine if it's a promotion or demotion
+  const isPromotion = isAdminChanged && 
+    ((oldRole === 'viewer' && newRole === 'committee') || 
+     (oldRole === 'viewer' && newRole === 'admin') ||
+     (oldRole === 'committee' && newRole === 'admin'));
 
   useEffect(() => {
     if (!isOpen) {
@@ -55,7 +77,50 @@ export default function RoleRequestDialog({
       
       {/* Dialog */}
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all animate-scale-in">
-        {status === 'approved' ? (
+        {isAdminChanged ? (
+          <>
+            {/* Admin Role Change Content */}
+            <div className="flex justify-center mb-4">
+              <div className={`w-16 h-16 ${isPromotion ? 'bg-blue-100' : 'bg-orange-100'} rounded-full flex items-center justify-center`}>
+                {isPromotion ? (
+                  <ShieldCheck size={32} className="text-blue-600" />
+                ) : (
+                  <ShieldAlert size={32} className="text-orange-600" />
+                )}
+              </div>
+            </div>
+            
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                {isPromotion ? '🎉 Role Upgraded!' : 'Role Changed'}
+              </h3>
+              <p className="text-gray-600 mb-2">
+                An administrator has changed your role from <span className="font-semibold">{getRoleDisplay(oldRole)}</span> to <span className="font-semibold text-blue-600">{getRoleDisplay(newRole)}</span>.
+              </p>
+              {isPromotion ? (
+                <p className="text-sm text-gray-500">
+                  You now have additional access and permissions. Your new capabilities are available immediately.
+                </p>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  Your access level has been adjusted. Some features may no longer be available.
+                </p>
+              )}
+            </div>
+            
+            <button
+              onClick={() => {
+                onClose();
+                if (!isPromotion) {
+                  setTimeout(() => window.location.reload(), 500);
+                }
+              }}
+              className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition cursor-pointer"
+            >
+              {isPromotion ? 'Great!' : 'Understood'}
+            </button>
+          </>
+        ) : isApproved ? (
           <>
             {/* Approval Content */}
             <div className="flex justify-center mb-4">

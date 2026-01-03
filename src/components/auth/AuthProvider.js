@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { getCurrentUser, getUserProfile, onAuthStateChange, signOut as supabaseSignOut } from '../../services/supabase';
+import { getCurrentUser, getUserProfile, onAuthStateChange, signOut as supabaseSignOut, supabase } from '../../services/supabase';
 
 const AuthContext = createContext({});
 
@@ -35,6 +35,50 @@ export function AuthProvider({ children }) {
       subscription?.unsubscribe();
     };
   }, []);
+  // Listen for real-time role changes
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const channel = supabase
+      .channel('profile-role-changes')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${profile.id}`
+      }, (payload) => {
+        // If role or status changed, update profile immediately
+        if (payload.new.role !== profile.role || payload.new.status !== profile.status) {
+          setProfile({
+            ...profile,
+            role: payload.new.role,
+            status: payload.new.status
+          });
+
+          // Trigger notification event for role change
+          if (payload.new.role !== profile.role) {
+            window.dispatchEvent(new CustomEvent('roleChanged', {
+              detail: {
+                oldRole: profile.role,
+                newRole: payload.new.role
+              }
+            }));
+          }
+
+          // If user is now inactive/deleted, log them out
+          if (payload.new.status !== 'active') {
+            supabaseSignOut();
+            setUser(null);
+            setProfile(null);
+          }
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id, profile?.role, profile?.status]);
 
   const checkUser = async () => {
     try {
