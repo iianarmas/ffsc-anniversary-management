@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, X, ChevronUp, Calendar, Tag, AlertCircle, CheckCircle, Clock, CheckSquare, ChevronRight } from 'lucide-react';
+import { Search, Filter, X, ChevronUp, Calendar, Tag, AlertCircle, CheckCircle, Clock, CheckSquare, ChevronRight, Users } from 'lucide-react';
 import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
-import { fetchAllTasks, toggleTaskComplete } from '../services/api';
+import { fetchAllTasks, toggleTaskComplete, getUsersForTaskAssignment } from '../services/api';
+import { useAuth } from './auth/AuthProvider';
 
 export default function MobileTasksView({ onTaskUpdate }) {
+  const { profile } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,6 +18,8 @@ export default function MobileTasksView({ onTaskUpdate }) {
   const [filterPriority, setFilterPriority] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterDueDate, setFilterDueDate] = useState('All');
+  const [filterAssignedTo, setFilterAssignedTo] = useState('me'); // Default to 'me'
+  const [availableUsers, setAvailableUsers] = useState([]);
   
   // Sidebar/Dialog states
   const [selectedPerson, setSelectedPerson] = useState(null);
@@ -25,6 +29,20 @@ export default function MobileTasksView({ onTaskUpdate }) {
 
   useEffect(() => {
     loadTasks();
+  }, []);
+
+  // Load available users for assignment filter
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const users = await getUsersForTaskAssignment();
+        console.log('Loaded users:', users); // Debug log
+        setAvailableUsers(users);
+      } catch (error) {
+        console.error('Error loading users:', error);
+      }
+    };
+    loadUsers();
   }, []);
 
   useEffect(() => {
@@ -51,6 +69,11 @@ export default function MobileTasksView({ onTaskUpdate }) {
 
   const filteredAndSortedTasks = React.useMemo(() => {
     let filtered = tasks.filter(task => {
+      // Filter by assigned user
+      const matchesAssignedTo = filterAssignedTo === 'All' || 
+        (filterAssignedTo === 'me' && task.assigned_to_user === profile?.id) ||
+        task.assigned_to_user === filterAssignedTo;
+      
       const matchesSearch = searchTerm === '' || 
         `${task.people.first_name} ${task.people.last_name} ${task.note_text}`.toLowerCase().includes(searchTerm.toLowerCase());
       
@@ -82,7 +105,7 @@ export default function MobileTasksView({ onTaskUpdate }) {
         }
       }
       
-      return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesDueDate;
+      return matchesAssignedTo && matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesDueDate;
     });
 
     // Sort: Overdue first, then by due date
@@ -97,15 +120,16 @@ export default function MobileTasksView({ onTaskUpdate }) {
     });
 
     return filtered;
-  }, [tasks, searchTerm, filterStatus, filterPriority, filterCategory, filterDueDate]);
+  }, [tasks, searchTerm, filterStatus, filterPriority, filterCategory, filterDueDate, filterAssignedTo, profile?.id]);
 
   const stats = React.useMemo(() => {
-    const total = tasks.length;
-    const incomplete = tasks.filter(t => t.status === 'incomplete').length;
-    const complete = tasks.filter(t => t.status === 'complete').length;
-    const overdue = tasks.filter(t => t.status === 'incomplete' && new Date(t.due_date) < new Date()).length;
+    // Calculate stats based on FILTERED tasks (user-specific)
+    const total = filteredAndSortedTasks.length;
+    const incomplete = filteredAndSortedTasks.filter(t => t.status === 'incomplete').length;
+    const complete = filteredAndSortedTasks.filter(t => t.status === 'complete').length;
+    const overdue = filteredAndSortedTasks.filter(t => t.status === 'incomplete' && new Date(t.due_date) < new Date()).length;
     return { total, incomplete, complete, overdue };
-  }, [tasks]);
+  }, [filteredAndSortedTasks]);
 
   const activeFiltersCount = [filterStatus, filterPriority, filterCategory, filterDueDate].filter(f => f !== 'All').length;
 
@@ -123,6 +147,7 @@ export default function MobileTasksView({ onTaskUpdate }) {
     setFilterPriority('All');
     setFilterCategory('All');
     setFilterDueDate('All');
+    setFilterAssignedTo('me'); // Reset to default 'me'
   };
 
   const handleOpenPerson = (task) => {
@@ -246,6 +271,7 @@ export default function MobileTasksView({ onTaskUpdate }) {
                 <span className="text-gray-500">Overdue</span>
               </div>
             </div>
+            </div>
 
             {/* Search Bar */}
           <div className="relative mb-3">
@@ -278,13 +304,31 @@ export default function MobileTasksView({ onTaskUpdate }) {
                 )}
               </button>
               <div className="flex-1 text-right">
-                <div className="text-sm font-semibold text-gray-900">
-                  {filteredAndSortedTasks.length}
-                  <span className="text-gray-400 font-normal"> / {tasks.length}</span>
-                </div>
-                <div className="text-xs text-gray-500">tasks</div>
+              <div className="text-sm font-semibold text-gray-900">
+                {filteredAndSortedTasks.length}
+                <span className="text-gray-400 font-normal"> / {tasks.length}</span>
               </div>
+              <div className="text-xs text-gray-500">tasks</div>
             </div>
+          </div>
+
+          {/* Active Filters Indicator & Reset */}
+          {(filterStatus !== 'All' || filterPriority !== 'All' || filterCategory !== 'All' || filterDueDate !== 'All' || filterAssignedTo !== 'me') && (
+            <div className="mt-3 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2">
+                <Filter size={14} className="text-blue-600" />
+                <span className="text-xs font-medium text-blue-900">
+                  Filters active
+                </span>
+              </div>
+              <button
+                onClick={handleResetFilters}
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                Clear All
+              </button>
+            </div>
+          )}
           </div>
         </div>
 
@@ -367,6 +411,25 @@ export default function MobileTasksView({ onTaskUpdate }) {
                     <option value="This Week">This Week</option>
                     <option value="This Month">This Month</option>
                     <option value="Overdue">Overdue</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Assigned To</label>
+                  <select
+                    value={filterAssignedTo}
+                    onChange={(e) => setFilterAssignedTo(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                  >
+                    <option value="All">All Users</option>
+                    <option value="me">Assigned to Me</option>
+                    {availableUsers
+                      .filter(user => user.id !== profile?.id)
+                      .map(user => (
+                        <option key={user.id} value={user.id}>
+                          {user.full_name}
+                        </option>
+                      ))}
                   </select>
                 </div>
 

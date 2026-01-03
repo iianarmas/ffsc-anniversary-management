@@ -1,12 +1,14 @@
 import React from 'react';
-import { Home, Users, Shirt, CheckSquare } from 'lucide-react';
+import { Home, Users, ShoppingBag, CheckSquare, UserCircle } from 'lucide-react';
+
 
 export default function MobileBottomNav({ currentView, setCurrentView, taskCount = 0 }) {
   const navItems = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'registration', label: 'Registration', icon: Users },
-    { id: 'shirts', label: 'Shirts', icon: Shirt },
-    { id: 'tasks', label: 'Tasks', icon: CheckSquare, badge: taskCount },
+    { id: 'home', icon: Home, label: 'Home' },
+    { id: 'registration', icon: Users, label: 'Registration' },
+    { id: 'shirts', icon: ShoppingBag, label: 'Shirts' },
+    { id: 'tasks', icon: CheckSquare, label: 'Tasks', badge: taskCount },
+    { id: 'profile', icon: UserCircle, label: 'Profile' }
   ];
 
   return (

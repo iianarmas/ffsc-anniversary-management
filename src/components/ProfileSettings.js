@@ -8,6 +8,15 @@ import Avatar from './Avatar';
 export default function ProfileSettings() {
   const { profile, refreshProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [fullName, setFullName] = useState(profile?.full_name || '');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
@@ -178,22 +187,52 @@ export default function ProfileSettings() {
 
   return (
       <>
-        <Header 
-          viewTitle="Dashboard" 
-          showSearch={false}
-          onOpenPersonNotes={(personId) => {
-            // For dashboard, we'll just log it for now since we don't have direct access to open notes
-            console.log('Open notes for person:', personId);
-            // In a full implementation, you'd want to navigate to registration view and open that person
-          }}
-        />
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
-          <p className="text-gray-600 mt-1">Manage your account information and preferences</p>
-        </div>
+        {!isMobile && (
+          <Header 
+            viewTitle="Profile Settings" 
+            showSearch={false}
+            onOpenPersonNotes={(personId) => {
+              console.log('Open notes for person:', personId);
+            }}
+          />
+        )}
+
+        {/* Mobile Header with Branding */}
+        {isMobile && (
+          <div className="sticky top-0 bg-white shadow-md z-20 mb-4">
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+              <img 
+                src="/church-logo.svg" 
+                alt="FFSC Logo" 
+                className="w-8 h-8 object-contain flex-shrink-0"
+              />
+              <div>
+                <h1 style={{ fontFamily: 'Moderniz, sans-serif' }} className="text-lg font-bold text-[#001740]">
+                  FFSC20
+                </h1>
+                <p className="text-xs text-gray-500">Profile Settings</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+    <div className={`min-h-screen bg-gray-50 ${isMobile ? 'py-0 px-0 pb-20' : 'py-8 px-4'}`}>
+      <div className={`max-w-3xl mx-auto ${isMobile ? 'px-4' : ''}`}>
+        {/* Header - Desktop Only */}
+        {!isMobile && (
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
+            <p className="text-gray-600 mt-1">Manage your account information and preferences</p>
+          </div>
+        )}
+
+        {/* Mobile Page Title */}
+        {isMobile && (
+          <div className="mb-4 mt-4">
+            <h2 className="text-xl font-bold text-gray-900">Account Settings</h2>
+            <p className="text-sm text-gray-600 mt-1">Manage your account information and preferences</p>
+          </div>
+        )}
 
         {/* Message Alert */}
         {message.text && (
@@ -274,10 +313,6 @@ export default function ProfileSettings() {
                     Remove Picture
                   </button>
                 )}
-              </div>
-              <div className="text-white">
-                <h2 className="text-2xl font-bold">{profile?.full_name}</h2>
-                <p className="text-blue-200">{profile?.email}</p>
               </div>
             </div>
           </div>

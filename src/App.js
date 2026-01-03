@@ -493,17 +493,20 @@ useEffect(() => {
         userName={profile?.full_name || 'User'}
       />
 
-      <Sidebar 
-        currentView={currentView} 
-        setCurrentView={(view) => {
-          setCurrentView(view);
-          localStorage.setItem('currentView', view);
-        }}
-        onAddPersonClick={() => setIsAddPersonOpen(true)}
-        taskStats={myTaskStats}
-        userProfile={profile}
-      />
-      <div className="flex-1 px-6 pt-16 ml-0 md:ml-16 transition-all duration-300">
+      {/* Sidebar - Desktop Only */}
+      {!isMobile && (
+        <Sidebar 
+          currentView={currentView} 
+          setCurrentView={(view) => {
+            setCurrentView(view);
+            localStorage.setItem('currentView', view);
+          }}
+          onAddPersonClick={() => setIsAddPersonOpen(true)}
+          taskStats={myTaskStats}
+          userProfile={profile}
+        />
+      )}
+      <div className={`flex-1 ${isMobile ? 'px-0 pt-0' : 'px-6 pt-16 ml-0 md:ml-16'} transition-all duration-300`}>
         <div className="w-full">
 
         {currentView === 'home' && (
@@ -568,6 +571,7 @@ useEffect(() => {
               updateShirtSize={updateShirtSize}
               toggleShirtPayment={toggleShirtPayment}
               toggleShirtGiven={toggleShirtGiven}
+              toggleShirtPrint={toggleShirtPrint}
               shirtSearchTerm={shirtSearchTerm}
               setShirtSearchTerm={setShirtSearchTerm}
               shirtFilterAge={shirtFilterAge}
@@ -655,10 +659,19 @@ useEffect(() => {
       )}
 
       <style>{`
-        @media print {
-          .no-print {
-            display: none !important;
+        /* Hide scrollbar on mobile */
+        @media (max-width: 767px) {
+          * {
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
           }
+          *::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+          }
+        }
+      `}</style>
+      <style>{`
+        @media print {
           .print-content {
             display: block !important;
           }

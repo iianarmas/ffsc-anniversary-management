@@ -7,6 +7,7 @@ export default function MobileShirtManagementView({
   updateShirtSize,
   toggleShirtPayment,
   toggleShirtGiven,
+  toggleShirtPrint,
   shirtSearchTerm,
   setShirtSearchTerm,
   shirtFilterAge,
@@ -19,7 +20,9 @@ export default function MobileShirtManagementView({
   setShirtFilterDistribution,
   shirtFilterSize,
   setShirtFilterSize,
-  onResetFilters
+  onResetFilters,
+  shirtFilterPrint,
+  setShirtFilterPrint,
 }) {
   const [showFilters, setShowFilters] = useState(false);
   const [editingPerson, setEditingPerson] = useState(null);
@@ -30,7 +33,8 @@ export default function MobileShirtManagementView({
     shirtFilterLocation,
     shirtFilterPayment,
     shirtFilterDistribution,
-    shirtFilterSize
+    shirtFilterSize,
+    shirtFilterPrint
   ].filter(f => f !== 'All').length;
 
   const shirtSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12', 'TS', 'XS', 'S', 'M', 'L', 'XL', '2XL', 'None yet'];
@@ -141,6 +145,24 @@ export default function MobileShirtManagementView({
               <div className="text-xs text-gray-500">people</div>
             </div>
           </div>
+
+          {/* Active Filters Indicator & Reset */}
+          {activeFiltersCount > 0 && (
+            <div className="mt-3 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2">
+                <Filter size={14} className="text-blue-600" />
+                <span className="text-xs font-medium text-blue-900">
+                  {activeFiltersCount} {activeFiltersCount === 1 ? 'filter' : 'filters'} active
+                </span>
+              </div>
+              <button
+                onClick={onResetFilters}
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                Clear All
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -237,6 +259,19 @@ export default function MobileShirtManagementView({
                 </select>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Print Status</label>
+                <select
+                  value={shirtFilterPrint}
+                  onChange={(e) => setShirtFilterPrint(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                >
+                  <option value="All">All Print Status</option>
+                  <option value="With Print">With Print</option>
+                  <option value="No Print">Plain (No Print)</option>
+                </select>
+              </div>
+
               </div>
             </div>
 
@@ -322,36 +357,55 @@ export default function MobileShirtManagementView({
               </div>
 
               {/* Toggle Buttons */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => {
+                      toggleShirtPayment(editingPerson.id);
+                      setEditingPerson({ ...editingPerson, paid: !editingPerson.paid });
+                    }}
+                    className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                      editingPerson.paid
+                        ? 'bg-green-100 text-green-800 border-2 border-green-300'
+                        : 'bg-red-50 text-red-600 border-2 border-red-200'
+                    }`}
+                    style={{ minHeight: '48px' }}
+                  >
+                    <DollarSign size={18} />
+                    <span>{editingPerson.paid ? '✓ Paid' : 'Mark Paid'}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      toggleShirtGiven(editingPerson.id);
+                      setEditingPerson({ ...editingPerson, shirtGiven: !editingPerson.shirtGiven });
+                    }}
+                    className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                      editingPerson.shirtGiven
+                        ? 'bg-blue-100 text-blue-800 border-2 border-blue-300'
+                        : 'bg-yellow-50 text-yellow-600 border-2 border-yellow-200'
+                    }`}
+                    style={{ minHeight: '48px' }}
+                  >
+                    <Package size={18} />
+                    <span>{editingPerson.shirtGiven ? '✓ Given' : 'Mark Given'}</span>
+                  </button>
+                </div>
+
+                {/* Print Status Toggle */}
                 <button
                   onClick={() => {
-                    toggleShirtPayment(editingPerson.id);
-                    setEditingPerson({ ...editingPerson, paid: !editingPerson.paid });
+                    toggleShirtPrint(editingPerson.id);
+                    setEditingPerson({ ...editingPerson, hasPrint: !editingPerson.hasPrint });
                   }}
-                  className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
-                    editingPerson.paid
-                      ? 'bg-green-100 text-green-800 border-2 border-green-300'
-                      : 'bg-red-50 text-red-600 border-2 border-red-200'
+                  className={`w-full py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                    editingPerson.hasPrint
+                      ? 'bg-purple-100 text-purple-800 border-2 border-purple-300'
+                      : 'bg-gray-100 text-gray-800 border-2 border-gray-300'
                   }`}
                   style={{ minHeight: '48px' }}
                 >
-                  <DollarSign size={18} />
-                  <span>{editingPerson.paid ? '✓ Paid' : 'Mark Paid'}</span>
-                </button>
-                <button
-                  onClick={() => {
-                    toggleShirtGiven(editingPerson.id);
-                    setEditingPerson({ ...editingPerson, shirtGiven: !editingPerson.shirtGiven });
-                  }}
-                  className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
-                    editingPerson.shirtGiven
-                      ? 'bg-blue-100 text-blue-800 border-2 border-blue-300'
-                      : 'bg-yellow-50 text-yellow-600 border-2 border-yellow-200'
-                  }`}
-                  style={{ minHeight: '48px' }}
-                >
-                  <Package size={18} />
-                  <span>{editingPerson.shirtGiven ? '✓ Given' : 'Mark Given'}</span>
+                  <Shirt size={18} />
+                  <span>{editingPerson.hasPrint ? '✓ With Print' : 'Plain (No Print)'}</span>
                 </button>
               </div>
             </div>
@@ -382,7 +436,7 @@ export default function MobileShirtManagementView({
           people.map((person) => (
             <div
               key={person.id}
-              className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 hover:border-[#001740] transition-all"
+              className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 transition-all"
               onClick={() => setEditingPerson(person)}
               style={{ minHeight: '44px' }}
             >
@@ -426,8 +480,8 @@ export default function MobileShirtManagementView({
 
                     {/* Print Status */}
                     {person.hasPrint !== undefined && !person.hasPrint && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 border border-purple-200">
-                        No Print
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 border border-gray-200">
+                        Plain
                       </span>
                     )}
                   </div>

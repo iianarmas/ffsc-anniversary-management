@@ -681,10 +681,12 @@ export default function TasksView({ onTaskUpdate }) {
                           options={[
                             { value: 'All', label: 'All Users' },
                             { value: 'me', label: 'Assigned to Me' },
-                            ...availableUsers.map(user => ({
-                              value: user.id,
-                              label: user.full_name
-                            }))
+                            ...availableUsers
+                              .filter(user => user.id !== profile?.id)
+                              .map(user => ({
+                                value: user.id,
+                                label: user.full_name
+                              }))
                           ]}
                           value={filterAssignedTo}
                           onChange={setFilterAssignedTo}
