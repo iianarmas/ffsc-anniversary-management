@@ -36,7 +36,8 @@ export default function UserManagement() {
       getAllUsers(),
       getRegistrationCodes()
     ]);
-    setUsers(usersData);
+    // Filter out deleted users from the list
+    setUsers(usersData.filter(user => user.status !== 'deleted'));
     setCodes(codesData);
     setLoading(false);
   };
@@ -76,11 +77,14 @@ export default function UserManagement() {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+    if (!window.confirm('Are you sure you want to delete this user? They will be permanently suspended and cannot log in anymore.')) return;
     
     const result = await deleteUser(userId);
     if (result.success) {
+      // Remove from local state immediately
       setUsers(prev => prev.filter(u => u.id !== userId));
+    } else {
+      alert(`Failed to delete user: ${result.error || 'Unknown error'}`);
     }
   };
 

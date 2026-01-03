@@ -18,6 +18,7 @@ import MobileTasksView from './components/MobileTasksView';
 import UserManagement from './components/admin/UserManagement';
 import ProfileSettings from './components/ProfileSettings';
 import HomePage from './components/HomePage';
+import WelcomeModal from './components/WelcomeModal';
 
 
 import { 
@@ -41,17 +42,7 @@ function AppContent() {
   const { profile } = useAuth();
   const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(() => {
-    // Check if user has seen welcome message before
-    const hasSeenWelcome = localStorage.getItem(`welcome-seen-${profile?.id}`);
-    return !hasSeenWelcome && profile?.role === 'viewer';
-  });
-
-  // Mark welcome as seen when user dismisses it
-  const dismissWelcome = () => {
-    localStorage.setItem(`welcome-seen-${profile?.id}`, 'true');
-    setShowWelcome(false);
-  };
+  const [showWelcome, setShowWelcome] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPeople, setSelectedPeople] = useState([]);
   const [filterAge, setFilterAge] = useState('All');
@@ -64,10 +55,7 @@ function AppContent() {
   const [shirtFilterDistribution, setShirtFilterDistribution] = useState('All');
   const [shirtFilterPrint, setShirtFilterPrint] = useState('All');
   const [shirtFilterSize, setShirtFilterSize] = useState('All');
-  const [currentView, setCurrentView] = useState(() => {
-  // Try to get saved view from localStorage, default to 'home'
-  return localStorage.getItem('currentView') || 'home';
-});
+  const [currentView, setCurrentView] = useState('home'); // Always start with 'home' initially
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
   const [taskStats, setTaskStats] = useState({
@@ -85,9 +73,6 @@ function AppContent() {
     overdue: 0,
     dueToday: 0
   });
-  
-
-  
 
 // Realtime subscriptions for people, registrations, and shirts
 useEffect(() => {
@@ -97,6 +82,7 @@ useEffect(() => {
       await loadTaskStats();  
       await loadPeopleTaskInfo();
     } catch (error) {
+      console.error('Error initializing data:', error);
       setLoading(false);
     }
   };
@@ -104,6 +90,17 @@ useEffect(() => {
   // Only initialize when profile is available
   if (profile?.id) {
     initializeData();
+    
+    // Check if this is the first login after email confirmation
+    const hasSeenWelcome = localStorage.getItem(`welcome-seen-${profile.id}`);
+    const isFirstSession = !sessionStorage.getItem(`session-started-${profile.id}`);
+    
+    if (!hasSeenWelcome && isFirstSession) {
+      setShowWelcome(true);
+    }
+    
+    // Mark that a session has started
+    sessionStorage.setItem(`session-started-${profile.id}`, 'true');
   }
 
   const updatePersonInState = (payload, table) => {
@@ -218,16 +215,29 @@ useEffect(() => {
     return () => window.removeEventListener('navigate-to-tasks', handleNavigateToTasks);
   }, []);
 
-  // Listen for navigation to profile
+  // Handle session management and view restoration
   useEffect(() => {
-    const handleNavigateToProfile = () => {
-      setCurrentView('profile');
-      localStorage.setItem('currentView', 'profile');
-    };
+    // Check if this is an active session
+    const isActiveSession = sessionStorage.getItem('session-active');
+    const savedView = localStorage.getItem('currentView');
+    
+    if (!isActiveSession) {
+      // New session - mark as active and clear any saved view
+      sessionStorage.setItem('session-active', 'true');
+      localStorage.removeItem('currentView');
+      // Stay at home (already default)
+    } else if (isActiveSession && savedView && savedView !== 'home') {
+      // Existing session with saved view - restore it
+      setCurrentView(savedView);
+    }
+  }, []); // Run only once on mount
 
-    window.addEventListener('navigate-to-profile', handleNavigateToProfile);
-    return () => window.removeEventListener('navigate-to-profile', handleNavigateToProfile);
-  }, []);
+  // Update storage when view changes
+  useEffect(() => {
+    if (currentView) {
+      localStorage.setItem('currentView', currentView);
+    }
+  }, [currentView]);
 
   const loadData = async (showLoadingOverlay = false) => {
     try {
@@ -470,6 +480,18 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-white flex">
+      {/* Welcome Modal */}
+      <WelcomeModal
+        isOpen={showWelcome}
+        onClose={() => {
+          if (profile?.id) {
+            localStorage.setItem(`welcome-seen-${profile.id}`, 'true');
+          }
+          setShowWelcome(false);
+        }}
+        userName={profile?.full_name || 'User'}
+      />
+
       <Sidebar 
         currentView={currentView} 
         setCurrentView={(view) => {

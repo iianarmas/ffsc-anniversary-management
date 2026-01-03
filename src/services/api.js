@@ -871,14 +871,23 @@ export async function updateUserStatus(userId, status) {
   }
 }
 
-// Delete user (admin only)
+// Delete user (admin only) - Suspends user and marks as deleted
 export const deleteUser = async (userId) => {
   try {
-    const { error } = await supabase.auth.admin.deleteUser(userId);
+    // Set user status to deleted (they won't be able to access the system)
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ 
+        status: 'deleted',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+      .select()
+      .single();
     
     if (error) throw error;
     
-    return { success: true };
+    return { success: true, data };
   } catch (error) {
     console.error('Error deleting user:', error);
     return { success: false, error: error.message };

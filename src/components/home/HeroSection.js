@@ -42,12 +42,12 @@ export default function HeroSection({ user, stats }) {
     <div className="bg-gradient-to-r from-[#0f2a71] to-[#001740] text-white p-8 rounded-lg shadow-lg">
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">
-          Welcome back, {user?.full_name || 'User'}! 👋
+          Welcome back, {user?.full_name || 'User'}!
         </h1>
         <p className="text-blue-200">{phTime} (Philippine Time)</p>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard 
           icon={CheckSquare}
           value={stats.myTasks}

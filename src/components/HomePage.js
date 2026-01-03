@@ -65,7 +65,7 @@ export default function HomePage({
       />
       
       <div className="p-6 bg-[#f9fafa] min-h-screen">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           {/* Hero Section with Stats */}
           <HeroSection 
             user={profile} 
@@ -78,7 +78,7 @@ export default function HomePage({
           />
 
           {/* Main Content Grid - 4 columns */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mt-6">
             {/* My Tasks Widget - 2 columns */}
             <div className="lg:col-span-2">
               <MyTasksWidget 
@@ -102,7 +102,7 @@ export default function HomePage({
           </div>
 
           {/* Bottom Row - Notifications and Recent Activity */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
             {/* Notifications Widget */}
             <div className="lg:col-span-1">
               <NotificationsWidget 

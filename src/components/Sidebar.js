@@ -39,6 +39,7 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
                 <button
                   onClick={() => {
                     setCurrentView(item.id);
+                    sessionStorage.setItem('currentView', item.id);
                     setIsMobileMenuOpen(false);
                   }}
                   title={item.label}
@@ -66,7 +67,10 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
         {/* Add Person Button */}
         <div className="absolute bottom-4 w-full px-2">
           <button
-            onClick={onAddPersonClick}
+            onClick={() => {
+              onAddPersonClick();
+              // Don't change view when adding person
+            }}
             title="Add Person"
             className="w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 text-gray-500 hover:bg-[#e2e8f8]"
           >

@@ -13,6 +13,12 @@ export default function Dashboard({ people = [], stats = {} }) {
   
   // Limit to first 230 people
   const limitedPeople = useMemo(() => people.slice(0, 230), [people]);
+
+  // State for selected date
+  const [selectedDate, setSelectedDate] = React.useState(() => {
+    // Default to today's date
+    return new Date().toISOString().split('T')[0];
+  });
   
   // Calculate age bracket distribution
   const ageBracketData = useMemo(() => {
@@ -68,7 +74,7 @@ export default function Dashboard({ people = [], stats = {} }) {
     return Object.values(locations);
   }, [limitedPeople]);
 
-  // Generate hourly trend data for today (Philippine Time)
+  // Generate hourly trend data for selected date (Philippine Time)
   const hourlyTrendData = useMemo(() => {
     const data = [];
     
@@ -100,32 +106,32 @@ export default function Dashboard({ people = [], stats = {} }) {
       };
     };
     
-    const nowPH = getPhilippineTime(new Date());
+    // Parse selected date
+    const [selectedYear, selectedMonth, selectedDay] = selectedDate.split('-').map(Number);
     
-    // Get all registrations for today in Philippine time
-    const todayRegistrations = people.filter(p => {
+    // Get all registrations for selected date in Philippine time
+    const dateRegistrations = people.filter(p => {
       if (!p.registeredAt || !p.registered) return false;
       
       const regPH = getPhilippineTime(p.registeredAt);
       
-      return regPH.day === nowPH.day && 
-             regPH.month === nowPH.month && 
-             regPH.year === nowPH.year;
+      return regPH.day === selectedDay && 
+             regPH.month === selectedMonth && 
+             regPH.year === selectedYear;
     });
     
-    // Find the range of hours we need to show
-    // Show hours before and after current time for a balanced view
-    const hoursBeforeCurrent = 6; // Show 6 hours before
-    const hoursAfterCurrent = 6; // Show 6 hours after
+    // Determine hour range based on registrations
+    let earliestHour = 0;
+    let latestHour = 23;
     
-    let earliestHour = Math.max(0, nowPH.hour - hoursBeforeCurrent); // Don't go below 0 (midnight)
-    let latestHour = Math.min(23, nowPH.hour + hoursAfterCurrent); // Don't go above 23 (11 PM)
-    
-    // Extend range if there are registrations outside the default range
-    if (todayRegistrations.length > 0) {
-      const hours = todayRegistrations.map(p => getPhilippineTime(p.registeredAt).hour);
-      earliestHour = Math.min(earliestHour, Math.min(...hours));
-      latestHour = Math.max(latestHour, Math.max(...hours));
+    if (dateRegistrations.length > 0) {
+      const hours = dateRegistrations.map(p => getPhilippineTime(p.registeredAt).hour);
+      earliestHour = Math.min(...hours);
+      latestHour = Math.max(...hours);
+      
+      // Add some padding for better visualization
+      earliestHour = Math.max(0, earliestHour - 1);
+      latestHour = Math.min(23, latestHour + 1);
     }
     
     // Generate data for each hour
@@ -135,7 +141,7 @@ export default function Dashboard({ people = [], stats = {} }) {
                       hour > 12 ? `${hour - 12} pm` : 
                       `${hour} am`;
       
-      const checkedInThisHour = todayRegistrations.filter(p => {
+      const checkedInThisHour = dateRegistrations.filter(p => {
         return getPhilippineTime(p.registeredAt).hour === hour;
       }).length;
       
@@ -147,7 +153,43 @@ export default function Dashboard({ people = [], stats = {} }) {
     }
     
     return data;
-  }, [limitedPeople]);
+  }, [people, selectedDate]);
+
+  // Calculate total registrations for selected date
+  const selectedDateTotalRegistrations = useMemo(() => {
+    const [selectedYear, selectedMonth, selectedDay] = selectedDate.split('-').map(Number);
+    
+    const getPhilippineTime = (date) => {
+      let timestamp = date;
+      if (typeof timestamp === 'string' && !timestamp.endsWith('Z') && !timestamp.includes('+') && !timestamp.includes('T00:00:00')) {
+        timestamp = timestamp + 'Z';
+      }
+      
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric'
+      });
+      
+      const parts = formatter.formatToParts(new Date(timestamp));
+      const getValue = (type) => parseInt(parts.find(p => p.type === type)?.value || 0);
+      
+      return {
+        year: getValue('year'),
+        month: getValue('month'),
+        day: getValue('day')
+      };
+    };
+    
+    return people.filter(p => {
+      if (!p.registeredAt || !p.registered) return false;
+      const regPH = getPhilippineTime(p.registeredAt);
+      return regPH.day === selectedDay && 
+             regPH.month === selectedMonth && 
+             regPH.year === selectedYear;
+    }).length;
+  }, [people, selectedDate]);
 
   // Calculate shirt distribution by size - use actual sizes from database
   const shirtDistributionData = useMemo(() => {
@@ -265,7 +307,13 @@ export default function Dashboard({ people = [], stats = {} }) {
                 </svg>
               </button>
             </div>
-            <HourlyTrendChart data={hourlyTrendData} height={280} />
+            <HourlyTrendChart 
+              data={hourlyTrendData} 
+              height={280}
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+              totalRegistrations={selectedDateTotalRegistrations}
+            />
           </div>
 
           {/* Age Group Distribution */}

@@ -50,9 +50,10 @@ export default function QuickActionsWidget({ userRole, setCurrentView }) {
             key={action.view}
             onClick={() => {
               setCurrentView(action.view);
+              sessionStorage.setItem('currentView', action.view);
               localStorage.setItem('currentView', action.view);
             }}
-            className={`w-full ${action.color} text-white p-4 rounded-lg transition flex items-center gap-3 shadow-sm`}
+                        className={`w-full ${action.color} text-white p-4 rounded-lg transition flex items-center gap-3 shadow-sm`}
           >
             <action.icon size={24} />
             <span className="font-medium text-lg">{action.label}</span>

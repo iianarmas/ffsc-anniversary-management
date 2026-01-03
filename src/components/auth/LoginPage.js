@@ -25,6 +25,9 @@ export default function LoginPage() {
       }
 
       if (data?.user) {
+        // Clear any previous session data to ensure fresh start
+        sessionStorage.clear();
+        localStorage.removeItem('currentView');
         navigate('/home');
         setLoading(false);
       } else {

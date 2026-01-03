@@ -20,18 +20,23 @@ export function ProtectedRoute({ children, requiredRole = null }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (profile?.status === 'suspended') {
+  if (profile?.status === 'suspended' || profile?.status === 'deleted') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white p-8 rounded-lg shadow-lg max-w-md text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Account Suspended</h1>
+          <h1 className="text-2xl font-bold text-red-600 mb-4">
+            {profile?.status === 'deleted' ? 'Account Deleted' : 'Account Suspended'}
+          </h1>
           <p className="text-gray-700 mb-4">
-            Your account has been suspended. Please contact an administrator for assistance.
+            {profile?.status === 'deleted' 
+              ? 'Your account has been deleted. Please contact an administrator if you believe this is an error.'
+              : 'Your account has been suspended. Please contact an administrator for assistance.'
+            }
           </p>
         </div>
       </div>
     );
-  }
+}
 
   if (requiredRole && profile?.role !== requiredRole) {
     return <Navigate to="/home" replace />;
