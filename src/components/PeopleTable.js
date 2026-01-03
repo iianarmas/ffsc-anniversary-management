@@ -58,10 +58,12 @@ export default function PeopleTable({
   setFilterLocation,
   filterStatus,
   setFilterStatus,
+  filterAttendance,
+  setFilterAttendance,
   onOpenPerson = () => {},
   onOpenNotes = () => {},
   peopleWithNotes = [],
-  peopleTaskInfo = {}, // NEW: Task info for each person
+  peopleTaskInfo = {},
   stickyTop = 60
 }) {
   const { profile } = useAuth();
@@ -210,7 +212,7 @@ export default function PeopleTable({
                   style={{ accentColor: '#0f2a71' }}
                 />
               </th>
-              <th className="px-4 py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
+              <th className="px- py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
                 <div className="flex items-center">
                   <span>Name</span>
                 </div>
@@ -267,25 +269,42 @@ export default function PeopleTable({
                 </div>
               </th>
               <th className="px-4 py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
-                <div className="flex items-center justify-between">
-                  <span>Status</span>
+              <div className="flex items-center justify-between">
+                <span>Status</span>
+                <FilterDropdown 
+                  column="status"
+                  options={[
+                    { value: 'All', label: 'All Status' },
+                    { value: 'Registered', label: 'Checked In' },
+                    { value: 'PreRegistered', label: 'Pending' }
+                  ]}
+                  value={filterStatus}
+                  onChange={setFilterStatus}
+                />
+              </div>
+            </th>
+            <th className="px-4 py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
+              <div className="flex items-center justify-between">
+                <span>Attendance</span>
+                {filterAttendance && setFilterAttendance && (
                   <FilterDropdown 
-                    column="status"
+                    column="attendance"
                     options={[
-                      { value: 'All', label: 'All Status' },
-                      { value: 'Registered', label: 'Checked In' },
-                      { value: 'PreRegistered', label: 'Pending' }
+                      { value: 'All', label: 'All' },
+                      { value: 'Attending', label: 'Attending Event' },
+                      { value: 'ShirtOnly', label: 'Shirt Only' }
                     ]}
-                    value={filterStatus}
-                    onChange={setFilterStatus}
+                    value={filterAttendance}
+                    onChange={setFilterAttendance}
                   />
-                </div>
-              </th>
-              <th className="px-4 py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
-                <div className="flex items-center justify-center">
-             <span>Timestamp</span>
-                </div>
-              </th>
+                )}
+              </div>
+            </th>
+            <th className="px-4 py-2 text-left border text-sm font-semibold text-gray-700 bg-white">
+              <div className="flex items-center justify-center">
+                <span>Timestamp</span>
+              </div>
+            </th>
             </tr>
           </thead>
           <tbody>
@@ -428,9 +447,6 @@ export default function PeopleTable({
                       <div className="text-sm text-gray-700">{formatContactNumber(person.contactNumber)}</div>
                     </td>
                   )}
-                  <td className="px-4 py-3 text-left border-r">
-                    <div className="text-sm text-gray-700">{person.location}</div>
-                  </td>
                   <td className="px-4 py-3 text-center border-r">
                     {person.registered ? (
                       <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-green-700 text-white">
@@ -439,6 +455,17 @@ export default function PeopleTable({
                     ) : (
                       <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-yellow-500 text-white">
                         Pending
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-center border-r">
+                    {person.attendanceStatus === 'shirt_only' ? (
+                      <span className="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">
+                        Shirt Only
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">
+                        Attending
                       </span>
                     )}
                   </td>
@@ -455,7 +482,7 @@ export default function PeopleTable({
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-gray-500">
+                <td colSpan={profile?.role !== 'viewer' ? 9 : 8} className="text-center py-12 text-gray-500">
                   No people found matching your search criteria
                 </td>
               </tr>

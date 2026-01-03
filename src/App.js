@@ -63,6 +63,7 @@ function AppContent() {
   const [filterAge, setFilterAge] = useState('All');
   const [filterLocation, setFilterLocation] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
+  const [filterAttendance, setFilterAttendance] = useState('All');
   const [shirtSearchTerm, setShirtSearchTerm] = useState('');
   const [shirtFilterAge, setShirtFilterAge] = useState('All');
   const [shirtFilterLocation, setShirtFilterLocation] = useState('All');
@@ -153,10 +154,11 @@ useEffect(() => {
           firstName: payload.new?.first_name,
           lastName: payload.new?.last_name,
           age: payload.new?.age,
-          gender: payload.new?.gender, // Add gender field
+          gender: payload.new?.gender,
           ageBracket: payload.new ? getAgeBracket(payload.new.age) : 'Adult',
           location: payload.new?.location === 'GUEST' ? 'Guest' : payload.new?.location,
           contactNumber: payload.new?.contact_number,
+          attendanceStatus: payload.new?.attendance_status || 'attending',
         };
       } else if (table === 'shirts') {
         updatedFields = {
@@ -408,7 +410,11 @@ useEffect(() => {
       const matchesStatus = filterStatus === 'All' || 
         (filterStatus === 'Registered' ? person.registered : !person.registered);
       
-      return matchesSearch && matchesAge && matchesLocation && matchesStatus;
+      // Attendance status filter
+      const matchesAttendance = filterAttendance === 'All' ||
+        (filterAttendance === 'Attending' ? person.attendanceStatus === 'attending' : person.attendanceStatus === 'shirt_only');
+      
+      return matchesSearch && matchesAge && matchesLocation && matchesStatus && matchesAttendance;
     });
 
     // Always sort alphabetically by first name
@@ -454,30 +460,46 @@ useEffect(() => {
   }, [people, shirtSearchTerm, shirtFilterAge, shirtFilterLocation, shirtFilterPayment, shirtFilterDistribution, shirtFilterSize, shirtFilterPrint]);
   
   const stats = useMemo(() => {
-    const registeredAll = people.filter(p => p.registered);
+    // Separate attending people from shirt-only orders
+    const attendingPeople = people.filter(p => p.attendanceStatus === 'attending');
+    const shirtOnlyPeople = people.filter(p => p.attendanceStatus === 'shirt_only');
+    
+    // Event attendance counts (only 'attending' people)
+    const registeredAll = attendingPeople.filter(p => p.registered);
     const registeredCounted = registeredAll.filter(p => p.ageBracket !== 'Toddler'); // Exclude toddlers from capacity count
     const toddlersCount = registeredAll.filter(p => p.ageBracket === 'Toddler').length;
     
     const registered = registeredAll.length;
-    const registeredCapacity = registeredCounted.length; // Count toward venue capacity
-    const preRegistered = people.filter(p => !p.registered).length;
+    const registeredCapacity = registeredCounted.length; // Count toward venue capacity (excludes toddlers)
+    const preRegistered = attendingPeople.filter(p => !p.registered).length;
+    
+    // Shirt counts (includes BOTH attending and shirt-only)
     const paid = people.filter(p => p.paid).length;
     const unpaid = people.filter(p => !p.paid).length;
     const shirtsGiven = people.filter(p => p.shirtGiven).length;
     const shirtsPending = people.filter(p => !p.shirtGiven).length;
+    
+    // Additional stats
     const maxCapacity = 230;
+    const totalShirtOrders = people.length; // All people (attending + shirt-only)
+    const shirtOnlyCount = shirtOnlyPeople.length;
     
     return { 
+      // Event attendance stats
       registered, 
       registeredCapacity, 
       toddlersCount,
       maxCapacity,
-      preRegistered, 
-      total: people.length, 
+      preRegistered,
+      attendingTotal: attendingPeople.length, // Total people attending (registered + pre-registered)
+      
+      // Shirt order stats
+      total: totalShirtOrders, // Total shirt orders
       paid, 
       unpaid, 
       shirtsGiven, 
-      shirtsPending 
+      shirtsPending,
+      shirtOnlyCount // People ordering shirts but not attending
     };
   }, [people]);
 
@@ -486,6 +508,7 @@ useEffect(() => {
     setFilterAge('All');
     setFilterLocation('All');
     setFilterStatus('All');
+    setFilterAttendance('All');
   };
 
   const handleResetShirtFilters = () => {
@@ -662,6 +685,8 @@ useEffect(() => {
               setFilterLocation={setFilterLocation}
               filterStatus={filterStatus}
               setFilterStatus={setFilterStatus}
+              filterAttendance={filterAttendance}
+              setFilterAttendance={setFilterAttendance}
               onResetFilters={handleResetRegistrationFilters}
               filteredAndSortedPeople={filteredAndSortedPeople}
               handleBulkRegister={handleBulkRegister}
@@ -681,6 +706,8 @@ useEffect(() => {
               setFilterLocation={setFilterLocation}
               filterStatus={filterStatus}
               setFilterStatus={setFilterStatus}
+              filterAttendance={filterAttendance}
+              setFilterAttendance={setFilterAttendance}
               onResetFilters={handleResetRegistrationFilters}
               handleSelectAll={handleSelectAll}
               selectedPeople={selectedPeople}

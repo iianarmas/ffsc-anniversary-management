@@ -66,6 +66,7 @@ export default function AddPersonSidebar({ isOpen, onClose, onPersonAdded }) {
     gender: '',
     location: '',
     contactNumber: '',
+    attendanceStatus: 'attending',
     shirtSize: '',
     paid: false,
     shirtGiven: false
@@ -107,7 +108,7 @@ export default function AddPersonSidebar({ isOpen, onClose, onPersonAdded }) {
       setShowSuccessToast(true);
       setFormData({
         firstName: '', lastName: '', age: '', gender: '', location: '',
-        contactNumber: '', shirtSize: '', paid: false, shirtGiven: false
+        contactNumber: '', attendanceStatus: 'attending', shirtSize: '', paid: false, shirtGiven: false
       });
       setTimeout(() => onClose(), 1500);
     } catch (error) {
@@ -121,7 +122,7 @@ export default function AddPersonSidebar({ isOpen, onClose, onPersonAdded }) {
   const handleClose = () => {
     setFormData({
       firstName: '', lastName: '', age: '', gender: '', location: '',
-      contactNumber: '', shirtSize: '', paid: false, shirtGiven: false
+      contactNumber: '', attendanceStatus: 'attending', shirtSize: '', paid: false, shirtGiven: false
     });
     setErrors({});
     onClose();
@@ -285,7 +286,67 @@ export default function AddPersonSidebar({ isOpen, onClose, onPersonAdded }) {
                   placeholder="Enter contact number"
                 />
               </div>
-            </div>
+              </div>
+              </div>
+
+              {/* Attendance Status */}
+              <div>
+                <h3 className="text-sm font-semibold text-[#001740] mb-4">
+                  Attendance Status
+                </h3>
+                
+                <div className="space-y-3">
+                  <label className="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition hover:bg-blue-50"
+                    style={{
+                      borderColor: formData.attendanceStatus === 'attending' ? '#0f2a71' : '#e5e7eb',
+                      backgroundColor: formData.attendanceStatus === 'attending' ? '#eff6ff' : 'white'
+                    }}
+                  >
+                    <input 
+                      type="radio" 
+                      value="attending"
+                      checked={formData.attendanceStatus === 'attending'}
+                      onChange={(e) => handleInputChange('attendanceStatus', e.target.value)}
+                      className="w-4 h-4 accent-[#0f2a71]"
+                    />
+                    <div className="flex-1">
+                      <span className="text-sm font-semibold text-gray-900">Attending Event</span>
+                      <p className="text-xs text-gray-500 mt-0.5">Will attend the anniversary celebration</p>
+                    </div>
+                  </label>
+                  
+                  <label className="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition hover:bg-purple-50"
+                    style={{
+                      borderColor: formData.attendanceStatus === 'shirt_only' ? '#9333ea' : '#e5e7eb',
+                      backgroundColor: formData.attendanceStatus === 'shirt_only' ? '#faf5ff' : 'white'
+                    }}
+                  >
+                    <input 
+                      type="radio" 
+                      value="shirt_only"
+                      checked={formData.attendanceStatus === 'shirt_only'}
+                      onChange={(e) => handleInputChange('attendanceStatus', e.target.value)}
+                      className="w-4 h-4 accent-purple-600"
+                    />
+                    <div className="flex-1">
+                      <span className="text-sm font-semibold text-gray-900">Shirt Order Only</span>
+                      <p className="text-xs text-gray-500 mt-0.5">Not attending, ordering shirt only</p>
+                    </div>
+                  </label>
+                </div>
+                
+                {/* Info message for shirt-only */}
+                {formData.attendanceStatus === 'shirt_only' && (
+                  <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                    <p className="text-xs text-purple-800">
+                      <span className="font-semibold">Note:</span> This person won't be counted toward the 230 event capacity but will be included in shirt order counts.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Shirt Details */}
+              <div>
           </div>
 
           {/* Shirt Details */}

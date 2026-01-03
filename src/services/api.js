@@ -28,21 +28,22 @@ export const fetchAllPeople = async () => {
 
     // Transform the data to match our app structure
     const transformed = data.map(person => ({
-      id: person.id,
-      firstName: person.first_name,
-      lastName: person.last_name,
-      age: person.age,
-      gender: person.gender, // Add gender field
-      ageBracket: getAgeBracket(person.age),
-      location: person.location === 'GUEST' ? 'Guest' : person.location,
-      contactNumber: person.contact_number,
-      registered: person.registrations?.[0]?.registered || false,
-      registeredAt: person.registrations?.[0]?.registered_at || null,
-      shirtSize: person.shirts?.[0]?.shirt_size || '',
-      paid: person.shirts?.[0]?.paid || false,
-      shirtGiven: person.shirts?.[0]?.shirt_given || false,
-      hasPrint: person.shirts?.[0]?.has_print ?? true,
-    }));
+    id: person.id,
+    firstName: person.first_name,
+    lastName: person.last_name,
+    age: person.age,
+    gender: person.gender,
+    ageBracket: getAgeBracket(person.age),
+    location: person.location === 'GUEST' ? 'Guest' : person.location,
+    contactNumber: person.contact_number,
+    attendanceStatus: person.attendance_status || 'attending',
+    registered: person.registrations?.[0]?.registered || false,
+    registeredAt: person.registrations?.[0]?.registered_at || null,
+    shirtSize: person.shirts?.[0]?.shirt_size || '',
+    paid: person.shirts?.[0]?.paid || false,
+    shirtGiven: person.shirts?.[0]?.shirt_given || false,
+    hasPrint: person.shirts?.[0]?.has_print ?? true,
+  }));
 
     return transformed;
   } catch (error) {
@@ -758,6 +759,7 @@ export const createPerson = async (personData, createdBy = null) => {
         gender: personData.gender || null,
         location: personData.location,
         contact_number: personData.contactNumber || null,
+        attendance_status: personData.attendanceStatus || 'attending',
         created_by: createdBy
       })
       .select()

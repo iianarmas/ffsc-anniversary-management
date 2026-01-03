@@ -34,6 +34,8 @@ export default function MobileRegistrationView({
   setFilterLocation,
   filterStatus,
   setFilterStatus,
+  filterAttendance,
+  setFilterAttendance,
   onResetFilters,
   filteredAndSortedPeople,
   handleBulkRegister,
@@ -62,7 +64,7 @@ export default function MobileRegistrationView({
     Guest: 'bg-gray-100 text-gray-800'
   };
 
-  const activeFiltersCount = [filterAge, filterLocation, filterStatus].filter(f => f !== 'All').length;
+  const activeFiltersCount = [filterAge, filterLocation, filterStatus, filterAttendance].filter(f => f !== 'All').length;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -247,6 +249,18 @@ export default function MobileRegistrationView({
                     <option value="All">All Status</option>
                     <option value="Registered">Checked In</option>
                     <option value="PreRegistered">Pending</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Attendance</label>
+                  <select
+                    value={filterAttendance}
+                    onChange={(e) => setFilterAttendance(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                  >
+                    <option value="All">All</option>
+                    <option value="Attending">Attending Event</option>
+                    <option value="ShirtOnly">Shirt Only</option>
                   </select>
                 </div>
               </div>
@@ -459,6 +473,12 @@ export default function MobileRegistrationView({
                       ) : (
                         <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-yellow-500 text-white">
                           Pending
+                        </span>
+                      )}
+                      {/* Attendance Badge */}
+                      {person.attendanceStatus === 'shirt_only' && (
+                        <span className="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">
+                          Shirt Only
                         </span>
                       )}
                     </div>

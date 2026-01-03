@@ -20,6 +20,8 @@ export default function RegistrationView({
   setFilterLocation,
   filterStatus,
   setFilterStatus,
+  filterAttendance,
+  setFilterAttendance,
   onResetFilters,
   handleSelectAll,
   selectedPeople,
@@ -320,6 +322,8 @@ useEffect(() => {
                 setFilterLocation={setFilterLocation}
                 filterStatus={filterStatus}
                 setFilterStatus={setFilterStatus}
+                filterAttendance={filterAttendance}
+                setFilterAttendance={setFilterAttendance}
                 onOpenPerson={handleOpenPerson}
                 onOpenNotes={handleOpenNotes}
                 peopleWithNotes={peopleWithNotes}
