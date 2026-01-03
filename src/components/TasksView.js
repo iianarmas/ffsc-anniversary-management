@@ -99,7 +99,7 @@ export default function TasksView({ onTaskUpdate }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  / Close filter dropdowns when clicking outside
+  // Close filter dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (openFilter) {
@@ -559,7 +559,7 @@ export default function TasksView({ onTaskUpdate }) {
         </div>
 
         {/* Table Section */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-white rounded-lg overflow-hidden">
           <div 
             className="relative overflow-y-auto overflow-x-hidden"
             ref={tableContainerRef}
@@ -649,7 +649,7 @@ export default function TasksView({ onTaskUpdate }) {
             <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
               <thead className="sticky bg-white z-30 border-b border-gray-200" style={{ top: `${actionBarHeight}px`, boxShadow: '0 2px 4px rgba(0,0,0,0.08)' }}>
                   <tr>
-                    <th className="px-4 py-2 border-r border-b border-gray-200 text-center text-sm font-semibold text-gray-700 bg-white w-12">
+                    <th className="px-4 py-2 border border-gray-200 text-center text-sm font-semibold text-gray-700 bg-white w-12">
                       <input
                         type="checkbox"
                         onChange={(e) => {
@@ -663,17 +663,17 @@ export default function TasksView({ onTaskUpdate }) {
                         className="w-4 h-4 rounded accent-[#0f2a71] cursor-pointer"
                       />
                     </th>
-                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Task</span>
                       </div>
                     </th>
-                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Person</span>
                       </div>
                     </th>
-                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Due Date</span>
                         <FilterDropdown 
@@ -690,7 +690,7 @@ export default function TasksView({ onTaskUpdate }) {
                         />
                       </div>
                     </th>
-                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Priority</span>
                         <FilterDropdown 
@@ -706,7 +706,7 @@ export default function TasksView({ onTaskUpdate }) {
                         />
                       </div>
                     </th>
-                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Category</span>
                         <FilterDropdown 
@@ -724,7 +724,7 @@ export default function TasksView({ onTaskUpdate }) {
                         />
                       </div>
                     </th>
-                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Assigned To</span>
                         <FilterDropdown 
@@ -744,7 +744,7 @@ export default function TasksView({ onTaskUpdate }) {
                         />
                       </div>
                     </th>
-                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Created By</span>
                         <FilterDropdown 
@@ -764,7 +764,7 @@ export default function TasksView({ onTaskUpdate }) {
                         />
                       </div>
                     </th>
-                    <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Status</span>
                         <FilterDropdown 
@@ -797,7 +797,7 @@ export default function TasksView({ onTaskUpdate }) {
                         key={task.id} 
                         className={`hover:bg-blue-50 transition border-t-0 ${getRowBackgroundColor(task)} ${index % 2 === 1 && task.status !== 'complete' && new Date(task.due_date) >= new Date() ? 'bg-slate-50' : ''}`}
                       >
-                        <td className="px-3 py-3 border-r border-b border-gray-200 text-center">
+                        <td className="px-3 py-3 border-l border-r border-gray-200 text-center">
                           <input
                             type="checkbox"
                             checked={selectedTasks.includes(task.id)}
@@ -874,33 +874,33 @@ export default function TasksView({ onTaskUpdate }) {
                   )}
                 </tbody>
               </table>
-
-              {/* Fixed pagination when table overflows */}
-              {useFixedPagination && (
-                <div ref={paginationRefEl} className="absolute bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200">
-                  <Pagination
-                    totalItems={filteredAndSortedTasks.length}
-                    itemsPerPage={itemsPerPage}
-                    currentPage={currentPage}
-                    onPageChange={handlePageChange}
-                    onItemsPerPageChange={handleItemsPerPageChange}
-                  />
-                </div>
-              )}
-            </div>
           </div>
+        </div>
 
         {/* Inline pagination when table doesn't overflow */}
         {!useFixedPagination && (
           <div className="mt-4">
             <Pagination
-            totalItems={filteredAndSortedTasks.length}
-            itemsPerPage={itemsPerPage}
-            currentPage={currentPage}
-            onPageChange={handlePageChange}
-            onItemsPerPageChange={handleItemsPerPageChange}
-          />
-        </div>
+              totalItems={filteredAndSortedTasks.length}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+            />
+          </div>
+        )}
+
+        {/* Fixed pagination when table overflows */}
+        {useFixedPagination && (
+          <div ref={paginationRefEl} className="absolute bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200">
+            <Pagination
+              totalItems={filteredAndSortedTasks.length}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+            />
+          </div>
         )}
 
         {/* Back to Top Button */}
