@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Check } from 'lucide-react';
 import { useBackHandler } from '../hooks/useBackButton';
+import { capitalizeWords, formatPhoneInput, extractPhoneNumber } from '../utils/formatters';
 
 const customSelectStyles = `
   select.custom-select {
@@ -84,7 +85,19 @@ export default function AddPersonSidebar({ isOpen, onClose, onPersonAdded }) {
   const shirtSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12', 'XS', 'S', 'M', 'L', 'XL', '2XL'];
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    let processedValue = value;
+    
+    // Auto-capitalize first letter of names
+    if (field === 'firstName' || field === 'lastName') {
+      processedValue = capitalizeWords(value);
+    }
+    
+    // Format phone number as user types
+    if (field === 'contactNumber') {
+      processedValue = formatPhoneInput(value);
+    }
+    
+    setFormData(prev => ({ ...prev, [field]: processedValue }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -107,7 +120,13 @@ export default function AddPersonSidebar({ isOpen, onClose, onPersonAdded }) {
 
     setIsSubmitting(true);
     try {
-      await onPersonAdded(formData);
+      // Prepare data with raw phone number (remove formatting)
+      const dataToSubmit = {
+        ...formData,
+        contactNumber: extractPhoneNumber(formData.contactNumber)
+      };
+      
+      await onPersonAdded(dataToSubmit);
       setShowSuccessToast(true);
       setFormData({
         firstName: '', lastName: '', age: '', gender: '', location: '',

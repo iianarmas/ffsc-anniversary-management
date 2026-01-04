@@ -8,6 +8,7 @@ import NotesDialog from './NotesDialog';
 import { fetchAllTasks, toggleTaskComplete, getAgeBracket, getUsersForTaskAssignment } from '../services/api';
 import { useAuth } from './auth/AuthProvider';
 import { supabase } from '../services/supabase';
+import { formatFullName } from '../utils/formatters';
 
 export default function TasksView({ onTaskUpdate }) {
   const { profile } = useAuth();

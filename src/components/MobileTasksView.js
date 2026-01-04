@@ -4,6 +4,7 @@ import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
 import { fetchAllTasks, toggleTaskComplete, getUsersForTaskAssignment } from '../services/api';
 import { useAuth } from './auth/AuthProvider';
+import { formatFullName } from '../utils/formatters';
 
 export default function MobileTasksView({ onTaskUpdate }) {
   const { profile } = useAuth();

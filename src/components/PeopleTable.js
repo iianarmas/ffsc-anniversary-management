@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { formatFullName } from '../utils/formatters';
 import { createPortal } from 'react-dom';
 import { Filter, StickyNote, CheckSquare, CheckCircle, Lock } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
@@ -325,9 +326,9 @@ export default function PeopleTable({
                       <button
                         onClick={() => onOpenPerson(person)}
                         className="text-left text-sm text-[#001740] hover:text-blue-700 transition font-medium focus:outline-none"
-                        aria-label={`Open ${person.firstName} ${person.lastName} details`}
+                        aria-label={`Open ${formatFullName(person.firstName, person.lastName)} details`}
                       >
-                        {person.firstName} {person.lastName}
+                        {formatFullName(person.firstName, person.lastName)}
                       </button>
                       {/* Notes/Task Indicators */}
                       {(() => {

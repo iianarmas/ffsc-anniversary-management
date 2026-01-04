@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { X, Plus, Edit2, Trash2, Save, XCircle, AlertTriangle, CalendarDays, Hash, Circle, RotateCw, User, Lock } from 'lucide-react';
 import { useBackHandler } from '../hooks/useBackButton';
-import { fetchNotesForPerson, createNote, updateNote, deleteNote, deletePerson, getUsersForTaskAssignment, supabase, updateAttendanceStatus } from '../services/api';
+import { fetchNotesForPerson, createNote, updateNote, deleteNote, deletePerson, getUsersForTaskAssignment, supabase, updateAttendanceStatus, updatePerson } from '../services/api';
+import { capitalizeWords, formatPhoneInput, extractPhoneNumber } from '../utils/formatters';
 import { useAuth } from './auth/AuthProvider';
 import shirtMale from '../assets/images/shirt-male.png';
 import shirtFemale from '../assets/images/shirt-female.png';
@@ -10,6 +11,18 @@ import ErrorDialog from './ErrorDialog';
 
 export default function AccountSidebar({ person, open, onClose, onNotesUpdate }) {
   const [localAttendanceStatus, setLocalAttendanceStatus] = useState(person?.attendanceStatus || 'attending');
+
+  // Edit mode states
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    firstName: '',
+    lastName: '',
+    age: '',
+    gender: '',
+    location: '',
+    contactNumber: ''
+  });
+  const [editErrors, setEditErrors] = useState({});
 
   // Handle back button
   useBackHandler(open, onClose);
@@ -292,6 +305,94 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
     }
   };
 
+  const handleEditPersonClick = () => {
+    setEditFormData({
+      firstName: person?.firstName || '',
+      lastName: person?.lastName || '',
+      age: person?.age || '',
+      gender: person?.gender || '',
+      location: person?.location === 'Guest' ? 'GUEST' : person?.location || '',
+      contactNumber: person?.contactNumber ? formatPhoneInput(person.contactNumber) : ''
+    });
+    setIsEditMode(true);
+  };
+
+  const handleCancelPersonEdit = () => {
+    setIsEditMode(false);
+    setEditFormData({
+      firstName: '',
+      lastName: '',
+      age: '',
+      gender: '',
+      location: '',
+      contactNumber: ''
+    });
+    setEditErrors({});
+  };
+
+  const handleEditPersonInputChange = (field, value) => {
+    let processedValue = value;
+    
+    // Auto-capitalize first letter of names
+    if (field === 'firstName' || field === 'lastName') {
+      processedValue = capitalizeWords(value);
+    }
+    
+    // Format phone number as user types
+    if (field === 'contactNumber') {
+      processedValue = formatPhoneInput(value);
+    }
+    
+    setEditFormData(prev => ({ ...prev, [field]: processedValue }));
+    if (editErrors[field]) {
+      setEditErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const validatePersonEditForm = () => {
+    const newErrors = {};
+    if (!editFormData.firstName.trim()) newErrors.firstName = 'First name is required';
+    if (!editFormData.lastName.trim()) newErrors.lastName = 'Last name is required';
+    if (editFormData.age && (isNaN(editFormData.age) || editFormData.age < 0 || editFormData.age > 150)) {
+      newErrors.age = 'Please enter a valid age';
+    }
+    setEditErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSavePersonEdit = async () => {
+    if (!validatePersonEditForm() || !person?.id) return;
+
+    try {
+      // Prepare data with raw phone number (remove formatting)
+      const dataToSave = {
+        ...editFormData,
+        contactNumber: extractPhoneNumber(editFormData.contactNumber)
+      };
+      
+      const result = await updatePerson(person.id, dataToSave);
+      if (result.success) {
+        setSuccessDialog({
+          isOpen: true,
+          title: 'Person Updated!',
+          message: 'The person information has been successfully updated.'
+        });
+        setIsEditMode(false);
+        // Trigger refresh
+        window.dispatchEvent(new Event('registrationUpdated'));
+      } else {
+        throw new Error('Update failed');
+      }
+    } catch (error) {
+      console.error('Error updating person:', error);
+      setErrorDialog({
+        isOpen: true,
+        title: 'Update Failed',
+        message: 'Failed to update person information. Please try again.'
+      });
+    }
+  };
+
 
   // For animation: always render, but visually hide when not open
 
@@ -355,7 +456,19 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">{person ? `${person.firstName} ${person.lastName}` : 'Person'}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-gray-900">{person ? `${person.firstName} ${person.lastName}` : 'Person'}</h3>
+                {/* Edit Button - beside name */}
+                {!isEditMode && (profile?.role === 'admin' || profile?.role === 'committee') && (
+                  <button
+                    onClick={handleEditPersonClick}
+                    className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors"
+                    title="Edit person info"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                )}
+              </div>
               <div className="mt-1 text-sm text-gray-500">Account details</div>
             </div>
             <div className="flex items-center gap-3">
@@ -401,45 +514,162 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
           <div className="flex flex-col gap-6">
             {/* Main Content Area */}
             <div className="flex flex-col lg:flex-row gap-6 items-start">
-              {/* Left Side - Person Details */}
+              {/* Left Side - Person Details or Edit Form */}
               <div className="flex-1 min-w-0">
-                <div className="grid grid-cols-2 gap-y-4 gap-x-6">
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">First name</div>
-                    <div className="text-sm text-gray-900 font-medium">{person?.firstName || '—'}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Last name</div>
-                    <div className="text-sm text-gray-900 font-medium">{person?.lastName || '—'}</div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Age</div>
-                    <div className="text-sm text-gray-900 font-medium">{person?.age ?? '—'}</div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Age bracket</div>
-                    <div className="text-sm text-gray-900 font-medium">{person?.ageBracket || '—'}</div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Gender</div>
-                    <div className="text-sm text-gray-900 font-medium">{person?.gender || '—'}</div>
-                  </div>
-
-                  {profile?.role !== 'viewer' && (
-                    <div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Number</div>
-                      <div className="text-sm text-gray-900 font-medium">{formatContactNumber(person?.contactNumber)}</div>
+                {isEditMode ? (
+                  /* Edit Form */
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs text-gray-700 font-medium mb-1 block">
+                          First Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={editFormData.firstName}
+                          onChange={(e) => handleEditPersonInputChange ('firstName', e.target.value)}
+                          className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#0f2a71] ${
+                            editErrors.firstName ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                        />
+                        {editErrors.firstName && (
+                          <p className="text-red-500 text-xs mt-1">{editErrors.firstName}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-700 font-medium mb-1 block">
+                          Last Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={editFormData.lastName}
+                          onChange={(e) => handleEditPersonInputChange ('lastName', e.target.value)}
+                          className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#0f2a71] ${
+                            editErrors.lastName ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                        />
+                        {editErrors.lastName && (
+                          <p className="text-red-500 text-xs mt-1">{editErrors.lastName}</p>
+                        )}
+                      </div>
                     </div>
-                  )}
 
-                  <div className="col-span-2">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Location</div>
-                    <div className="text-sm text-gray-900 font-medium">{person?.location || '—'}</div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs text-gray-700 font-medium mb-1 block">Age</label>
+                        <input
+                          type="number"
+                          value={editFormData.age}
+                          onChange={(e) => handleEditPersonInputChange ('age', e.target.value)}
+                          className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#0f2a71] ${
+                            editErrors.age ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          min="0"
+                          max="150"
+                        />
+                        {editErrors.age && (
+                          <p className="text-red-500 text-xs mt-1">{editErrors.age}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-700 font-medium mb-1 block">Gender</label>
+                        <select
+                          value={editFormData.gender}
+                          onChange={(e) => handleEditPersonInputChange ('gender', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#0f2a71] bg-white"
+                        >
+                          <option value="">Select</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-gray-700 font-medium mb-1 block">Location</label>
+                      <select
+                        value={editFormData.location}
+                        onChange={(e) => handleEditPersonInputChange ('location', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#0f2a71] bg-white"
+                      >
+                        <option value="">Select</option>
+                        <option value="Main">Main</option>
+                        <option value="Cobol">Cobol</option>
+                        <option value="Malacañang">Malacañang</option>
+                        <option value="GUEST">Guest</option>
+                      </select>
+                    </div>
+
+                    {profile?.role !== 'viewer' && (
+                      <div>
+                        <label className="text-xs text-gray-700 font-medium mb-1 block">Contact Number</label>
+                        <input
+                          type="tel"
+                          value={editFormData.contactNumber}
+                          onChange={(e) => handleEditPersonInputChange ('contactNumber', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#0f2a71]"
+                        />
+                      </div>
+                    )}
+
+                    {/* Save/Cancel Buttons */}
+                    <div className="flex gap-2 pt-2">
+                      <button
+                        onClick={handleCancelPersonEdit}
+                        className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                      >
+                        <XCircle size={16} />
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSavePersonEdit}
+                        className="flex-1 px-4 py-2 bg-[#001740] hover:bg-[#0f2a71] text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Save size={16} />
+                        Save Changes
+                      </button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  /* View Mode - Original Details */
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-6">
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">First name</div>
+                      <div className="text-sm text-gray-900 font-medium">{person?.firstName || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Last name</div>
+                      <div className="text-sm text-gray-900 font-medium">{person?.lastName || '—'}</div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Age</div>
+                      <div className="text-sm text-gray-900 font-medium">{person?.age ?? '—'}</div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Age bracket</div>
+                      <div className="text-sm text-gray-900 font-medium">{person?.ageBracket || '—'}</div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Gender</div>
+                      <div className="text-sm text-gray-900 font-medium">{person?.gender || '—'}</div>
+                    </div>
+
+                    {profile?.role !== 'viewer' && (
+                      <div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Number</div>
+                        <div className="text-sm text-gray-900 font-medium">{formatContactNumber(person?.contactNumber)}</div>
+                      </div>
+                    )}
+
+                    <div className="col-span-2">
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Location</div>
+                      <div className="text-sm text-gray-900 font-medium">{person?.location || '—'}</div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Right Side - Shirt Image with Details Box */}

@@ -801,6 +801,71 @@ export const createPerson = async (personData, createdBy = null) => {
   }
 };
 
+// Update person information
+export const updatePerson = async (personId, personData) => {
+  try {
+    // 1. Update person basic info
+    const { error: personError } = await supabase
+      .from('people')
+      .update({
+        first_name: personData.firstName,
+        last_name: personData.lastName,
+        age: personData.age || null,
+        gender: personData.gender || null,
+        location: personData.location,
+        contact_number: personData.contactNumber || null,
+        attendance_status: personData.attendanceStatus || 'attending',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', personId);
+
+    if (personError) throw personError;
+
+    // 2. Update or create shirt record if shirt data provided
+    if (personData.shirtSize !== undefined) {
+      const { data: existing } = await supabase
+        .from('shirts')
+        .select('*')
+        .eq('person_id', personId)
+        .single();
+
+      if (existing) {
+        // Update existing shirt
+        const { error: shirtError } = await supabase
+          .from('shirts')
+          .update({
+            shirt_size: personData.shirtSize,
+            paid: personData.paid !== undefined ? personData.paid : existing.paid,
+            shirt_given: personData.shirtGiven !== undefined ? personData.shirtGiven : existing.shirt_given,
+            has_print: personData.hasPrint !== undefined ? personData.hasPrint : existing.has_print
+          })
+          .eq('person_id', personId);
+
+        if (shirtError) throw shirtError;
+      } else if (personData.shirtSize) {
+        // Create new shirt record
+        const { error: shirtError } = await supabase
+          .from('shirts')
+          .insert({
+            person_id: personId,
+            shirt_size: personData.shirtSize,
+            paid: personData.paid || false,
+            shirt_given: personData.shirtGiven || false,
+            has_print: personData.hasPrint !== undefined ? personData.hasPrint : true
+          });
+
+        if (shirtError) throw shirtError;
+      }
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating person:', error);
+    return { success: false, error };
+  }
+};
+
+
 // Delete person and all related data
 export async function deletePerson(personId) {
   const { error } = await supabase

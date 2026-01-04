@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatFullName } from '../utils/formatters';
 import { Search, Filter, X, ChevronRight, Check, ChevronUp, Users, CheckCircle, Clock, StickyNote, CheckSquare, Lock } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 import NotesDialog from './NotesDialog';
@@ -347,7 +348,7 @@ export default function MobileRegistrationView({
                     {/* Name with Notes/Tasks Indicator */}
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="text-base font-bold text-gray-900 leading-tight flex-1">
-                      {person.firstName} {person.lastName}
+                      {formatFullName(person.firstName, person.lastName)}
                     </h3>
                     
                     {/* Notes/Task Indicators */}
