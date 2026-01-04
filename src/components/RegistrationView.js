@@ -60,7 +60,6 @@ export default function RegistrationView({
   const handleCloseSidebar = () => {
     if (!allowSidebarClose) return; // Prevent close if blocked
     setSidebarOpen(false);
-    // clear selected person after animation completes
     setTimeout(() => setSelectedPerson(null), 300);
   };
 
@@ -68,33 +67,12 @@ export default function RegistrationView({
   useEffect(() => {
     if (selectedPerson && sidebarOpen) {
       // Find updated person data
-      const updatedPerson = filteredAndSortedPeople.find(p => p.id === selectedPerson.id) 
-                         || people.find(p => p.id === selectedPerson.id);
+      const updatedPerson = people.find(p => p.id === selectedPerson.id);
       if (updatedPerson) {
         setSelectedPerson(updatedPerson);
       }
     }
-  }, [filteredAndSortedPeople, people]);
-
-  // Listen for registration updates but don't close sidebar
-  useEffect(() => {
-    const handleRegistrationUpdate = (event) => {
-      // Reload task info when registrations update
-      loadPeopleTaskInfo();
-      
-      // If keepSidebarOpen flag is set, ensure sidebar stays open
-      if (event?.detail?.keepSidebarOpen && selectedPerson) {
-        // Refresh the selected person's data
-        const updatedPerson = people.find(p => p.id === selectedPerson.id);
-        if (updatedPerson) {
-          setSelectedPerson(updatedPerson);
-        }
-      }
-    };
-
-    window.addEventListener('registrationUpdated', handleRegistrationUpdate);
-    return () => window.removeEventListener('registrationUpdated', handleRegistrationUpdate);
-  }, [selectedPerson, people]);
+  }, [people]);
 
   const handleOpenNotes = (person) => {
     setNotesDialogPerson(person);

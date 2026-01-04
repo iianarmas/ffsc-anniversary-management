@@ -40,9 +40,11 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate, o
 
   // Prevent sidebar from closing when person data updates
   const personIdRef = React.useRef(person?.id);
+  const savingRef = React.useRef(false);
+  
   useEffect(() => {
-    // Only reset if we switched to a completely different person
-    if (person?.id && person.id !== personIdRef.current) {
+    // Only reset if we switched to a completely different person AND we're not currently saving
+    if (person?.id && person.id !== personIdRef.current && !savingRef.current) {
       personIdRef.current = person.id;
       setIsEditMode(false);
       setEditFormData({
@@ -56,22 +58,7 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate, o
       setEditErrors({});
     }
   }, [person?.id]);
-  // Reset edit mode when person changes (but not when sidebar closes)
-  useEffect(() => {
-    if (person?.id && open) {
-      // Person changed while sidebar is open - reset edit mode
-      setIsEditMode(false);
-      setEditFormData({
-        firstName: '',
-        lastName: '',
-        age: '',
-        gender: '',
-        location: '',
-        contactNumber: ''
-      });
-      setEditErrors({});
-    }
-  }, [person?.id, open]);
+
   const [notes, setNotes] = useState([]);
   const [newNoteText, setNewNoteText] = useState('');
   const [editingNoteId, setEditingNoteId] = useState(null);
@@ -115,12 +102,14 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate, o
       setEditErrors({});
       // Reset prevent close when sidebar closes
       setPreventClose(false);
+      // Notify parent to unblock as well
+      if (onBlockClose) onBlockClose(false);
     }
     return () => {
       document.removeEventListener('keydown', handleKey);
       document.body.style.overflow = '';
     };
-  }, [open, onClose, preventClose]);
+  }, [open, onClose, preventClose, onBlockClose]);
 
   // Load available users for task assignment
   useEffect(() => {
@@ -424,20 +413,22 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate, o
           title: 'Person Updated!',
           message: 'The person information has been successfully updated.'
         });
+        
         // Trigger refresh WITHOUT closing sidebar
         window.dispatchEvent(new CustomEvent('registrationUpdated', { 
           detail: { keepSidebarOpen: true } 
         }));
+        
         // Call onNotesUpdate if provided to refresh task info
         if (onNotesUpdate) {
           onNotesUpdate();
         }
         
-        // Unblock sidebar after 1.5 seconds (after realtime update completes)
+        // Unblock after 1 second so user can close if they want
         setTimeout(() => {
           setPreventClose(false);
           if (onBlockClose) onBlockClose(false);
-        }, 1500);
+        }, 1000);
       } else {
         setPreventClose(false);
         if (onBlockClose) onBlockClose(false);
