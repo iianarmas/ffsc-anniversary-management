@@ -181,7 +181,9 @@ export default function ShirtManagementView({
             className="fixed w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
             style={{
               top: `${dropdownPosition.top}px`,
-              left: `${dropdownPosition.left}px`
+              left: `${dropdownPosition.left}px`,
+              maxHeight: '300px',
+              overflowY: 'auto'
             }}
           >
             <div className="py-1">
@@ -507,6 +509,7 @@ export default function ShirtManagementView({
                             { value: 'L', label: 'L' },
                             { value: 'XL', label: 'XL' },
                             { value: '2XL', label: '2XL' },
+                            { value: 'No shirt', label: 'No shirt' },
                             { value: 'None yet', label: 'None yet' }
                           ]}
                           value={shirtFilterSize}
@@ -722,6 +725,7 @@ export default function ShirtManagementView({
                             <option value="L">L</option>
                             <option value="XL">XL</option>
                             <option value="2XL">2XL</option>
+                            <option value="No shirt">No shirt</option>
                           </select>
                         </td>
                         <td className="px-4 py-3 border-r text-center">

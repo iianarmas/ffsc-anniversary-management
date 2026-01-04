@@ -498,7 +498,10 @@ useEffect(() => {
     
     // Shirt counts (includes both attending AND shirt-only)
     const paid = people.filter(p => p.paid).length;
-    const unpaid = people.filter(p => !p.paid).length;
+    
+    // Unpaid = Total - Toddlers - "No shirt" people - Paid people
+    const noShirtCount = people.filter(p => p.shirtSize === 'No shirt').length;
+    const unpaid = people.length - toddlersCount - noShirtCount - paid;
     const shirtsGiven = people.filter(p => p.shirtGiven).length;
     const shirtsPending = people.filter(p => !p.shirtGiven).length;
     const maxCapacity = 230;

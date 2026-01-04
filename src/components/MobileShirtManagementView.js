@@ -45,7 +45,7 @@ export default function MobileShirtManagementView({
     shirtFilterAttendance
   ].filter(f => f !== 'All').length;
 
-  const shirtSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12', 'TS', 'XS', 'S', 'M', 'L', 'XL', '2XL', 'None yet'];
+  const shirtSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12', 'TS', 'XS', 'S', 'M', 'L', 'XL', '2XL', 'No shirt', 'None yet'];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -362,6 +362,47 @@ export default function MobileShirtManagementView({
                     <option key={size} value={size}>{size}</option>
                   ))}
                 </select>
+              </div>
+
+              {/* Attendance Status Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Attendance Status</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={async () => {
+                      const { updateAttendanceStatus } = await import('../services/api');
+                      const result = await updateAttendanceStatus(editingPerson.id, 'attending');
+                      if (result.success) {
+                        setEditingPerson({ ...editingPerson, attendanceStatus: 'attending' });
+                        window.dispatchEvent(new Event('registrationUpdated'));
+                      }
+                    }}
+                    className={`py-3 rounded-xl font-semibold transition-all ${
+                      editingPerson.attendanceStatus === 'attending'
+                        ? 'bg-green-600 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    Attending
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const { updateAttendanceStatus } = await import('../services/api');
+                      const result = await updateAttendanceStatus(editingPerson.id, 'shirt_only');
+                      if (result.success) {
+                        setEditingPerson({ ...editingPerson, attendanceStatus: 'shirt_only' });
+                        window.dispatchEvent(new Event('registrationUpdated'));
+                      }
+                    }}
+                    className={`py-3 rounded-xl font-semibold transition-all ${
+                      editingPerson.attendanceStatus === 'shirt_only'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    Shirt Only
+                  </button>
+                </div>
               </div>
 
               {/* Toggle Buttons */}

@@ -464,12 +464,21 @@ export default function UserManagement() {
                         </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(user.created_at + 'Z').toLocaleDateString('en-US', {
-                          timeZone: 'Asia/Manila',
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
+                        {(() => {
+                          try {
+                            if (!user.created_at) return '—';
+                            const date = new Date(user.created_at);
+                            if (isNaN(date.getTime())) return '—';
+                            return date.toLocaleDateString('en-US', {
+                              timeZone: 'Asia/Manila',
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            });
+                          } catch (error) {
+                            return '—';
+                          }
+                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
@@ -547,12 +556,21 @@ export default function UserManagement() {
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">Joined</span>
                       <span className="text-xs text-gray-900">
-                        {new Date(user.created_at + 'Z').toLocaleDateString('en-US', {
-                          timeZone: 'Asia/Manila',
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
+                        {(() => {
+                          try {
+                            if (!user.created_at) return '—';
+                            const date = new Date(user.created_at);
+                            if (isNaN(date.getTime())) return '—';
+                            return date.toLocaleDateString('en-US', {
+                              timeZone: 'Asia/Manila',
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            });
+                          } catch (error) {
+                            return '—';
+                          }
+                        })()}
                       </span>
                     </div>
                   </div>
@@ -677,12 +695,21 @@ export default function UserManagement() {
                       <p className="text-sm text-gray-600 mt-1">{code.description}</p>
                     )}
                     <p className="text-xs text-gray-500 mt-1">
-                      Created {new Date(code.created_at + 'Z').toLocaleDateString('en-US', {
-                        timeZone: 'Asia/Manila',
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      })}
+                      Created {(() => {
+                        try {
+                          if (!code.created_at) return '—';
+                          const date = new Date(code.created_at);
+                          if (isNaN(date.getTime())) return '—';
+                          return date.toLocaleDateString('en-US', {
+                            timeZone: 'Asia/Manila',
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          });
+                        } catch (error) {
+                          return '—';
+                        }
+                      })()}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">

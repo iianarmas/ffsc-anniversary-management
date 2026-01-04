@@ -151,7 +151,9 @@ export default function PeopleTable({
             style={{
               top: `${dropdownPosition.top}px`,
               left: `${dropdownPosition.left}px`,
-              zIndex: 99999
+              zIndex: 99999,
+              maxHeight: '300px',
+              overflowY: 'auto'
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -454,13 +456,35 @@ export default function PeopleTable({
                   </td>
                   <td className="px-4 py-3 text-center border-r">
                     {person.registered ? (
-                      <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-green-700 text-white">
+                      <button
+                        onClick={async () => {
+                          const { removeCheckIn } = await import('../services/api');
+                          await removeCheckIn(person.id, profile?.id);
+                        }}
+                        disabled={profile?.role === 'viewer'}
+                        className={`inline-block px-3 py-1 text-xs font-semibold rounded-full transition ${
+                          profile?.role === 'viewer'
+                            ? 'bg-green-700 text-white cursor-not-allowed opacity-50'
+                            : 'bg-green-700 text-white hover:bg-green-800 cursor-pointer active:scale-95'
+                        }`}
+                      >
                         Checked In
-                      </span>
+                      </button>
                     ) : (
-                      <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-yellow-500 text-white">
+                      <button
+                        onClick={async () => {
+                          const { checkInPerson } = await import('../services/api');
+                          await checkInPerson(person.id, profile?.id);
+                        }}
+                        disabled={profile?.role === 'viewer'}
+                        className={`inline-block px-3 py-1 text-xs font-semibold rounded-full transition ${
+                          profile?.role === 'viewer'
+                            ? 'bg-yellow-500 text-white cursor-not-allowed opacity-50'
+                            : 'bg-yellow-500 text-white hover:bg-yellow-600 cursor-pointer active:scale-95'
+                        }`}
+                      >
                         Pending
-                      </span>
+                      </button>
                     )}
                   </td>
                   <td className="px-4 py-3 text-left border-r">

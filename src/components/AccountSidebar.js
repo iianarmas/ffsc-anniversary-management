@@ -114,9 +114,11 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
                 .select('full_name, role')
                 .eq('id', personData.created_by)
                 .single();
-              // Show "Admin" for admin users, actual name for others
+              
               const creatorName = profileData?.full_name || 'Unknown';
               const isAdmin = profileData?.role === 'admin';
+              
+              // Admin shows name + date, Committee shows only name
               setCreatedByName(isAdmin ? 'Admin' : creatorName);
             } else {
               setCreatedByName('System');
@@ -126,11 +128,15 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
         }
         
         if (data) {
-          setCreatedAt(data.created_at);
-          // Show "Admin" for admin users, actual name for others
+          const creatorRole = data.profiles?.role;
           const creatorName = data.profiles?.full_name || 'Unknown';
-          const isAdmin = data.profiles?.role === 'admin';
+          const isAdmin = creatorRole === 'admin';
+          
+          // Admin shows name + date, Committee/others show only name (no date)
           setCreatedByName(isAdmin ? 'Admin' : creatorName);
+          
+          // Only show created_at date if created by admin
+          setCreatedAt(isAdmin ? data.created_at : null);
         }
       } catch (error) {
         console.error('Error loading creator info:', error);

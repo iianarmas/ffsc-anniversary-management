@@ -760,7 +760,8 @@ export const createPerson = async (personData, createdBy = null) => {
         location: personData.location,
         contact_number: personData.contactNumber || null,
         attendance_status: personData.attendanceStatus || 'attending',
-        created_by: createdBy
+        created_by: createdBy,
+        created_at: new Date().toISOString()
       })
       .select()
       .single();
