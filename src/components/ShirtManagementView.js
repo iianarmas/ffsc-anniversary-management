@@ -845,25 +845,21 @@ export default function ShirtManagementView({
 
       {/* Account details sidebar */}
       <div className="screen-only">
-        {sidebarOpen && (
-          <AccountSidebar 
-            person={selectedPerson} 
-            open={sidebarOpen} 
-            onClose={handleCloseSidebar}
-            onNotesUpdate={loadPeopleTaskInfo}
-          />
-        )}
+        <AccountSidebar 
+          person={selectedPerson} 
+          open={sidebarOpen} 
+          onClose={handleCloseSidebar}
+          onNotesUpdate={loadPeopleTaskInfo}
+        />
       </div>
       
       {/* Notes Dialog */}
       <div className="screen-only">
-        {notesDialogOpen && (
-          <NotesDialog 
-            person={notesDialogPerson} 
-            isOpen={notesDialogOpen} 
-            onClose={handleCloseNotes} 
-          />
-        )}
+        <NotesDialog 
+          person={notesDialogPerson} 
+          isOpen={notesDialogOpen} 
+          onClose={handleCloseNotes} 
+        />
       </div>
 
       <style>{`

@@ -131,7 +131,7 @@ export default function EditPersonDialog({ person, isOpen, onClose }) {
       />
 
       {/* Dialog */}
-      <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 animate-scale-in max-w-lg mx-auto">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-2rem)] max-w-lg animate-scale-in">
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-[#001740] to-[#0f2a71] px-6 py-4">
@@ -364,7 +364,7 @@ export default function EditPersonDialog({ person, isOpen, onClose }) {
         @keyframes scale-in {
           from { 
             opacity: 0;
-            transform: translate(-50%, -50%) scale(0.9);
+            transform: translate(-50%, -50%) scale(0.92);
           }
           to { 
             opacity: 1;
@@ -372,10 +372,10 @@ export default function EditPersonDialog({ person, isOpen, onClose }) {
           }
         }
         .animate-fade-in {
-          animation: fade-in 0.2s ease-out;
+          animation: fade-in 0.15s ease-out;
         }
         .animate-scale-in {
-          animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+          animation: scale-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
       `}</style>
     </>

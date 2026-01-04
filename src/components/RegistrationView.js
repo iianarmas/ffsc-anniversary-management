@@ -75,15 +75,23 @@ export default function RegistrationView({
 
   // Listen for registration updates but don't close sidebar
   useEffect(() => {
-    const handleRegistrationUpdate = () => {
+    const handleRegistrationUpdate = (event) => {
       // Reload task info when registrations update
       loadPeopleTaskInfo();
-      // Don't close the sidebar - let user keep working
+      
+      // If keepSidebarOpen flag is set, ensure sidebar stays open
+      if (event?.detail?.keepSidebarOpen && selectedPerson) {
+        // Refresh the selected person's data
+        const updatedPerson = people.find(p => p.id === selectedPerson.id);
+        if (updatedPerson) {
+          setSelectedPerson(updatedPerson);
+        }
+      }
     };
 
     window.addEventListener('registrationUpdated', handleRegistrationUpdate);
     return () => window.removeEventListener('registrationUpdated', handleRegistrationUpdate);
-  }, []);
+  }, [selectedPerson, people]);
 
   const handleOpenNotes = (person) => {
     setNotesDialogPerson(person);

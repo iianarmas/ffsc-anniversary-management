@@ -19,7 +19,7 @@ export default function SuccessDialog({
       />
       
       {/* Dialog */}
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md animate-scale-in mx-4">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl w-[calc(100%-2rem)] max-w-md animate-scale-in">
         <div className="p-6">
           {/* Success Icon with animation */}
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-once">
@@ -50,11 +50,11 @@ export default function SuccessDialog({
         @keyframes scale-in {
           from {
             opacity: 0;
-            transform: scale(0.95);
+            transform: translate(-50%, -50%) scale(0.92);
           }
           to {
             opacity: 1;
-            transform: scale(1);
+            transform: translate(-50%, -50%) scale(1);
           }
         }
         @keyframes bounce-once {
