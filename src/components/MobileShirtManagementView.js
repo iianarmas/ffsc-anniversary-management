@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Filter, X, ChevronRight, ChevronUp, Shirt, DollarSign, Package, AlertCircle, StickyNote, CheckSquare, CheckCircle, Lock } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 import NotesDialog from './NotesDialog';
+import { useBackHandler } from '../hooks/useBackButton';
 
 export default function MobileShirtManagementView({
   people,
@@ -34,6 +35,9 @@ export default function MobileShirtManagementView({
   const [editingPerson, setEditingPerson] = useState(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [notesDialogPerson, setNotesDialogPerson] = useState(null);
+  // Handle back button for filters and edit modal
+  useBackHandler(showFilters, () => setShowFilters(false));
+  useBackHandler(!!editingPerson, () => setEditingPerson(null));
 
   const activeFiltersCount = [
     shirtFilterAge,

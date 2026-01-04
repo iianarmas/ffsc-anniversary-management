@@ -58,6 +58,7 @@ function AppContent() {
   const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPeople, setSelectedPeople] = useState([]);
   const [filterAge, setFilterAge] = useState('All');
@@ -93,6 +94,27 @@ function AppContent() {
   });
   const [pendingRoleRequestCount, setPendingRoleRequestCount] = useState(0);
   const [roleRequestResult, setRoleRequestResult] = useState({ show: false, status: '' });
+
+  // Prevent app exit when back button is pressed (only exit from home)
+  useEffect(() => {
+    const handlePopState = (e) => {
+      // If we're not on home view and back is pressed, navigate to home instead of exiting
+      if (currentView !== 'home') {
+        e.preventDefault();
+        setCurrentView('home');
+        window.history.pushState(null, '', window.location.pathname);
+      }
+      // If on home, allow default behavior (exit app)
+    };
+
+    // Push initial state
+    window.history.pushState(null, '', window.location.pathname);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [currentView]);
 
   // Update status bar color based on current view
   useEffect(() => {

@@ -5,10 +5,13 @@ import { useAuth } from './auth/AuthProvider';
 import ConfirmDialog from './ConfirmDialog';
 import SuccessDialog from './SuccessDialog';
 import ErrorDialog from './ErrorDialog';
+import { useBackHandler } from '../hooks/useBackButton';
 
 export default function NotesDialog({ person, isOpen, onClose }) {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(false);
+  // Handle back button
+  useBackHandler(isOpen, onClose);
   const [newNoteText, setNewNoteText] = useState('');
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingText, setEditingText] = useState('');

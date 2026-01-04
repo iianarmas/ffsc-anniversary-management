@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, Plus, Edit2, Trash2, Save, XCircle, AlertTriangle, CalendarDays, Hash, Circle, RotateCw, User, Lock } from 'lucide-react';
+import { useBackHandler } from '../hooks/useBackButton';
 import { fetchNotesForPerson, createNote, updateNote, deleteNote, deletePerson, getUsersForTaskAssignment, supabase, updateAttendanceStatus } from '../services/api';
 import { useAuth } from './auth/AuthProvider';
 import shirtMale from '../assets/images/shirt-male.png';
@@ -9,6 +10,9 @@ import ErrorDialog from './ErrorDialog';
 
 export default function AccountSidebar({ person, open, onClose, onNotesUpdate }) {
   const [localAttendanceStatus, setLocalAttendanceStatus] = useState(person?.attendanceStatus || 'attending');
+
+  // Handle back button
+  useBackHandler(open, onClose);
   
   // Update local state when person prop changes
   useEffect(() => {

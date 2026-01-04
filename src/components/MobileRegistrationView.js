@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Filter, X, ChevronRight, Check, ChevronUp, Users, CheckCircle, Clock, StickyNote, CheckSquare, Lock } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 import NotesDialog from './NotesDialog';
+import { useBackHandler } from '../hooks/useBackButton';
 
 const formatPhilippineTime = (utcTimestamp) => {
   if (!utcTimestamp) return '—';
@@ -47,6 +48,8 @@ export default function MobileRegistrationView({
 }) {
   const { profile } = useAuth();
   const [showFilters, setShowFilters] = useState(false);
+  // Handle back button for filters
+  useBackHandler(showFilters, () => setShowFilters(false));
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [notesDialogPerson, setNotesDialogPerson] = useState(null);
 

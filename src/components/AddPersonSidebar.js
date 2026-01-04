@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Check } from 'lucide-react';
+import { useBackHandler } from '../hooks/useBackButton';
 
 const customSelectStyles = `
   select.custom-select {
@@ -59,6 +60,8 @@ function SuccessToast({ message, subMessage, show, onClose }) {
 
 // Main AddPersonSidebar Component
 export default function AddPersonSidebar({ isOpen, onClose, onPersonAdded }) {
+  // Handle back button
+  useBackHandler(isOpen, onClose);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
