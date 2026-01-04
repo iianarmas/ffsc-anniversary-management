@@ -148,8 +148,8 @@ function AppContent() {
   useEffect(() => {
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
-      // Use dark blue for most views, white for home
-      const color = currentView === 'home' ? '#ffffff' : '#001740';
+      // Use the same color as header background for consistency
+      const color = '#f9fafa';
       metaThemeColor.setAttribute('content', color);
     }
   }, [currentView]);
@@ -700,8 +700,8 @@ useEffect(() => {
   useEffect(() => {
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
-      // Use dark blue for most views, white for home
-      const color = currentView === 'home' ? '#ffffff' : '#001740';
+      // Use the same color as header background for consistency
+      const color = '#f9fafa';
       metaThemeColor.setAttribute('content', color);
     }
   }, [currentView]);
