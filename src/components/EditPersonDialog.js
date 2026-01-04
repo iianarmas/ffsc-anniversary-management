@@ -340,7 +340,7 @@ export default function EditPersonDialog({ person, isOpen, onClose }) {
             <button
               onClick={handleSave}
               disabled={isLoading}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-[#001740] to-[#0f2a71] text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 bg-[#001740] text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>

@@ -65,7 +65,7 @@ export default function ShirtActionButtons({
               className="flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-500 rounded-lg font-medium transition text-sm cursor-not-allowed"
             >
               <Lock size={16} />
-              Print List
+              Print
             </button>
             {showPrintTooltip && createPortal(
               <div
