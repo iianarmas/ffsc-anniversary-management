@@ -24,10 +24,11 @@ export default function TaskAssignmentNotification() {
         (payload) => {
           const newTask = payload.new;
           
+          
           // Only show notification if it's a task
           if (newTask.is_task) {
             // Fetch person details to show in notification
-            fetchPersonDetails(newTask);
+            fetchPersonDetails(newTask, 'assigned');
           }
         }
       )
@@ -43,9 +44,13 @@ export default function TaskAssignmentNotification() {
           const updatedTask = payload.new;
           const oldTask = payload.old;
           
-          // Only show notification if task was just assigned to this user
-          if (updatedTask.is_task && oldTask.assigned_to_user !== profile.id) {
-            fetchPersonDetails(updatedTask);
+          // ONLY show notification if the assigned_to_user field changed FROM someone else TO this user
+          const wasAssignedToSomeoneElse = oldTask.assigned_to_user && oldTask.assigned_to_user !== profile.id;
+          const isNowAssignedToMe = updatedTask.assigned_to_user === profile.id;
+          const assignmentChanged = oldTask.assigned_to_user !== updatedTask.assigned_to_user;
+          
+          if (updatedTask.is_task && wasAssignedToSomeoneElse && isNowAssignedToMe && assignmentChanged) {
+            fetchPersonDetails(updatedTask, 'assigned');
           }
         }
       )
@@ -56,7 +61,7 @@ export default function TaskAssignmentNotification() {
     };
   }, [profile?.id]);
 
-  const fetchPersonDetails = async (task) => {
+  const fetchPersonDetails = async (task, notificationType = 'assigned') => {
     try {
       const { data: person } = await supabase
         .from('people')
@@ -66,12 +71,13 @@ export default function TaskAssignmentNotification() {
 
       if (person) {
         const notification = {
-          id: task.id,
+          id: `${task.id}-${Date.now()}`,
           personName: `${person.first_name} ${person.last_name}`,
           taskText: task.note_text,
           priority: task.priority,
           dueDate: task.due_date,
           category: task.category,
+          notificationType: notificationType,
           timestamp: Date.now()
         };
 
@@ -188,14 +194,16 @@ export default function TaskAssignmentNotification() {
             <div className="p-4">
               <div className="flex items-start gap-3">
                 {/* Icon with accent color */}
-                <div className={`flex-shrink-0 p-2.5 rounded-lg ${priorityStyles.accent}`}>
-                  <Bell size={22} className={notification.priority === 'High' ? 'text-red-600' : notification.priority === 'Medium' ? 'text-orange-600' : 'text-green-600'} />
+                <div className={`flex-shrink-0 p-2.5 rounded-lg ${notification.notificationType === 'completed' ? 'bg-green-50' : priorityStyles.accent}`}>
+                  <Bell size={22} className={notification.notificationType === 'completed' ? 'text-green-600' : notification.priority === 'High' ? 'text-red-600' : notification.priority === 'Medium' ? 'text-orange-600' : 'text-green-600'} />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1.5">
-                    <h4 className="text-sm font-bold text-gray-900">New Task Assigned</h4>
+                    <h4 className="text-sm font-bold text-gray-900">
+                      {notification.notificationType === 'completed' ? 'Task Completed' : 'New Task Assigned'}
+                    </h4>
                     <button
                       onClick={() => removeNotification(notification.id)}
                       className="flex-shrink-0 p-1 hover:bg-gray-100 rounded-lg transition"

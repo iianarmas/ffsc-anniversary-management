@@ -377,7 +377,7 @@ export default function ShirtManagementView({
       </div>
 
       {/* Screen content */}
-      <div className="no-print">
+      <div className="screen-only">
         {/* Header */}
         <Header
           viewTitle="Anniversary Shirt Management"
@@ -393,8 +393,9 @@ export default function ShirtManagementView({
         />
 
         <div className="p-4 bg-white">
-          <div className="sticky top-16 z-20 py-2 border-b border-gray-100 mb-3">
-            <div className="flex items-center justify-between">
+          <div className="screen-only">
+            <div className="sticky top-16 z-20 py-2 border-b border-gray-100 mb-3">
+              <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Anniversary Shirt Management</h2>
                 <p className="text-sm text-gray-600 mt-1">Track shirt payments, sizes, and distribution status</p>
@@ -405,6 +406,7 @@ export default function ShirtManagementView({
                 <span className="text-gray-500">{people.length === 1 ? 'person' : 'people'}</span>
               </div>
             </div>
+          </div>
           </div>
 
 
@@ -825,7 +827,7 @@ export default function ShirtManagementView({
       </div>
 
       {/* Account details sidebar */}
-      <div className="no-print">
+      <div className="screen-only">
         {sidebarOpen && (
           <AccountSidebar 
             person={selectedPerson} 
@@ -837,7 +839,7 @@ export default function ShirtManagementView({
       </div>
       
       {/* Notes Dialog */}
-      <div className="no-print">
+      <div className="screen-only">
         {notesDialogOpen && (
           <NotesDialog 
             person={notesDialogPerson} 
@@ -846,6 +848,14 @@ export default function ShirtManagementView({
           />
         )}
       </div>
+
+      <style>{`
+        @media print {
+          .screen-only {
+            display: none !important;
+          }
+        }
+      `}</style>
     </>
   );
 }
