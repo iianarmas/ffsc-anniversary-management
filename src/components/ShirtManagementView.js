@@ -67,7 +67,10 @@ export default function ShirtManagementView({
     setSidebarOpen(true);
   };
 
+  const [allowSidebarClose, setAllowSidebarClose] = useState(true);
+  
   const handleCloseSidebar = () => {
+    if (!allowSidebarClose) return; // Prevent close if blocked
     setSidebarOpen(false);
     setTimeout(() => setSelectedPerson(null), 300);
   };
@@ -850,6 +853,7 @@ export default function ShirtManagementView({
           open={sidebarOpen} 
           onClose={handleCloseSidebar}
           onNotesUpdate={loadPeopleTaskInfo}
+          onBlockClose={(blocked) => setAllowSidebarClose(!blocked)}
         />
       </div>
       

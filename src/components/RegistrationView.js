@@ -55,7 +55,10 @@ export default function RegistrationView({
     setSidebarOpen(true);
   };
 
+  const [allowSidebarClose, setAllowSidebarClose] = useState(true);
+  
   const handleCloseSidebar = () => {
+    if (!allowSidebarClose) return; // Prevent close if blocked
     setSidebarOpen(false);
     // clear selected person after animation completes
     setTimeout(() => setSelectedPerson(null), 300);
@@ -420,6 +423,7 @@ useEffect(() => {
         open={sidebarOpen} 
         onClose={handleCloseSidebar}
         onNotesUpdate={loadPeopleTaskInfo}
+        onBlockClose={(blocked) => setAllowSidebarClose(!blocked)}
       />
         
         {/* Notes Dialog */}

@@ -4,7 +4,6 @@ import { capitalizeWords, formatPhoneInput, extractPhoneNumber } from '../utils/
 import { updatePerson } from '../services/api';
 import SuccessDialog from './SuccessDialog';
 import ErrorDialog from './ErrorDialog';
-import { useBackHandler } from '../hooks/useBackButton';
 
 export default function EditPersonDialog({ person, isOpen, onClose }) {
   const [formData, setFormData] = useState({
@@ -21,8 +20,6 @@ export default function EditPersonDialog({ person, isOpen, onClose }) {
   const [successDialog, setSuccessDialog] = useState({ isOpen: false, title: '', message: '' });
   const [errorDialog, setErrorDialog] = useState({ isOpen: false, title: '', message: '' });
 
-  // Handle back button
-  useBackHandler(isOpen, onClose);
 
   // Initialize form data when person changes
   useEffect(() => {
@@ -38,6 +35,28 @@ export default function EditPersonDialog({ person, isOpen, onClose }) {
       });
     }
   }, [person]);
+
+  // Handle mobile back button
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handlePopState = (e) => {
+      e.preventDefault();
+      onClose();
+    };
+    
+    // Push a state when dialog opens
+    window.history.pushState({ editDialogOpen: true }, '');
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      // Clean up: if dialog is still in history, go back
+      if (window.history.state?.editDialogOpen) {
+        window.history.back();
+      }
+    };
+  }, [isOpen, onClose]);
 
   const handleInputChange = (field, value) => {
     let processedValue = value;
@@ -127,7 +146,10 @@ export default function EditPersonDialog({ person, isOpen, onClose }) {
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-fade-in"
-        onClick={onClose}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
       />
 
       {/* Dialog */}

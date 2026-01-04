@@ -9,8 +9,12 @@ import shirtFemale from '../assets/images/shirt-female.png';
 import SuccessDialog from './SuccessDialog';
 import ErrorDialog from './ErrorDialog';
 
-export default function AccountSidebar({ person, open, onClose, onNotesUpdate }) {
+
+export default function AccountSidebar({ person, open, onClose, onNotesUpdate, onBlockClose }) {
   const [localAttendanceStatus, setLocalAttendanceStatus] = useState(person?.attendanceStatus || 'attending');
+ 
+  // Flag to prevent auto-close after save
+  const [preventClose, setPreventClose] = useState(false);
 
   // Edit mode states
   const [isEditMode, setIsEditMode] = useState(false);
@@ -92,7 +96,7 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
 
   useEffect(() => {
     const handleKey = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && !preventClose) onClose();
     };
     if (open) {
       document.addEventListener('keydown', handleKey);
@@ -109,12 +113,14 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
         contactNumber: ''
       });
       setEditErrors({});
+      // Reset prevent close when sidebar closes
+      setPreventClose(false);
     }
     return () => {
       document.removeEventListener('keydown', handleKey);
       document.body.style.overflow = '';
     };
-  }, [open, onClose]);
+  }, [open, onClose, preventClose]);
 
   // Load available users for task assignment
   useEffect(() => {
@@ -399,6 +405,10 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
     if (!validatePersonEditForm() || !person?.id) return;
 
     try {
+      // Block sidebar from closing
+      setPreventClose(true);
+      if (onBlockClose) onBlockClose(true);
+      
       // Prepare data with raw phone number (remove formatting)
       const dataToSave = {
         ...editFormData,
@@ -415,7 +425,6 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
           message: 'The person information has been successfully updated.'
         });
         // Trigger refresh WITHOUT closing sidebar
-        // Use custom event with detail to prevent parent from closing
         window.dispatchEvent(new CustomEvent('registrationUpdated', { 
           detail: { keepSidebarOpen: true } 
         }));
@@ -423,11 +432,21 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
         if (onNotesUpdate) {
           onNotesUpdate();
         }
+        
+        // Unblock sidebar after 1.5 seconds (after realtime update completes)
+        setTimeout(() => {
+          setPreventClose(false);
+          if (onBlockClose) onBlockClose(false);
+        }, 1500);
       } else {
+        setPreventClose(false);
+        if (onBlockClose) onBlockClose(false);
         throw new Error('Update failed');
       }
     } catch (error) {
       console.error('Error updating person:', error);
+      setPreventClose(false);
+      if (onBlockClose) onBlockClose(false);
       setErrorDialog({
         isOpen: true,
         title: 'Update Failed',
@@ -484,7 +503,7 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
       {open && (
         <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300 opacity-100"
-          onClick={onClose}
+          onClick={() => !preventClose && onClose()}
           aria-hidden
         />
       )}
@@ -517,7 +536,7 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
             <div className="flex items-center gap-3">
               {person && person.registered ? getBadge('Checked In', 'bg-green-700 text-white') : getBadge('Pending', 'bg-yellow-500 text-white')}
               <button
-                onClick={onClose}
+                onClick={() => !preventClose && onClose()}
                 className="p-2 rounded hover:bg-gray-100 focus:outline-none"
                 aria-label="Close details"
               >
