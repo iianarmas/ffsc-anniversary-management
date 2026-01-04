@@ -95,25 +95,53 @@ function AppContent() {
   const [pendingRoleRequestCount, setPendingRoleRequestCount] = useState(0);
   const [roleRequestResult, setRoleRequestResult] = useState({ show: false, status: '' });
 
-  // Prevent app exit when back button is pressed (only exit from home)
+  // Handle back button for view navigation
   useEffect(() => {
+    // Don't interfere if we're in a browser with actual history
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                        window.navigator.standalone === true;
+    
+    if (!isStandalone) {
+      // In browser mode, let normal browser back button work
+      return;
+    }
+
+    // PWA mode: handle back button for views
     const handlePopState = (e) => {
+      // Check if this is triggered by a modal/overlay (they add their own state)
+      if (e.state?.modalOpen) {
+        // Let the modal handler deal with it
+        return;
+      }
+
       // If we're not on home view and back is pressed, navigate to home instead of exiting
       if (currentView !== 'home') {
         e.preventDefault();
         setCurrentView('home');
-        window.history.pushState(null, '', window.location.pathname);
+        // Add state back so we don't exit the app
+        window.history.pushState({ view: 'home' }, '');
       }
       // If on home, allow default behavior (exit app)
     };
 
-    // Push initial state
-    window.history.pushState(null, '', window.location.pathname);
+    // Push initial state only in PWA mode
+    window.history.pushState({ view: currentView }, '');
     window.addEventListener('popstate', handlePopState);
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
+  }, [currentView]);
+
+  // Update history state when view changes (PWA only)
+  useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                        window.navigator.standalone === true;
+    
+    if (isStandalone && currentView) {
+      // Replace current state with new view
+      window.history.replaceState({ view: currentView }, '');
+    }
   }, [currentView]);
 
   // Update status bar color based on current view
@@ -679,7 +707,7 @@ useEffect(() => {
   }, [currentView]);
 
   return (
-    <div className="min-h-screen bg-white flex" style={{ background: 'white' }}>
+    <div className="min-h-screen bg-white flex" style={{ background: 'white', boxShadow: 'none' }}>
       {/* Welcome Modal */}
       <WelcomeModal
         isOpen={showWelcome}
@@ -897,8 +925,25 @@ useEffect(() => {
           background-image: none !important;
         }
         
-        /* Hide scrollbar on mobile */
+        /* Remove any box shadows that might create gradients */
+        * {
+          box-shadow: none !important;
+        }
+        
+        /* Hide scrollbar on mobile - industry standard for mobile apps */
         @media (max-width: 767px) {
+          body, html, #root, .min-h-screen {
+            background: white !important;
+            background-image: none !important;
+            box-shadow: none !important;
+          }
+          
+          /* Remove potential shadow/gradient from main containers */
+          .flex, .min-h-screen, div[style*="background"] {
+            box-shadow: none !important;
+          }
+          
+          /* Hide scrollbar on all elements */
           * {
             scrollbar-width: none; /* Firefox */
             -ms-overflow-style: none; /* IE and Edge */
