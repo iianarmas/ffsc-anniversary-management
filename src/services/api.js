@@ -814,8 +814,7 @@ export const updatePerson = async (personId, personData) => {
         gender: personData.gender || null,
         location: personData.location,
         contact_number: personData.contactNumber || null,
-        attendance_status: personData.attendanceStatus || 'attending',
-        updated_at: new Date().toISOString()
+        attendance_status: personData.attendanceStatus || 'attending'
       })
       .eq('id', personId);
 

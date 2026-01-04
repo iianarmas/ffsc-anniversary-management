@@ -72,6 +72,19 @@ export default function ShirtManagementView({
     setTimeout(() => setSelectedPerson(null), 300);
   };
 
+  // Keep selected person data in sync when people list updates
+  useEffect(() => {
+    if (selectedPerson && sidebarOpen) {
+      // Find updated person data
+      const updatedPerson = people.find(p => p.id === selectedPerson.id);
+      if (updatedPerson) {
+        setSelectedPerson(updatedPerson);
+      }
+    }
+  }, [people]);
+
+
+
   const handleOpenNotes = (person) => {
     setNotesDialogPerson(person);
     setNotesDialogOpen(true);

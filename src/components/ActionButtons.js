@@ -29,9 +29,6 @@ export default function ActionButtons({
     setShowPrintTooltip(true);
   };
 
-  // Debug logging
-  console.log('ActionButtons - selectedPeople:', selectedPeople, 'length:', selectedPeople.length);
-
   return (
     <div className="bg-white px-4 py-3 flex items-center justify-between min-h-[60px]">
       <div className="flex items-center gap-4">

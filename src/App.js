@@ -44,8 +44,8 @@ import { supabase } from './services/supabase';
 
 import './assets/fonts/fonts.css';
 
-// Register service worker for PWA
-if ('serviceWorker' in navigator) {
+// Register service worker for PWA (only in production)
+if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => console.log('SW registered:', registration))

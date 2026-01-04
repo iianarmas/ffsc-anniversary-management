@@ -3,6 +3,7 @@ import { formatFullName } from '../utils/formatters';
 import { Search, Filter, X, ChevronRight, ChevronUp, Shirt, DollarSign, Package, AlertCircle, StickyNote, CheckSquare, CheckCircle, Lock } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 import NotesDialog from './NotesDialog';
+import EditPersonDialog from './EditPersonDialog';
 import { useBackHandler } from '../hooks/useBackButton';
 
 export default function MobileShirtManagementView({
@@ -36,6 +37,11 @@ export default function MobileShirtManagementView({
   const [editingPerson, setEditingPerson] = useState(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [notesDialogPerson, setNotesDialogPerson] = useState(null);
+
+  const [editDialogPerson, setEditDialogPerson] = useState(null);
+  const [longPressTimer, setLongPressTimer] = useState(null);
+  const [longPressTriggered, setLongPressTriggered] = useState(false);
+
   // Handle back button for filters and edit modal
   useBackHandler(showFilters, () => setShowFilters(false));
   useBackHandler(!!editingPerson, () => setEditingPerson(null));
@@ -491,7 +497,39 @@ export default function MobileShirtManagementView({
             <div
               key={person.id}
               className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 transition-all"
-              onClick={() => setEditingPerson(person)}
+              onClick={() => {
+                if (!longPressTriggered) {
+                  setEditingPerson(person);
+                }
+                setLongPressTriggered(false);
+              }}
+              onTouchStart={(e) => {
+                // Only allow long press for admin and committee
+                if (profile?.role !== 'admin' && profile?.role !== 'committee') return;
+                
+                const timer = setTimeout(() => {
+                  setLongPressTriggered(true);
+                  setEditDialogPerson(person);
+                  // Haptic feedback if available
+                  if (window.navigator.vibrate) {
+                    window.navigator.vibrate(50);
+                  }
+                }, 500); // 500ms long press
+                setLongPressTimer(timer);
+              }}
+              onTouchEnd={() => {
+                if (longPressTimer) {
+                  clearTimeout(longPressTimer);
+                  setLongPressTimer(null);
+                }
+              }}
+              onTouchMove={() => {
+                if (longPressTimer) {
+                  clearTimeout(longPressTimer);
+                  setLongPressTimer(null);
+                  setLongPressTriggered(false);
+                }
+              }}
               style={{ minHeight: '44px' }}
             >
               <div className="flex items-center justify-between">
@@ -666,6 +704,15 @@ export default function MobileShirtManagementView({
           person={notesDialogPerson}
           isOpen={!!notesDialogPerson}
           onClose={() => setNotesDialogPerson(null)}
+        />
+      )}
+
+      {/* Edit Person Dialog */}
+      {editDialogPerson && (profile?.role === 'admin' || profile?.role === 'committee') && (
+        <EditPersonDialog
+          person={editDialogPerson}
+          isOpen={!!editDialogPerson}
+          onClose={() => setEditDialogPerson(null)}
         />
       )}
     </div>

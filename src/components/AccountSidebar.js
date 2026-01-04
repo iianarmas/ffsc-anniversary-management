@@ -33,6 +33,41 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
       setLocalAttendanceStatus(person.attendanceStatus);
     }
   }, [person?.attendanceStatus]);
+
+  // Prevent sidebar from closing when person data updates
+  const personIdRef = React.useRef(person?.id);
+  useEffect(() => {
+    // Only reset if we switched to a completely different person
+    if (person?.id && person.id !== personIdRef.current) {
+      personIdRef.current = person.id;
+      setIsEditMode(false);
+      setEditFormData({
+        firstName: '',
+        lastName: '',
+        age: '',
+        gender: '',
+        location: '',
+        contactNumber: ''
+      });
+      setEditErrors({});
+    }
+  }, [person?.id]);
+  // Reset edit mode when person changes (but not when sidebar closes)
+  useEffect(() => {
+    if (person?.id && open) {
+      // Person changed while sidebar is open - reset edit mode
+      setIsEditMode(false);
+      setEditFormData({
+        firstName: '',
+        lastName: '',
+        age: '',
+        gender: '',
+        location: '',
+        contactNumber: ''
+      });
+      setEditErrors({});
+    }
+  }, [person?.id, open]);
   const [notes, setNotes] = useState([]);
   const [newNoteText, setNewNoteText] = useState('');
   const [editingNoteId, setEditingNoteId] = useState(null);
@@ -62,6 +97,18 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
     if (open) {
       document.addEventListener('keydown', handleKey);
       document.body.style.overflow = 'hidden';
+    } else {
+      // Reset edit mode when sidebar closes
+      setIsEditMode(false);
+      setEditFormData({
+        firstName: '',
+        lastName: '',
+        age: '',
+        gender: '',
+        location: '',
+        contactNumber: ''
+      });
+      setEditErrors({});
     }
     return () => {
       document.removeEventListener('keydown', handleKey);
@@ -101,60 +148,48 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
       
       try {
         // Fetch person with creator info
-        const { data, error } = await supabase
+        const { data: personData, error: personError } = await supabase
           .from('people')
-          .select(`
-            created_at,
-            created_by,
-            profiles!people_created_by_fkey (
-              full_name
-            )
-          `)
+          .select('created_at, created_by')
           .eq('id', person.id)
           .single();
         
-        if (error) {
-          console.error('Error fetching creator info:', error);
-          // Try fallback without the profiles join
-          const { data: personData, error: personError } = await supabase
-            .from('people')
-            .select('created_at, created_by')
-            .eq('id', person.id)
-            .single();
-            
-          if (!personError && personData) {
-            setCreatedAt(personData.created_at);
-            // If we have created_by ID, try to fetch the profile separately
-            if (personData.created_by) {
-              const { data: profileData } = await supabase
-                .from('profiles')
-                .select('full_name, role')
-                .eq('id', personData.created_by)
-                .single();
-              
-              const creatorName = profileData?.full_name || 'Unknown';
-              const isAdmin = profileData?.role === 'admin';
-              
-              // Admin shows name + date, Committee shows only name
-              setCreatedByName(isAdmin ? 'Admin' : creatorName);
-            } else {
-              setCreatedByName('System');
-            }
-          }
+        if (personError) {
+          console.error('Error fetching person info:', personError);
+          setCreatedByName('Unknown');
+          setCreatedAt(person.createdAt || person.timestamp || '');
           return;
         }
         
-        if (data) {
-          const creatorRole = data.profiles?.role;
-          const creatorName = data.profiles?.full_name || 'Unknown';
-          const isAdmin = creatorRole === 'admin';
+        if (!personData) return;
+        
+        // Now fetch the creator's profile separately
+        if (personData.created_by) {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('full_name, role')
+            .eq('id', personData.created_by)
+            .single();
           
-          // Admin shows name + date, Committee/others show only name (no date)
-          setCreatedByName(isAdmin ? 'Admin' : creatorName);
-          
-          // Only show created_at date if created by admin
-          setCreatedAt(isAdmin ? data.created_at : null);
+          if (profileError) {
+            console.error('Error fetching creator profile:', profileError);
+            setCreatedByName('Unknown');
+          } else {
+            const creatorRole = profileData?.role;
+            const creatorName = profileData?.full_name || 'Unknown';
+            const isAdmin = creatorRole === 'admin';
+            
+            // Admin shows name + date, Committee/others show only name (no date)
+            setCreatedByName(isAdmin ? 'Admin' : creatorName);
+            
+            // Only show created_at date if created by admin
+            setCreatedAt(isAdmin ? personData.created_at : null);
+          }
+        } else {
+          setCreatedByName('System');
+          setCreatedAt(null);
         }
+        
       } catch (error) {
         console.error('Error loading creator info:', error);
         // Set defaults
@@ -372,14 +407,22 @@ export default function AccountSidebar({ person, open, onClose, onNotesUpdate })
       
       const result = await updatePerson(person.id, dataToSave);
       if (result.success) {
+        // Exit edit mode and show success
+        setIsEditMode(false);
         setSuccessDialog({
           isOpen: true,
           title: 'Person Updated!',
           message: 'The person information has been successfully updated.'
         });
-        setIsEditMode(false);
-        // Trigger refresh
-        window.dispatchEvent(new Event('registrationUpdated'));
+        // Trigger refresh WITHOUT closing sidebar
+        // Use custom event with detail to prevent parent from closing
+        window.dispatchEvent(new CustomEvent('registrationUpdated', { 
+          detail: { keepSidebarOpen: true } 
+        }));
+        // Call onNotesUpdate if provided to refresh task info
+        if (onNotesUpdate) {
+          onNotesUpdate();
+        }
       } else {
         throw new Error('Update failed');
       }

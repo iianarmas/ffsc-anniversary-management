@@ -3,6 +3,7 @@ import { formatFullName } from '../utils/formatters';
 import { Search, Filter, X, ChevronRight, Check, ChevronUp, Users, CheckCircle, Clock, StickyNote, CheckSquare, Lock } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 import NotesDialog from './NotesDialog';
+import EditPersonDialog from './EditPersonDialog';
 import { useBackHandler } from '../hooks/useBackButton';
 
 const formatPhilippineTime = (utcTimestamp) => {
@@ -53,6 +54,10 @@ export default function MobileRegistrationView({
   useBackHandler(showFilters, () => setShowFilters(false));
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [notesDialogPerson, setNotesDialogPerson] = useState(null);
+
+  const [editDialogPerson, setEditDialogPerson] = useState(null);
+  const [longPressTimer, setLongPressTimer] = useState(null);
+  const [longPressTriggered, setLongPressTriggered] = useState(false);
 
 
   const activeFiltersCount = [filterAge, filterLocation, filterStatus, filterAttendance].filter(f => f !== 'All').length;
@@ -324,7 +329,39 @@ export default function MobileRegistrationView({
                     ? 'border-[#001740] shadow-md' 
                     : 'border-transparent'
                 }`}
-                onClick={() => handleSelectPerson(person.id)}
+                onClick={() => {
+                  if (!longPressTriggered) {
+                    handleSelectPerson(person.id);
+                  }
+                  setLongPressTriggered(false);
+                }}
+                onTouchStart={(e) => {
+                  // Only allow long press for admin and committee
+                  if (profile?.role !== 'admin' && profile?.role !== 'committee') return;
+                  
+                  const timer = setTimeout(() => {
+                    setLongPressTriggered(true);
+                    setEditDialogPerson(person);
+                    // Haptic feedback if available
+                    if (window.navigator.vibrate) {
+                      window.navigator.vibrate(50);
+                    }
+                  }, 500); // 500ms long press
+                  setLongPressTimer(timer);
+                }}
+                onTouchEnd={() => {
+                  if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    setLongPressTimer(null);
+                  }
+                }}
+                onTouchMove={() => {
+                  if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    setLongPressTimer(null);
+                    setLongPressTriggered(false);
+                  }
+                }}
                 style={{ minHeight: '44px' }}
               >
                 <div className="flex items-start gap-3">
@@ -559,6 +596,15 @@ export default function MobileRegistrationView({
           person={notesDialogPerson}
           isOpen={!!notesDialogPerson}
           onClose={() => setNotesDialogPerson(null)}
+        />
+      )}
+
+      {/* Edit Person Dialog */}
+      {editDialogPerson && (profile?.role === 'admin' || profile?.role === 'committee') && (
+        <EditPersonDialog
+          person={editDialogPerson}
+          isOpen={!!editDialogPerson}
+          onClose={() => setEditDialogPerson(null)}
         />
       )}
     </div>

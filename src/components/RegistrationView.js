@@ -61,6 +61,30 @@ export default function RegistrationView({
     setTimeout(() => setSelectedPerson(null), 300);
   };
 
+  // Keep selected person data in sync when people list updates
+  useEffect(() => {
+    if (selectedPerson && sidebarOpen) {
+      // Find updated person data
+      const updatedPerson = filteredAndSortedPeople.find(p => p.id === selectedPerson.id) 
+                         || people.find(p => p.id === selectedPerson.id);
+      if (updatedPerson) {
+        setSelectedPerson(updatedPerson);
+      }
+    }
+  }, [filteredAndSortedPeople, people]);
+
+  // Listen for registration updates but don't close sidebar
+  useEffect(() => {
+    const handleRegistrationUpdate = () => {
+      // Reload task info when registrations update
+      loadPeopleTaskInfo();
+      // Don't close the sidebar - let user keep working
+    };
+
+    window.addEventListener('registrationUpdated', handleRegistrationUpdate);
+    return () => window.removeEventListener('registrationUpdated', handleRegistrationUpdate);
+  }, []);
+
   const handleOpenNotes = (person) => {
     setNotesDialogPerson(person);
     setNotesDialogOpen(true);
@@ -383,19 +407,19 @@ useEffect(() => {
         </div>
 
         {/* Account details sidebar */}
-        <AccountSidebar 
-          person={selectedPerson} 
-          open={sidebarOpen} 
-          onClose={handleCloseSidebar}
-          onNotesUpdate={loadPeopleTaskInfo}
-        />
+      <AccountSidebar 
+        person={selectedPerson} 
+        open={sidebarOpen} 
+        onClose={handleCloseSidebar}
+        onNotesUpdate={loadPeopleTaskInfo}
+      />
         
         {/* Notes Dialog */}
-        <NotesDialog 
-          person={notesDialogPerson} 
-          isOpen={notesDialogOpen} 
-          onClose={handleCloseNotes} 
-        />
+      <NotesDialog 
+        person={notesDialogPerson} 
+        isOpen={notesDialogOpen} 
+        onClose={handleCloseNotes} 
+      />
 
       </div>
     </>
