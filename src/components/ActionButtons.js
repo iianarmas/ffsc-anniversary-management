@@ -43,6 +43,9 @@ export default function ActionButtons({
                 {s.Icon && <s.Icon size={14} className="text-gray-400" />}
                 <span className="font-semibold text-gray-900">{s.value}</span>
                 <span className="text-gray-500">{s.label}</span>
+                {s.subtitle && (
+                  <span className="text-xs text-gray-400 ml-1">{s.subtitle}</span>
+                )}
                 {i < stats.length - 1 && <span className="text-gray-300">|</span>}
               </div>
             ))}

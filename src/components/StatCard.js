@@ -31,6 +31,13 @@ export default function StatCard({ title, value, Icon, variant = 'compact', aria
       iconBg: 'bg-red-100',
       value: 'text-red-700',
       glow: 'group-hover:shadow-red-200'
+    },
+    purple: {
+      bg: 'from-purple-50 to-violet-50',
+      icon: 'text-purple-600',
+      iconBg: 'bg-purple-100',
+      value: 'text-purple-700',
+      glow: 'group-hover:shadow-purple-200'
     }
   };
 

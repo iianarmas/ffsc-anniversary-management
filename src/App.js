@@ -503,11 +503,23 @@ useEffect(() => {
     const shirtsPending = people.filter(p => !p.shirtGiven).length;
     const maxCapacity = 230;
     
+    // Capacity calculation - based on people on the list (not checked in)
+    // Count all attending people except toddlers
+    const attendingCountedTowardCapacity = attendingPeople.filter(p => p.ageBracket !== 'Toddler').length;
+    const totalToddlersOnList = attendingPeople.filter(p => p.ageBracket === 'Toddler').length;
+    
+    const slotsRemaining = maxCapacity - attendingCountedTowardCapacity;
+    const capacityPercentage = Math.round((attendingCountedTowardCapacity / maxCapacity) * 100);
+    
     return { 
       registered, 
       registeredCapacity, 
       toddlersCount,
+      totalToddlersOnList,
       maxCapacity,
+      slotsRemaining,
+      capacityPercentage,
+      attendingCountedTowardCapacity,
       preRegistered, 
       total: people.length,
       attendingCount: attendingPeople.length,

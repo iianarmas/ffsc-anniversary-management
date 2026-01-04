@@ -268,7 +268,7 @@ export default function Dashboard({ people = [], stats = {} }) {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <StatCard 
             title="Total Pre-registered" 
             value={stats.total || 0} 
@@ -279,9 +279,17 @@ export default function Dashboard({ people = [], stats = {} }) {
           <StatCard 
             title="Checked In" 
             value={`${stats.registeredCapacity || 0} / ${stats.maxCapacity || 230}`}
-            subtitle={stats.registered !== stats.registeredCapacity ? `(${stats.registered} total including ${stats.toddlersCount} ${stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})` : null}
+            subtitle={stats.registered !== stats.registeredCapacity ? `(${stats.registered} total, ${stats.toddlersCount} ${stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})` : null}
             Icon={CheckCircle} 
             color="green"
+            variant="expanded"
+          />
+          <StatCard 
+            title="Slots Remaining" 
+            value={stats.slotsRemaining || 0}
+            subtitle={`${stats.capacityPercentage || 0}% capacity`}
+            Icon={Users} 
+            color="purple"
             variant="expanded"
           />
           <StatCard 

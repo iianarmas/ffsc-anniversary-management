@@ -146,28 +146,34 @@ export default function MobileRegistrationView({
         
         {/* Compact Stats Row - Now inside sticky header */}
         <div className="bg-white px-4 py-3 border-b border-gray-100">
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             <div className="text-center">
               <div className="text-lg font-bold text-[#001740]">{people.length}</div>
               <div className="text-xs text-gray-500">Total</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-green-600">
-                {people.filter(p => p.registered).length}
+                {people.filter(p => p.registered && p.attendanceStatus === 'attending' && p.ageBracket !== 'Toddler').length}
               </div>
               <div className="text-xs text-gray-500">Checked</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-yellow-600">
-                {people.filter(p => !p.registered).length}
+                {people.filter(p => !p.registered && p.attendanceStatus === 'attending').length}
               </div>
               <div className="text-xs text-gray-500">Pending</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-blue-600">
-                {Math.round((people.filter(p => p.registered && p.ageBracket !== 'Toddler').length / 230) * 100)}%
+                {Math.round((people.filter(p => p.attendanceStatus === 'attending' && p.ageBracket !== 'Toddler').length / 230) * 100)}%
               </div>
-              <div className="text-xs text-gray-500">Capacity</div>
+              <div className="text-xs text-gray-500">Full</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-purple-600">
+                {230 - people.filter(p => p.attendanceStatus === 'attending' && p.ageBracket !== 'Toddler').length}
+              </div>
+              <div className="text-xs text-gray-500">Slots</div>
             </div>
           </div>
         </div>

@@ -307,7 +307,12 @@ useEffect(() => {
                       value: `${stats.registeredCapacity || 0} / ${stats.maxCapacity || 230}`,
                       subtitle: stats.registered !== stats.registeredCapacity ? `(${stats.registered} total, ${stats.toddlersCount} ${stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})` : null
                     },
-                    { Icon: Clock, label: 'Pending', value: stats.preRegistered || 0 }
+                    { Icon: Clock, label: 'Pending', value: stats.preRegistered || 0 },
+                    { 
+                      Icon: Users, 
+                      label: 'Slots Remaining', 
+                      value: stats.slotsRemaining || 0
+                    }
                   ]}
                   readOnly={!canRegister}
                 
