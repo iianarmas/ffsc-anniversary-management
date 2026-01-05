@@ -165,22 +165,25 @@ export default function MobileCollectionsView({ people }) {
 
   return (
     <>
-      {/* Header */}
-      <Header 
-        viewTitle="Payment Collections"
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        searchPlaceholder="Search by name..."
-        showSearch={false}
-        showBell={false}
-      />
+    {/* Fixed Header with Branding */}
+      <div className="sticky top-0 bg-white shadow-md z-20">
+      {/* Logo and Brand Section */}
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+          <img 
+            src="/church-logo.svg" 
+            alt="FFSC Logo" 
+            className="w-8 h-8 object-contain flex-shrink-0"
+          />
+          <div>
+            <h1 style={{ fontFamily: 'Moderniz, sans-serif' }} className="text-lg font-bold text-[#001740]">
+              FFSC20
+            </h1>
+            <p className="text-xs text-gray-500">Shirt Payment Collections</p>
+          </div>
+        </div>
+        </div>
 
       <div className="pb-20">
-        {/* Page Title */}
-        <div className="bg-white border-b border-gray-200 px-4 py-4">
-          <h1 className="text-xl font-semibold text-gray-900">Payment Collections</h1>
-          <p className="text-xs text-gray-500 mt-0.5">Track shirt order payments</p>
-        </div>
 
       {/* Stats Cards */}
       <div className="p-4 space-y-3">

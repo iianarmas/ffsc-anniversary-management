@@ -66,13 +66,23 @@ export default function HomePage({
 
   return (
     <>
-      <Header 
-        viewTitle="Home" 
-        showSearch={false}
-        onOpenPersonNotes={(personId) => {
-          console.log('Open notes for person:', personId);
-        }}
-      />
+      {/* Fixed Header with Branding */}
+      <div className="sticky top-0 bg-white shadow-md z-20">
+      {/* Logo and Brand Section */}
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+          <img 
+            src="/church-logo.svg" 
+            alt="FFSC Logo" 
+            className="w-8 h-8 object-contain flex-shrink-0"
+          />
+          <div>
+            <h1 style={{ fontFamily: 'Moderniz, sans-serif' }} className="text-lg font-bold text-[#001740]">
+              FFSC20
+            </h1>
+            <p className="text-xs text-gray-500">Home</p>
+          </div>
+        </div>
+        </div>
       
       <div className={`bg-[#f9fafa] min-h-screen ${isMobile ? 'pb-20' : 'flex'}`}>
         {/* MAIN CONTENT AREA - LEFT SIDE */}
