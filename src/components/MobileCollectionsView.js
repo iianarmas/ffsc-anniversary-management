@@ -196,7 +196,7 @@ export default function MobileCollectionsView({ people, toggleShirtPayment, peop
     <>
     {/* Fixed Header with Branding */}
       <div className="fixed top-0 left-0 right-0 bg-[#f9fafa] border-b border-gray-200 shadow-sm z-20">
-      {/* Logo and Brand Section */}
+        {/* Logo and Brand Section */}
         <div className="flex items-center justify-between gap-3 px-4 py-2">
           <div className="flex items-center gap-3">
             <img 
@@ -219,16 +219,27 @@ export default function MobileCollectionsView({ people, toggleShirtPayment, peop
               >
                 FFSC20
               </h1>
-              <p className="text-xs text-gray-500 mt-0.5">Collections</p>
+              <p className="text-xs text-gray-500 mt-0.5">Payment Collections</p>
             </div>
           </div>
-          <Avatar 
-            src={profile?.avatar_url} 
-            name={profile?.full_name}
-            size="md"
-          />
+          <div className="flex items-center gap-3">
+
+            <div
+              onClick={() => {
+                const event = new CustomEvent('navigate-to-profile');
+                window.dispatchEvent(event);
+              }}
+              className="cursor-pointer"
+            >
+              <Avatar 
+                src={profile?.avatar_url} 
+                name={profile?.full_name}
+                size="md"
+              />
+            </div>
+          </div>
         </div>
-        </div>
+      </div>
 
       <div className="pt-14 pb-20">
 

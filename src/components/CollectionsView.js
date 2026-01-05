@@ -515,10 +515,10 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
                     <td className="px-4 py-3 text-center">
                       <button
                         onClick={(e) => handlePaymentClick(person, e)}
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer ${
                           person.paid 
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                            : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+                            ? 'bg-green-600 text-white hover:bg-green-500' 
+                            : 'bg-red-600 text-white hover:bg-red-500'
                         }`}
                       >
                         {person.paid ? 'Paid' : 'Unpaid'}

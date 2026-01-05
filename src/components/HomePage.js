@@ -8,6 +8,7 @@ import CalendarWidget from './home/CalendarWidget';
 import RecentActivityWidget from './home/RecentActivityWidget';
 import NotificationsWidget from './home/NotificationsWidget';
 import { getMyStats } from '../services/api';
+import Avatar from './Avatar';
 
 export default function HomePage({ 
   stats, 
@@ -66,13 +67,51 @@ export default function HomePage({
 
   return (
     <>
-      <Header 
-        viewTitle="Home" 
-        showSearch={false}
-        onOpenPersonNotes={(personId) => {
-          console.log('Open notes for person:', personId);
-        }}
-      />
+      {/* Fixed Header with Branding */}
+      <div className="fixed top-0 left-0 right-0 bg-[#f9fafa] border-b border-gray-200 shadow-sm z-20">
+        {/* Logo and Brand Section */}
+        <div className="flex items-center justify-between gap-3 px-4 py-2">
+          <div className="flex items-center gap-3">
+            <img 
+              src="/church-logo.svg" 
+              alt="FFSC Logo" 
+              className="w-8 h-8 object-contain flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => {
+                const event = new CustomEvent('navigate-to-home');
+                window.dispatchEvent(event);
+              }}
+            />
+            <div>
+              <h1 
+                style={{ fontFamily: 'Moderniz, sans-serif' }} 
+                className="text-sm text-[#001740] cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => {
+                  const event = new CustomEvent('navigate-to-home');
+                  window.dispatchEvent(event);
+                }}
+              >
+                FFSC20
+              </h1>
+              <p className="text-xs text-gray-500 mt-0.5">Home</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div
+              onClick={() => {
+                const event = new CustomEvent('navigate-to-profile');
+                window.dispatchEvent(event);
+              }}
+              className="cursor-pointer"
+            >
+              <Avatar 
+                src={profile?.avatar_url} 
+                name={profile?.full_name}
+                size="md"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
       
       <div className={`bg-[#f9fafa] min-h-screen ${isMobile ? 'pb-20' : 'flex'}`}>
         {/* MAIN CONTENT AREA - LEFT SIDE */}

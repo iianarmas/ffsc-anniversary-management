@@ -759,16 +759,7 @@ useEffect(() => {
           />
         )}
 
-        {/* Mobile Add Person Button - Top Right */}
-        {isMobile && profile?.role !== 'viewer' && currentView !== 'home' && currentView !== 'profile' && currentView !== 'users' && currentView !== 'collections' && (
-          <button
-            onClick={() => setIsAddPersonOpen(true)}
-            className="fixed top-4 right-4 z-40 p-2 hover:bg-gray-100 rounded-lg transition-all duration-300 active:scale-95"
-            aria-label="Add person"
-          >
-            <Plus size={20} className="text-gray-400" />
-          </button>
-        )}
+        
 
         {currentView === 'registration' && (
           isMobile ? (
