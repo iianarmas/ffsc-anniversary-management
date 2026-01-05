@@ -633,27 +633,9 @@ export default function ShirtManagementView({
                   { Icon: Package, label: 'Given', value: stats.shirtsGiven },
                   { Icon: Clock, label: 'Pending Distribution', value: stats.shirtsPending }
                 ]}
+                advancedFilters={advancedFilters}
+                onOpenAdvancedFilters={() => setIsAdvancedFilterOpen(true)}
               />
-              
-              {/* Advanced Filter Button */}
-              <div className="px-4 pb-3">
-                <button
-                  onClick={() => setIsAdvancedFilterOpen(true)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
-                    advancedFilters
-                      ? 'bg-purple-800 text-white hover:bg-purple-700'
-                      : 'bg-purple-50 text-purple-800 hover:bg-purple-100 border border-purple-200'
-                  }`}
-                >
-                  <Sparkles size={18} />
-                  Advanced Filters
-                  {advancedFilters && (
-                    <span className="ml-1 px-2 py-0.5 bg-white bg-opacity-20 rounded-full text-xs font-bold">
-                      Active
-                    </span>
-                  )}
-                </button>
-              </div>
             </div>
 
             <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
