@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from './auth/AuthProvider';
 import { canManageShirts } from '../utils/permissions';
-import { ChevronUp, Search, Filter, DollarSign, Package, Clock, Users, StickyNote, CheckSquare, CheckCircle, Lock } from 'lucide-react';
+import { ChevronUp, Search, Filter, DollarSign, Package, Clock, Users, StickyNote, CheckSquare, CheckCircle, Lock, Sparkles } from 'lucide-react';
+import AdvancedFilterDialog from './AdvancedFilterDialog';
 import Header from './Header';
 import StatsBar from './StatsBar';
 import ShirtActionButtons from './ShirtActionButtons';
@@ -42,6 +43,10 @@ export default function ShirtManagementView({
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
+
+  // Advanced filter state
+  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState(null);
 
   // Pagination measurement for fixed pagination layout
   const paginationRef = useRef(null);
@@ -265,10 +270,134 @@ export default function ShirtManagementView({
     );
   };
 
+  // Apply advanced filters to people list
+  const applyAdvancedFilters = (peopleList, filters) => {
+    if (!filters) return peopleList;
+
+    return peopleList.filter(person => {
+      // Payment status
+      if (filters.paymentStatus !== 'All') {
+        if (filters.paymentStatus === 'Paid' && !person.paid) return false;
+        if (filters.paymentStatus === 'Unpaid' && person.paid) return false;
+      }
+
+      // Print status
+      if (filters.printStatus !== 'All') {
+        if (filters.printStatus === 'With Print' && !person.hasPrint) return false;
+        if (filters.printStatus === 'Plain' && person.hasPrint) return false;
+      }
+
+      // Categories (Kids/Teen/Adult based on size)
+      if (filters.categories && filters.categories.length > 0) {
+        const getSizeCategory = (size) => {
+          if (!size || size === 'No shirt' || size === 'Select Size' || size === '') return 'No Order';
+          const kidsSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12'];
+          const teenSizes = ['TS'];
+          if (kidsSizes.includes(size)) return 'Kids';
+          if (teenSizes.includes(size)) return 'Teen';
+          return 'Adult';
+        };
+        const category = getSizeCategory(person.shirtSize);
+        if (!filters.categories.includes(category)) return false;
+      }
+
+      // Locations
+      if (filters.locations && filters.locations.length > 0) {
+        if (!filters.locations.includes(person.location)) return false;
+      }
+
+      // Amount range
+      if (filters.amountMin !== '' || filters.amountMax !== '') {
+        const getShirtPrice = (p) => {
+          if (!p.shirtSize || p.shirtSize === 'No shirt' || p.shirtSize === 'Select Size' || p.shirtSize === '') return 0;
+          const SHIRT_PRICING = {
+            plain: {
+              '#4 (XS) 1-2': 86, '#6 (S) 3-4': 89, '#8 (M) 5-6': 92, '#10 (L) 7-8': 94,
+              '#12 (XL) 9-10': 97, '#14 (2XL) 11-12': 99, 'TS': 105, 'XS': 109,
+              'S': 115, 'M': 119, 'L': 123, 'XL': 127, '2XL': 131
+            },
+            withPrint: {
+              '#4 (XS) 1-2': 220, '#6 (S) 3-4': 220, '#8 (M) 5-6': 220, '#10 (L) 7-8': 220,
+              '#12 (XL) 9-10': 220, '#14 (2XL) 11-12': 220, 'TS': 220, 'XS': 240,
+              'S': 240, 'M': 240, 'L': 240, 'XL': 240, '2XL': 240
+            }
+          };
+          if (p.hasPrint) return SHIRT_PRICING.withPrint[p.shirtSize] || 0;
+          return SHIRT_PRICING.plain[p.shirtSize] || 0;
+        };
+        const price = getShirtPrice(person);
+        const min = parseFloat(filters.amountMin) || 0;
+        const max = parseFloat(filters.amountMax) || Infinity;
+        if (price < min || price > max) return false;
+      }
+
+      // Name search
+      if (filters.nameSearch && filters.nameSearch !== '') {
+        const fullName = `${person.firstName} ${person.lastName}`.toLowerCase();
+        if (!fullName.includes(filters.nameSearch.toLowerCase())) return false;
+      }
+
+      // Task/Notes filters
+      const taskInfo = peopleTaskInfo[person.id] || {};
+      if (filters.hasNotes && !taskInfo.hasNotes) return false;
+      if (filters.hasTasks && !taskInfo.hasTasks) return false;
+      if (filters.hasOverdueTasks) {
+        if (!taskInfo.hasTasks || taskInfo.incompleteTasksCount === 0) return false;
+      }
+
+      // Missing contact
+      if (filters.missingContact && person.contactNumber) return false;
+
+      // === SHIRT-SPECIFIC FILTERS ===
+      // Shirt size
+      if (filters.shirtSize && filters.shirtSize !== 'All') {
+        if (person.shirtSize !== filters.shirtSize) return false;
+      }
+
+      // Distribution status
+      if (filters.distributionStatus && filters.distributionStatus !== 'All') {
+        if (filters.distributionStatus === 'Given' && !person.shirtGiven) return false;
+        if (filters.distributionStatus === 'Pending' && person.shirtGiven) return false;
+      }
+
+      // Age bracket
+      if (filters.ageBracket && filters.ageBracket !== 'All') {
+        if (person.ageBracket !== filters.ageBracket) return false;
+      }
+
+      // Registration status
+      if (filters.registrationStatus && filters.registrationStatus !== 'All') {
+        const hasRegistration = person.registrationStatus === 'Registered' || person.checkInStatus === 'Checked In';
+        if (filters.registrationStatus === 'Registered' && !hasRegistration) return false;
+        if (filters.registrationStatus === 'Not Registered' && hasRegistration) return false;
+      }
+
+      // Attendance status
+      if (filters.attendanceStatus && filters.attendanceStatus !== 'All') {
+        if (filters.attendanceStatus === 'attending' && person.attendanceStatus !== 'attending') return false;
+        if (filters.attendanceStatus === 'shirt_only' && person.attendanceStatus !== 'shirt_only') return false;
+      }
+
+      // Missing size
+      if (filters.missingSize) {
+        const hasMissingSize = !person.shirtSize || 
+                               person.shirtSize === '' || 
+                               person.shirtSize === 'Select Size' || 
+                               person.shirtSize === 'None yet';
+        if (!hasMissingSize) return false;
+      }
+
+      return true;
+    });
+  };
+
+  // Apply advanced filters first, then paginate
+  const filteredPeople = applyAdvancedFilters(people, advancedFilters);
+
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = people.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredPeople.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -460,8 +589,13 @@ export default function ShirtManagementView({
               </div>
               <div className="text-sm text-gray-500 flex items-baseline gap-2">
                 <Users size={18} className="text-gray-400" />
-                <span className="font-semibold text-gray-900 text-lg">{people.length}</span>
-                <span className="text-gray-500">{people.length === 1 ? 'person' : 'people'}</span>
+                <span className="font-semibold text-gray-900 text-lg">{filteredPeople.length}</span>
+                <span className="text-gray-500">{filteredPeople.length === 1 ? 'person' : 'people'}</span>
+                {advancedFilters && filteredPeople.length !== people.length && (
+                  <span className="text-xs text-purple-600 font-medium">
+                    (filtered from {people.length})
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -486,9 +620,13 @@ export default function ShirtManagementView({
                   shirtFilterDistribution !== 'All' || 
                   shirtFilterSize !== 'All' ||
                   shirtFilterPrint !== 'All' ||
-                  shirtFilterAttendance !== 'All'
+                  shirtFilterAttendance !== 'All' ||
+                  advancedFilters !== null
                 }
-                onResetFilters={onResetFilters}
+                onResetFilters={() => {
+                  onResetFilters();
+                  setAdvancedFilters(null);
+                }}
                 stats={[
                   { Icon: DollarSign, label: 'Paid', value: stats.paid },
                   { Icon: DollarSign, label: 'Unpaid', value: stats.unpaid },
@@ -496,6 +634,26 @@ export default function ShirtManagementView({
                   { Icon: Clock, label: 'Pending Distribution', value: stats.shirtsPending }
                 ]}
               />
+              
+              {/* Advanced Filter Button */}
+              <div className="px-4 pb-3">
+                <button
+                  onClick={() => setIsAdvancedFilterOpen(true)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
+                    advancedFilters
+                      ? 'bg-purple-800 text-white hover:bg-purple-700'
+                      : 'bg-purple-50 text-purple-800 hover:bg-purple-100 border border-purple-200'
+                  }`}
+                >
+                  <Sparkles size={18} />
+                  Advanced Filters
+                  {advancedFilters && (
+                    <span className="ml-1 px-2 py-0.5 bg-white bg-opacity-20 rounded-full text-xs font-bold">
+                      Active
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
 
             <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
@@ -805,7 +963,7 @@ export default function ShirtManagementView({
           {!useFixedPagination && (
             <div className="mt-4 px-4">
               <Pagination
-                totalItems={people.length}
+                totalItems={filteredPeople.length}
                 itemsPerPage={itemsPerPage}
                 currentPage={currentPage}
                 onPageChange={handlePageChange}
@@ -818,7 +976,7 @@ export default function ShirtManagementView({
           {useFixedPagination && (
             <div ref={paginationRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200">
               <Pagination
-                totalItems={people.length}
+                totalItems={filteredPeople.length}
                 itemsPerPage={itemsPerPage}
                 currentPage={currentPage}
                 onPageChange={handlePageChange}
@@ -863,6 +1021,21 @@ export default function ShirtManagementView({
           onClose={handleCloseNotes} 
         />
       </div>
+
+      
+
+      {/* Advanced Filter Dialog */}
+      <AdvancedFilterDialog
+        isOpen={isAdvancedFilterOpen}
+        onClose={() => setIsAdvancedFilterOpen(false)}
+        onApplyFilters={(filters) => {
+          setAdvancedFilters(filters);
+          setIsAdvancedFilterOpen(false);
+        }}
+        people={people}
+        viewType="shirts"
+        peopleTaskInfo={peopleTaskInfo}
+      />
 
       <style>{`
         @media print {

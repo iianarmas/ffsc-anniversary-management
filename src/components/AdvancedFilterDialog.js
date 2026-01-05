@@ -9,6 +9,8 @@ export default function AdvancedFilterDialog({
   viewType = 'collections',
   peopleTaskInfo = {}
 }) {
+  // ===== VIEW-SPECIFIC CONFIGURATIONS =====
+  const isShirtView = viewType === 'shirts';
   // Core filter states
   const [paymentStatus, setPaymentStatus] = useState('All');
   const [printStatus, setPrintStatus] = useState('All');
@@ -16,6 +18,14 @@ export default function AdvancedFilterDialog({
   const [locations, setLocations] = useState([]);
   const [amountMin, setAmountMin] = useState('');
   const [amountMax, setAmountMax] = useState('');
+  
+  // Shirt-specific states
+  const [shirtSize, setShirtSize] = useState('All');
+  const [distributionStatus, setDistributionStatus] = useState('All');
+  const [ageBracket, setAgeBracket] = useState('All');
+  const [registrationStatus, setRegistrationStatus] = useState('All');
+  const [attendanceStatus, setAttendanceStatus] = useState('All');
+  const [missingSize, setMissingSize] = useState(false);
   
   // Advanced filter states
   const [nameSearch, setNameSearch] = useState('');
@@ -65,6 +75,13 @@ export default function AdvancedFilterDialog({
       setMissingContact(false);
       setShowSaveSection(false);
       setFilterName('');
+      // Reset shirt-specific filters
+      setShirtSize('All');
+      setDistributionStatus('All');
+      setAgeBracket('All');
+      setRegistrationStatus('All');
+      setAttendanceStatus('All');
+      setMissingSize(false);
     }
   }, [isOpen]);
 
@@ -103,13 +120,16 @@ export default function AdvancedFilterDialog({
   // Calculate filtered results in real-time
   const filteredResults = useMemo(() => {
     return people.filter(person => {
-      // Only show people with actual shirt orders for collections view
-      if (!person.shirtSize || 
-          person.shirtSize === 'No shirt' || 
-          person.shirtSize === 'Select Size' || 
-          person.shirtSize === 'None yet' ||
-          person.shirtSize === '') {
-        return false;
+      // For collections view: Only show people with actual shirt orders
+      // For shirts view: Show all people (including those without sizes)
+      if (!isShirtView) {
+        if (!person.shirtSize || 
+            person.shirtSize === 'No shirt' || 
+            person.shirtSize === 'Select Size' || 
+            person.shirtSize === 'None yet' ||
+            person.shirtSize === '') {
+          return false;
+        }
       }
 
       // Payment status filter
@@ -160,9 +180,46 @@ export default function AdvancedFilterDialog({
       // Missing contact info
       if (missingContact && person.contactNumber) return false;
 
+      // === SHIRT-SPECIFIC FILTERS ===
+      if (isShirtView) {
+        // Shirt size filter
+        if (shirtSize !== 'All' && person.shirtSize !== shirtSize) return false;
+        
+        // Distribution status filter
+        if (distributionStatus !== 'All') {
+          if (distributionStatus === 'Given' && !person.shirtGiven) return false;
+          if (distributionStatus === 'Pending' && person.shirtGiven) return false;
+        }
+        
+        // Age bracket filter
+        if (ageBracket !== 'All' && person.ageBracket !== ageBracket) return false;
+        
+        // Registration status filter
+        if (registrationStatus !== 'All') {
+          const hasRegistration = person.registrationStatus === 'Registered' || person.checkInStatus === 'Checked In';
+          if (registrationStatus === 'Registered' && !hasRegistration) return false;
+          if (registrationStatus === 'Not Registered' && hasRegistration) return false;
+        }
+        
+        // Attendance status filter
+        if (attendanceStatus !== 'All') {
+          if (attendanceStatus === 'attending' && person.attendanceStatus !== 'attending') return false;
+          if (attendanceStatus === 'shirt_only' && person.attendanceStatus !== 'shirt_only') return false;
+        }
+        
+        // Missing size filter
+        if (missingSize) {
+          const hasMissingSize = !person.shirtSize || 
+                                 person.shirtSize === '' || 
+                                 person.shirtSize === 'Select Size' || 
+                                 person.shirtSize === 'None yet';
+          if (!hasMissingSize) return false;
+        }
+      }
+
       return true;
     });
-  }, [people, paymentStatus, printStatus, categories, locations, amountMin, amountMax, nameSearch, hasNotes, hasTasks, hasOverdueTasks, missingContact, peopleTaskInfo]);
+  }, [people, paymentStatus, printStatus, categories, locations, amountMin, amountMax, nameSearch, hasNotes, hasTasks, hasOverdueTasks, missingContact, peopleTaskInfo, isShirtView, shirtSize, distributionStatus, ageBracket, registrationStatus, attendanceStatus, missingSize]);
 
   // Get result count color
   const getResultColor = () => {
@@ -181,9 +238,18 @@ export default function AdvancedFilterDialog({
     setHasOverdueTasks(preset.hasOverdueTasks || false);
     setHasNotes(preset.hasNotes || false);
     setHasTasks(preset.hasTasks || false);
+    // Shirt-specific presets
+    setDistributionStatus(preset.distributionStatus || 'All');
+    setMissingSize(preset.missingSize || false);
   };
 
-  const quickPresets = [
+  const quickPresets = isShirtView ? [
+    { name: 'Pending Distribution', distributionStatus: 'Pending' },
+    { name: 'Unpaid', paymentStatus: 'Unpaid' },
+    { name: 'Missing Size', missingSize: true },
+    { name: 'Main Location', locations: ['Main'] },
+    { name: 'With Print', printStatus: 'With Print' }
+  ] : [
     { name: 'Unpaid Orders', paymentStatus: 'Unpaid' },
     { name: 'High Priority', hasOverdueTasks: true },
     { name: 'Main Location', locations: ['Main'] },
@@ -201,7 +267,12 @@ export default function AdvancedFilterDialog({
       config: {
         paymentStatus, printStatus, categories, locations,
         amountMin, amountMax, nameSearch, hasNotes, hasTasks,
-        hasOverdueTasks, missingContact
+        hasOverdueTasks, missingContact,
+        // Shirt-specific
+        ...(isShirtView && {
+          shirtSize, distributionStatus, ageBracket,
+          registrationStatus, attendanceStatus, missingSize
+        })
       }
     };
     
@@ -232,6 +303,15 @@ export default function AdvancedFilterDialog({
     setHasTasks(config.hasTasks || false);
     setHasOverdueTasks(config.hasOverdueTasks || false);
     setMissingContact(config.missingContact || false);
+    // Shirt-specific
+    if (isShirtView) {
+      setShirtSize(config.shirtSize || 'All');
+      setDistributionStatus(config.distributionStatus || 'All');
+      setAgeBracket(config.ageBracket || 'All');
+      setRegistrationStatus(config.registrationStatus || 'All');
+      setAttendanceStatus(config.attendanceStatus || 'All');
+      setMissingSize(config.missingSize || false);
+    }
   };
 
   // Delete saved filter
@@ -260,6 +340,15 @@ export default function AdvancedFilterDialog({
     setHasTasks(false);
     setHasOverdueTasks(false);
     setMissingContact(false);
+    // Shirt-specific
+    if (isShirtView) {
+      setShirtSize('All');
+      setDistributionStatus('All');
+      setAgeBracket('All');
+      setRegistrationStatus('All');
+      setAttendanceStatus('All');
+      setMissingSize(false);
+    }
   };
 
   // Apply filters
@@ -267,7 +356,12 @@ export default function AdvancedFilterDialog({
     onApplyFilters({
       paymentStatus, printStatus, categories, locations,
       amountMin, amountMax, nameSearch, hasNotes, hasTasks,
-      hasOverdueTasks, missingContact
+      hasOverdueTasks, missingContact,
+      // Shirt-specific
+      ...(isShirtView && {
+        shirtSize, distributionStatus, ageBracket,
+        registrationStatus, attendanceStatus, missingSize
+      })
     });
   };
 
@@ -300,7 +394,16 @@ export default function AdvancedFilterDialog({
     hasNotes,
     hasTasks,
     hasOverdueTasks,
-    missingContact
+    missingContact,
+    // Shirt-specific
+    ...(isShirtView ? [
+      shirtSize !== 'All',
+      distributionStatus !== 'All',
+      ageBracket !== 'All',
+      registrationStatus !== 'All',
+      attendanceStatus !== 'All',
+      missingSize
+    ] : [])
   ].filter(Boolean).length;
 
   if (!isOpen) return null;
@@ -472,6 +575,122 @@ export default function AdvancedFilterDialog({
                   />
                 </div>
               </div>
+
+              {/* === SHIRT-SPECIFIC FILTERS === */}
+              {isShirtView && (
+                <>
+                  {/* Shirt Size */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Shirt Size</label>
+                    <select
+                      value={shirtSize}
+                      onChange={(e) => setShirtSize(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="All">All Sizes</option>
+                      <option value="#4 (XS) 1-2">#4 (XS) 1-2</option>
+                      <option value="#6 (S) 3-4">#6 (S) 3-4</option>
+                      <option value="#8 (M) 5-6">#8 (M) 5-6</option>
+                      <option value="#10 (L) 7-8">#10 (L) 7-8</option>
+                      <option value="#12 (XL) 9-10">#12 (XL) 9-10</option>
+                      <option value="#14 (2XL) 11-12">#14 (2XL) 11-12</option>
+                      <option value="TS">TS</option>
+                      <option value="XS">XS</option>
+                      <option value="S">S</option>
+                      <option value="M">M</option>
+                      <option value="L">L</option>
+                      <option value="XL">XL</option>
+                      <option value="2XL">2XL</option>
+                      <option value="No shirt">No shirt</option>
+                      <option value="None yet">None yet</option>
+                    </select>
+                  </div>
+
+                  {/* Distribution Status */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Distribution Status</label>
+                    <div className="flex gap-2">
+                      {['All', 'Given', 'Pending'].map(status => (
+                        <button
+                          key={status}
+                          onClick={() => setDistributionStatus(status)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            distributionStatus === status
+                              ? 'bg-green-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {status}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Age Bracket */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Age Bracket</label>
+                    <div className="flex flex-wrap gap-2">
+                      {['All', 'Toddler', 'Kid', 'Youth', 'Adult'].map(bracket => (
+                        <button
+                          key={bracket}
+                          onClick={() => setAgeBracket(bracket)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            ageBracket === bracket
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {bracket}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Registration Status */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Registration Status</label>
+                    <div className="flex gap-2">
+                      {['All', 'Registered', 'Not Registered'].map(status => (
+                        <button
+                          key={status}
+                          onClick={() => setRegistrationStatus(status)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            registrationStatus === status
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {status}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Attendance Status */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Attendance Status</label>
+                    <div className="flex gap-2">
+                      {[
+                        { value: 'All', label: 'All' },
+                        { value: 'attending', label: 'Attending Event' },
+                        { value: 'shirt_only', label: 'Shirt Only' }
+                      ].map(option => (
+                        <button
+                          key={option.value}
+                          onClick={() => setAttendanceStatus(option.value)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            attendanceStatus === option.value
+                              ? 'bg-teal-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -529,6 +748,19 @@ export default function AdvancedFilterDialog({
                   />
                   <span className="text-sm text-gray-700">Missing contact info</span>
                 </label>
+                
+                {/* Shirt-specific checkbox */}
+                {isShirtView && (
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={missingSize}
+                      onChange={(e) => setMissingSize(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300 accent-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">Missing shirt size</span>
+                  </label>
+                )}
               </div>
             </div>
           </div>

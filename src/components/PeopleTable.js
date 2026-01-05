@@ -186,7 +186,7 @@ export default function PeopleTable({
       <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
           <thead className="sticky bg-white z-30" style={{ top: `${stickyTop}px`, boxShadow: '0 2px 4px rgba(0,0,0,0.08)' }}>
             <tr className="border-b border-gray-200">
-              <th className="px-2 py-1 text-left border-r border-b border-gray-200 w-12 text-center bg-white">
+              <th className="px-2 py-1 text-left border border-gray-200 w-12 text-center bg-white">
                 <input
                   ref={selectAllCheckboxRef}
                   type="checkbox"
