@@ -332,12 +332,7 @@ export default function MobileShirtManagementView({
       {showFilters && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-30 animate-fade-in" 
-          onClick={(e) => {
-            // Only close if clicking the backdrop itself
-            if (e.target === e.currentTarget) {
-              setShowFilters(false);
-            }
-          }}
+          onClick={() => setShowFilters(false)}
         >
           <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
@@ -681,7 +676,12 @@ export default function MobileShirtManagementView({
             <div
               key={person.id}
               className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 transition-all"
-              onClick={() => {
+              onClick={(e) => {
+                // Don't open edit modal if clicking notes/tasks button
+                if (e.target.closest('[aria-label="View notes and tasks"]')) {
+                  e.stopPropagation();
+                  return;
+                }
                 if (!longPressTriggered) {
                   setEditingPerson(person);
                 }
@@ -748,8 +748,14 @@ export default function MobileShirtManagementView({
                       return (
                         <button
                           onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
-                            setNotesDialogPerson(person);
+                            // Ensure edit modal doesn't open
+                            setEditingPerson(null);
+                            // Small delay to ensure state is clean
+                            setTimeout(() => {
+                              setNotesDialogPerson(person);
+                            }, 10);
                           }}
                           className="flex-shrink-0 p-1.5 hover:bg-blue-50 rounded transition active:scale-95"
                           aria-label="View notes and tasks"
