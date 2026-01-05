@@ -893,9 +893,17 @@ useEffect(() => {
 
         {currentView === 'collections' && (
           isMobile ? (
-            <MobileCollectionsView people={people} />
+            <MobileCollectionsView 
+              people={people} 
+              toggleShirtPayment={toggleShirtPayment}
+              peopleTaskInfo={peopleTaskInfo}
+            />
           ) : (
-            <CollectionsView people={people} />
+            <CollectionsView 
+              people={people} 
+              toggleShirtPayment={toggleShirtPayment}
+              peopleTaskInfo={peopleTaskInfo}
+            />
           )
         )}
 

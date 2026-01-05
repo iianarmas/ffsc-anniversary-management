@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { DollarSign, TrendingUp, AlertCircle, Download, Filter, Search } from 'lucide-react';
+import { DollarSign, TrendingUp, AlertCircle, Download, Filter, Search, StickyNote, CheckSquare } from 'lucide-react';
 import Header from './Header';
+import NotesDialog from './NotesDialog';
 
 const SHIRT_PRICING = {
   plain: {
@@ -35,7 +36,7 @@ const SHIRT_PRICING = {
   }
 };
 
-export default function CollectionsView({ people }) {
+export default function CollectionsView({ people, toggleShirtPayment, peopleTaskInfo = {} }) {
   const getShirtPrice = (size, hasPrint, isPaid) => {
     if (!size || size === 'No shirt' || size === 'Select Size' || size === 'None yet' || size === '') return 0;
     
@@ -63,6 +64,9 @@ export default function CollectionsView({ people }) {
   const [filterPayment, setFilterPayment] = useState('All');
   const [filterPrint, setFilterPrint] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
+  const [filterLocation, setFilterLocation] = useState('All');
+  const [selectedPerson, setSelectedPerson] = useState(null);
+  const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false);
 
   // Calculate collection statistics
   const collectionStats = useMemo(() => {
@@ -148,11 +152,12 @@ export default function CollectionsView({ people }) {
   // Filtered people for the table
   const filteredPeople = useMemo(() => {
     return people.filter(person => {
-      // Only show people with actual shirt orders
+      // Only show people with actual shirt orders (excluding empty, "No shirt", etc.)
       if (!person.shirtSize || 
           person.shirtSize === 'No shirt' || 
           person.shirtSize === 'Select Size' || 
-          person.shirtSize === 'None yet') {
+          person.shirtSize === 'None yet' ||
+          person.shirtSize === '') {
         return false;
       }
 
@@ -168,7 +173,9 @@ export default function CollectionsView({ people }) {
       const category = getSizeCategory(person.shirtSize);
       const matchesCategory = filterCategory === 'All' || category === filterCategory;
 
-      return matchesSearch && matchesPayment && matchesPrint && matchesCategory;
+      const matchesLocation = filterLocation === 'All' || person.location === filterLocation;
+
+      return matchesSearch && matchesPayment && matchesPrint && matchesCategory && matchesLocation;
     }).sort((a, b) => {
       const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
       const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
@@ -178,9 +185,10 @@ export default function CollectionsView({ people }) {
 
   // Export to CSV
   const handleExport = () => {
-    const headers = ['Name', 'Size', 'Category', 'Print Status', 'Amount', 'Payment Status'];
+    const headers = ['Name', 'Location', 'Size', 'Category', 'Print Status', 'Amount', 'Payment Status'];
     const rows = filteredPeople.map(person => [
       `${person.firstName} ${person.lastName}`,
+      person.location,
       person.shirtSize,
       getSizeCategory(person.shirtSize),
       person.hasPrint ? 'With Print' : 'Plain',
@@ -203,6 +211,24 @@ export default function CollectionsView({ people }) {
 
   const formatCurrency = (amount) => {
     return `₱${amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  const handleOpenNotes = (person) => {
+    // Ensure person object has the required structure for NotesDialog
+    const personForDialog = {
+      id: person.id,
+      firstName: person.firstName,
+      lastName: person.lastName
+    };
+    setSelectedPerson(personForDialog);
+    setIsNotesDialogOpen(true);
+  };
+
+  const handlePaymentClick = (person, e) => {
+    e.stopPropagation();
+    if (toggleShirtPayment) {
+      toggleShirtPayment(person.id);
+    }
   };
 
   return (
@@ -380,6 +406,18 @@ export default function CollectionsView({ people }) {
             <option value="Adult">Adult</option>
           </select>
 
+          <select
+            value={filterLocation}
+            onChange={(e) => setFilterLocation(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="All">All Locations</option>
+            <option value="Main">Main</option>
+            <option value="Cobol">Cobol</option>
+            <option value="Malacañang">Malacañang</option>
+            <option value="Guest">Guest</option>
+          </select>
+
           <button
             onClick={handleExport}
             className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -397,6 +435,7 @@ export default function CollectionsView({ people }) {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Name</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Location</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Size</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Category</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Print</th>
@@ -409,11 +448,48 @@ export default function CollectionsView({ people }) {
                 const price = getShirtPrice(person.shirtSize, person.hasPrint, person.paid);
                 const category = getSizeCategory(person.shirtSize);
                 
+                const taskInfo = peopleTaskInfo[person.id] || {};
+                
                 return (
                   <tr key={person.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-sm text-gray-900">
-                      {person.firstName} {person.lastName}
+                      <div className="flex items-center justify-between gap-2">
+                        <span>{person.firstName} {person.lastName}</span>
+                        <button
+                          onClick={() => handleOpenNotes(person)}
+                          className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+                          title="View notes and tasks"
+                        >
+                          <div className="relative">
+                            {taskInfo.hasTasks ? (
+                              <CheckSquare 
+                                size={16} 
+                                className={
+                                  taskInfo.incompleteTasksCount > 0
+                                    ? taskInfo.highestPriority === 'High'
+                                      ? 'text-red-500'
+                                      : taskInfo.highestPriority === 'Medium'
+                                        ? 'text-orange-500'
+                                        : 'text-green-500'
+                                    : 'text-gray-400'
+                                }
+                              />
+                            ) : (
+                              <StickyNote 
+                                size={16} 
+                                className={taskInfo.hasNotes ? 'text-blue-500' : 'text-gray-300'}
+                              />
+                            )}
+                            {(taskInfo.notesCount > 0 || taskInfo.tasksCount > 0) && (
+                              <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[8px] font-bold rounded-full w-3 h-3 flex items-center justify-center">
+                                {taskInfo.notesCount + taskInfo.tasksCount}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      </div>
                     </td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{person.location}</td>
                     <td className="px-4 py-3 text-sm text-gray-700">{person.shirtSize}</td>
                     <td className="px-4 py-3 text-sm text-gray-700">{category}</td>
                     <td className="px-4 py-3 text-sm text-gray-700">
@@ -423,13 +499,16 @@ export default function CollectionsView({ people }) {
                       {formatCurrency(price)}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        person.paid 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-orange-100 text-orange-800'
-                      }`}>
+                      <button
+                        onClick={(e) => handlePaymentClick(person, e)}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+                          person.paid 
+                            ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                            : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+                        }`}
+                      >
                         {person.paid ? 'Paid' : 'Unpaid'}
-                      </span>
+                      </button>
                     </td>
                   </tr>
                 );
@@ -444,6 +523,16 @@ export default function CollectionsView({ people }) {
         </div>
       </div>
     </div>
+
+      {/* Notes Dialog */}
+      <NotesDialog
+        person={selectedPerson}
+        isOpen={isNotesDialogOpen && selectedPerson !== null}
+        onClose={() => {
+          setIsNotesDialogOpen(false);
+          setTimeout(() => setSelectedPerson(null), 100);
+        }}
+      />
     </>
   );
 }

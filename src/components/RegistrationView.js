@@ -103,6 +103,16 @@ export default function RegistrationView({
     }
   }, [filteredAndSortedPeople]);
 
+  // Listen for task updates
+  useEffect(() => {
+    const handleTaskUpdate = () => {
+      loadPeopleTaskInfo();
+    };
+    
+    window.addEventListener('taskUpdated', handleTaskUpdate);
+    return () => window.removeEventListener('taskUpdated', handleTaskUpdate);
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => {
       setShowBackToTop(window.scrollY > 300);

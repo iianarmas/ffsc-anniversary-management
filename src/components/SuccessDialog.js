@@ -11,15 +11,18 @@ export default function SuccessDialog({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
-        onClick={onClose}
+        className="absolute inset-0 bg-black bg-opacity-30 pointer-events-auto"
+        onClick={(e) => {
+          e.stopPropagation();
+          // Don't close on backdrop click for success dialog
+        }}
       />
       
       {/* Dialog */}
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl w-[calc(100%-2rem)] max-w-md animate-scale-in z-[70]">
+      <div className="relative bg-white rounded-xl shadow-2xl w-[calc(100%-2rem)] max-w-md animate-scale-in pointer-events-auto">
         <div className="p-6">
           {/* Success Icon with animation */}
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-once">

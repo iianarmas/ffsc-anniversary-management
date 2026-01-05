@@ -10,8 +10,6 @@ import { useBackHandler } from '../hooks/useBackButton';
 export default function NotesDialog({ person, isOpen, onClose }) {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(false);
-  // Handle back button
-  useBackHandler(isOpen, onClose);
   const [newNoteText, setNewNoteText] = useState('');
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingText, setEditingText] = useState('');
@@ -32,10 +30,27 @@ export default function NotesDialog({ person, isOpen, onClose }) {
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, noteId: null, isTask: false });
   const [successDialog, setSuccessDialog] = useState({ isOpen: false, title: '', message: '' });
   const [errorDialog, setErrorDialog] = useState({ isOpen: false, title: '', message: '' });
+  // Handle back button - but not when success/error dialogs are open
+  useBackHandler(isOpen && !successDialog.isOpen && !errorDialog.isOpen && !deleteConfirm.isOpen, onClose);
 
   useEffect(() => {
     if (isOpen && person) {
       loadNotes();
+    } else if (!isOpen) {
+      // Reset all states when dialog closes
+      setNewNoteText('');
+      setIsTask(false);
+      setTaskDueDate('');
+      setTaskPriority('Medium');
+      setTaskCategory('General');
+      setTaskRecurrence('none');
+      setTaskRecurrenceEndDate('');
+      setEditingNoteId(null);
+      setEditingText('');
+      setEditingTaskData(null);
+      setSuccessDialog({ isOpen: false, title: '', message: '' });
+      setErrorDialog({ isOpen: false, title: '', message: '' });
+      setDeleteConfirm({ isOpen: false, noteId: null, isTask: false });
     }
   }, [isOpen, person]);
 
@@ -93,7 +108,7 @@ export default function NotesDialog({ person, isOpen, onClose }) {
       // Notify other components that a task was created
       window.dispatchEvent(new Event('taskUpdated'));
       
-      // Show success dialog
+      // Show success dialog - user will manually close it
       setSuccessDialog({
         isOpen: true,
         title: isTask ? 'Task Created!' : 'Note Added!',
@@ -133,6 +148,7 @@ export default function NotesDialog({ person, isOpen, onClose }) {
     setLoading(true);
     try {
       await deleteNote(deleteConfirm.noteId);
+      setDeleteConfirm({ isOpen: false, noteId: null, isTask: false }); // Close confirm dialog first
       await loadNotes();
       
       // Notify other components that a task was updated/deleted
@@ -265,7 +281,10 @@ export default function NotesDialog({ person, isOpen, onClose }) {
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={() => {
+              window.dispatchEvent(new Event('taskUpdated'));
+              onClose();
+            }}
             className="p-2 hover:bg-gray-100 rounded-lg transition"
             aria-label="Close"
           >
@@ -661,24 +680,31 @@ export default function NotesDialog({ person, isOpen, onClose }) {
       </div>
 
       {/* Confirm Delete Dialog */}
-      <ConfirmDialog
-        isOpen={deleteConfirm.isOpen}
-        onClose={() => setDeleteConfirm({ isOpen: false, noteId: null, isTask: false })}
-        onConfirm={handleDeleteNote}
-        title={deleteConfirm.isTask ? "Delete Task?" : "Delete Note?"}
-        message={`Are you sure you want to delete this ${deleteConfirm.isTask ? 'task' : 'note'}? This action cannot be undone.`}
-        confirmText={deleteConfirm.isTask ? "Delete Task" : "Delete Note"}
-        type="danger"
-      />
+      {isOpen && (
+        <ConfirmDialog
+          isOpen={deleteConfirm.isOpen}
+          onClose={() => setDeleteConfirm({ isOpen: false, noteId: null, isTask: false })}
+          onConfirm={() => {
+            handleDeleteNote();
+          }}
+          title={deleteConfirm.isTask ? "Delete Task?" : "Delete Note?"}
+          message={`Are you sure you want to delete this ${deleteConfirm.isTask ? 'task' : 'note'}? This action cannot be undone.`}
+          confirmText={deleteConfirm.isTask ? "Delete Task" : "Delete Note"}
+          type="danger"
+        />
+      )}
 
       {/* Success Dialog */}
-      <SuccessDialog
-        isOpen={successDialog.isOpen}
-        onClose={() => setSuccessDialog({ isOpen: false, title: '', message: '' })}
-        title={successDialog.title}
-        message={successDialog.message}
-      />
-
+      {isOpen && (
+        <SuccessDialog
+          isOpen={successDialog.isOpen}
+          onClose={() => {
+            setSuccessDialog({ isOpen: false, title: '', message: '' });
+          }}
+          title={successDialog.title}
+          message={successDialog.message}
+        />
+      )}
       {/* Error Dialog */}
       <ErrorDialog
         isOpen={errorDialog.isOpen}

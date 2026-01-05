@@ -454,7 +454,7 @@ export default function MobileRegistrationView({
                     
                     {/* Notes/Task Indicators */}
                     {(() => {
-                      const taskInfo = peopleTaskInfo[person.id];
+                      const taskInfo = peopleTaskInfo[person.id] || {};
                       
                       // Check if user is viewer
                       if (profile?.role === 'viewer') {
@@ -462,67 +462,14 @@ export default function MobileRegistrationView({
                         if (taskInfo?.incompleteTasksCount > 0 || taskInfo?.hasOnlyCompletedTasks || taskInfo?.hasNotes) {
                           return (
                             <div className="flex-shrink-0 p-1.5 rounded">
-                              <Lock size={16} className="text-gray-400" />
+                              <Lock size={18} className="text-gray-400" />
                             </div>
                           );
                         }
                         return null;
                       }
                       
-                      // Show task indicator if person has incomplete tasks
-                      if (taskInfo?.incompleteTasksCount > 0) {
-                        const priorityColor = 
-                          taskInfo.highestPriority === 'High' ? 'text-red-600' :
-                          taskInfo.highestPriority === 'Medium' ? 'text-yellow-600' :
-                          'text-green-600';
-                        
-                        return (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setNotesDialogPerson(person);
-                            }}
-                            className="flex-shrink-0 p-1.5 hover:bg-blue-50 rounded transition active:scale-95"
-                            aria-label="View tasks"
-                          >
-                            <CheckSquare size={16} className={`${priorityColor}`} />
-                          </button>
-                        );
-                      }
-                      
-                      // Show completed task indicator if person has only completed tasks
-                      if (taskInfo?.hasOnlyCompletedTasks) {
-                        return (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setNotesDialogPerson(person);
-                            }}
-                            className="flex-shrink-0 p-1.5 hover:bg-blue-50 rounded transition active:scale-95"
-                            aria-label="View completed tasks"
-                          >
-                            <CheckCircle size={16} className="text-gray-400" />
-                          </button>
-                        );
-                      }
-                      
-                      // Show note indicator if person has only notes (no tasks)
-                      if (taskInfo?.hasNotes) {
-                        return (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setNotesDialogPerson(person);
-                            }}
-                            className="flex-shrink-0 p-1.5 hover:bg-blue-50 rounded transition active:scale-95"
-                            aria-label="View notes"
-                          >
-                            <StickyNote size={16} className="text-blue-600" fill="currentColor" />
-                          </button>
-                        );
-                      }
-                      
-                      // ALWAYS show a button to add notes/tasks even if none exist yet
+                      // Show clickable icon with badge
                       return (
                         <button
                           onClick={(e) => {
@@ -530,9 +477,34 @@ export default function MobileRegistrationView({
                             setNotesDialogPerson(person);
                           }}
                           className="flex-shrink-0 p-1.5 hover:bg-blue-50 rounded transition active:scale-95"
-                          aria-label="Add note or task"
+                          aria-label="View notes and tasks"
                         >
-                          <StickyNote size={16} className="text-gray-300 hover:text-gray-500" />
+                          <div className="relative">
+                            {taskInfo.hasTasks ? (
+                              <CheckSquare 
+                                size={18} 
+                                className={
+                                  taskInfo.incompleteTasksCount > 0
+                                    ? taskInfo.highestPriority === 'High'
+                                      ? 'text-red-500'
+                                      : taskInfo.highestPriority === 'Medium'
+                                        ? 'text-orange-500'
+                                        : 'text-green-500'
+                                    : 'text-gray-400'
+                                }
+                              />
+                            ) : (
+                              <StickyNote 
+                                size={18} 
+                                className={taskInfo.hasNotes ? 'text-blue-500' : 'text-gray-300'}
+                              />
+                            )}
+                            {(taskInfo.notesCount > 0 || taskInfo.tasksCount > 0) && (
+                              <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                                {taskInfo.notesCount + taskInfo.tasksCount}
+                              </span>
+                            )}
+                          </div>
                         </button>
                       );
                     })()}
@@ -655,13 +627,11 @@ export default function MobileRegistrationView({
       )}
 
       {/* Notes Dialog */}
-      {notesDialogPerson && profile?.role !== 'viewer' && (
-        <NotesDialog
-          person={notesDialogPerson}
-          isOpen={!!notesDialogPerson}
-          onClose={() => setNotesDialogPerson(null)}
-        />
-      )}
+      <NotesDialog
+        person={notesDialogPerson}
+        isOpen={!!notesDialogPerson && profile?.role !== 'viewer'}
+        onClose={() => setNotesDialogPerson(null)}
+      />
 
       {/* Edit Person Dialog */}
       {editDialogPerson && (profile?.role === 'admin' || profile?.role === 'committee') && (

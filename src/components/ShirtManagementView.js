@@ -117,6 +117,46 @@ export default function ShirtManagementView({
     }
   }, [people]);
 
+  // Listen for task updates
+  useEffect(() => {
+    const handleTaskUpdate = () => {
+      loadPeopleTaskInfo();
+    };
+    
+    window.addEventListener('taskUpdated', handleTaskUpdate);
+    return () => window.removeEventListener('taskUpdated', handleTaskUpdate);
+  }, []);
+
+  // Listen for task updates
+  useEffect(() => {
+    const handleTaskUpdate = () => {
+      loadPeopleTaskInfo();
+    };
+    
+    window.addEventListener('taskUpdated', handleTaskUpdate);
+    return () => window.removeEventListener('taskUpdated', handleTaskUpdate);
+  }, []);
+
+  // Listen for task updates
+  useEffect(() => {
+    const handleTaskUpdate = () => {
+      loadPeopleTaskInfo();
+    };
+    
+    window.addEventListener('taskUpdated', handleTaskUpdate);
+    return () => window.removeEventListener('taskUpdated', handleTaskUpdate);
+  }, []);
+
+  // Listen for task updates
+  useEffect(() => {
+    const handleTaskUpdate = () => {
+      loadPeopleTaskInfo();
+    };
+    
+    window.addEventListener('taskUpdated', handleTaskUpdate);
+    return () => window.removeEventListener('taskUpdated', handleTaskUpdate);
+  }, []);
+
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
@@ -610,7 +650,7 @@ export default function ShirtManagementView({
                             </button>
                             {/* Notes/Task Indicators */}
                             {(() => {
-                              const taskInfo = peopleTaskInfo[person.id];
+                              const taskInfo = peopleTaskInfo[person.id] || {};
                               
                               // Check if user is viewer
                               if (profile?.role === 'viewer') {
@@ -628,84 +668,42 @@ export default function ShirtManagementView({
                                 return null;
                               }
                               
-                              // Show task indicator if person has incomplete tasks
-                              if (taskInfo?.incompleteTasksCount > 0) {
-                                const priorityColor = 
-                                  taskInfo.highestPriority === 'High' ? 'text-red-600' :
-                                  taskInfo.highestPriority === 'Medium' ? 'text-yellow-600' :
-                                  'text-green-600';
-                                
-                                return (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleOpenNotes(person);
-                                    }}
-                                    className="p-1 hover:bg-blue-50 rounded transition group relative"
-                                    aria-label="View tasks"
-                                  >
-                                    <CheckSquare size={14} className={`${priorityColor} hover:opacity-80 transition`} />
-                                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
-                                      {taskInfo.incompleteTasksCount} incomplete task{taskInfo.incompleteTasksCount > 1 ? 's' : ''} ({taskInfo.highestPriority} priority)
-                                      {taskInfo.notesCount > 0 && `, ${taskInfo.notesCount} note${taskInfo.notesCount > 1 ? 's' : ''}`}
-                                    </span>
-                                  </button>
-                                );
-                              }
-                              
-                              // Show completed task indicator if person has only completed tasks
-                              if (taskInfo?.hasOnlyCompletedTasks) {
-                                return (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleOpenNotes(person);
-                                    }}
-                                    className="p-1 hover:bg-blue-50 rounded transition group relative"
-                                    aria-label="View completed tasks"
-                                  >
-                                    <CheckCircle size={14} className="text-gray-400 hover:text-gray-600 transition" />
-                                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
-                                      {taskInfo.completedTasksCount} completed task{taskInfo.completedTasksCount > 1 ? 's' : ''}
-                                      {taskInfo.notesCount > 0 && `, ${taskInfo.notesCount} note${taskInfo.notesCount > 1 ? 's' : ''}`}
-                                    </span>
-                                  </button>
-                                );
-                              }
-                              
-                              // Show note indicator if person has only notes (no tasks)
-                              if (taskInfo?.hasNotes) {
-                                return (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleOpenNotes(person);
-                                    }}
-                                    className="p-1 hover:bg-blue-50 rounded transition group relative"
-                                    aria-label="View notes"
-                                  >
-                                    <StickyNote size={14} className="text-blue-600 hover:text-blue-700 transition" fill="currentColor" />
-                                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
-                                      {taskInfo.notesCount} note{taskInfo.notesCount > 1 ? 's' : ''}
-                                    </span>
-                                  </button>
-                                );
-                              }
-                              
-                              // ALWAYS show a button to add notes/tasks (visible on icon hover only)
+                              // Show clickable icon with badge
                               return (
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleOpenNotes(person);
                                   }}
-                                  className="p-1 hover:bg-blue-50 rounded transition group relative"
-                                  aria-label="Add note or task"
+                                  className="p-1 hover:bg-blue-50 rounded transition relative"
+                                  aria-label="View notes and tasks"
                                 >
-                                  <StickyNote size={14} className="text-gray-300 hover:text-[#0f2a71] transition" />
-                                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
-                                    Add note or task
-                                  </span>
+                                  <div className="relative">
+                                    {taskInfo.hasTasks ? (
+                                      <CheckSquare 
+                                        size={16} 
+                                        className={
+                                          taskInfo.incompleteTasksCount > 0
+                                            ? taskInfo.highestPriority === 'High'
+                                              ? 'text-red-500'
+                                              : taskInfo.highestPriority === 'Medium'
+                                                ? 'text-orange-500'
+                                                : 'text-green-500'
+                                            : 'text-gray-400'
+                                        }
+                                      />
+                                    ) : (
+                                      <StickyNote 
+                                        size={16} 
+                                        className={taskInfo.hasNotes ? 'text-blue-500' : 'text-gray-300'}
+                                      />
+                                    )}
+                                    {(taskInfo.notesCount > 0 || taskInfo.tasksCount > 0) && (
+                                      <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[8px] font-bold rounded-full w-3 h-3 flex items-center justify-center">
+                                        {taskInfo.notesCount + taskInfo.tasksCount}
+                                      </span>
+                                    )}
+                                  </div>
                                 </button>
                               );
                             })()}
