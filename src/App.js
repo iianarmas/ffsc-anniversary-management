@@ -20,6 +20,8 @@ import ProfileSettings from './components/ProfileSettings';
 import HomePage from './components/HomePage';
 import WelcomeModal from './components/WelcomeModal';
 import MobileBottomNav from './components/MobileBottomNav';
+import CollectionsView from './components/CollectionsView';
+import MobileCollectionsView from './components/MobileCollectionsView';
 import TaskAssignmentNotification from './components/TaskAssignmentNotification';
 import { Plus } from 'lucide-react';
 import RoleRequestDialog from './components/RoleRequestDialog';
@@ -747,7 +749,7 @@ useEffect(() => {
         )}
 
         {/* Mobile Add Person Button - Top Right */}
-        {isMobile && profile?.role !== 'viewer' && currentView !== 'home' && currentView !== 'profile' && currentView !== 'users' && (
+        {isMobile && profile?.role !== 'viewer' && currentView !== 'home' && currentView !== 'profile' && currentView !== 'users' && currentView !== 'collections' && (
           <button
             onClick={() => setIsAddPersonOpen(true)}
             className="fixed top-4 right-4 z-40 p-2 hover:bg-gray-100 rounded-lg transition-all duration-300 active:scale-95"
@@ -882,6 +884,14 @@ useEffect(() => {
 
         {currentView === 'profile' && (
           <ProfileSettings />
+        )}
+
+        {currentView === 'collections' && (
+          isMobile ? (
+            <MobileCollectionsView people={people} />
+          ) : (
+            <CollectionsView people={people} />
+          )
         )}
 
         {/* Add Person Sidebar */}

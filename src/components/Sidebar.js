@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Shirt, Menu, X, BarChart3, ChevronRight, Plus, CheckSquare, Shield, Home } from 'lucide-react';
+import { Users, Shirt, Menu, X, BarChart3, ChevronRight, Plus, CheckSquare, Shield, Home, DollarSign } from 'lucide-react';
 
 export default function Sidebar({ currentView, setCurrentView, onAddPersonClick, taskStats, userProfile }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -7,12 +7,13 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
 
   const menuItems = [
     { id: 'home', label: 'Home', icon: Home },
-    { id: 'dashboard', label: 'Dashboard', icon: BarChart3, showDividerAfter: true },
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    ...(userProfile?.role === 'admin' || userProfile?.role === 'committee' ? [{ id: 'collections', label: 'Payment Collections', icon: DollarSign, showDividerAfter: true }] : [{ showDividerAfter: true }]),
     { id: 'registration', label: 'Registration', icon: Users },
     { id: 'shirts', label: 'Shirt Management', icon: Shirt },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, badge: taskStats?.incomplete || 0 },
     ...(userProfile?.role === 'admin' ? [{ id: 'users', label: 'Manage Users', icon: Shield }] : []),
-  ];
+  ].filter(item => item.id || item.showDividerAfter); // Filter out empty objects
 
   return (
     <>

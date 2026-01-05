@@ -1,0 +1,62 @@
+// src/config/pricing.js
+const SHIRT_PRICING = {
+  plain: {
+    '#4 (XS) 1-2': 86,
+    '#6 (S) 3-4': 89,
+    '#8 (M) 5-6': 92,
+    '#10 (L) 7-8': 94,
+    '#12 (XL) 9-10': 97,
+    '#14 (2XL) 11-12': 99,
+    'TS': 105,
+    'XS': 109,
+    'S': 115,
+    'M': 119,
+    'L': 123,
+    'XL': 127,
+    '2XL': 131
+  },
+  withPrint: {
+    // Kids to Teen sizes
+    '#4 (XS) 1-2': 220,
+    '#6 (S) 3-4': 220,
+    '#8 (M) 5-6': 220,
+    '#10 (L) 7-8': 220,
+    '#12 (XL) 9-10': 220,
+    '#14 (2XL) 11-12': 220,
+    'TS': 220,
+    // Adult sizes
+    'XS': 240,
+    'S': 240,
+    'M': 240,
+    'L': 240,
+    'XL': 240,
+    '2XL': 240
+  }
+};
+
+const getShirtPrice = (size, hasPrint, isPaid) => {
+  // No shirt or not yet selected = no cost
+  if (!size || size === 'No shirt' || size === 'Select Size' || size === 'None yet' || size === '') return 0;
+  
+  // Calculate price based on print preference
+  if (hasPrint) {
+    return SHIRT_PRICING.withPrint[size] || 0;
+  }
+  return SHIRT_PRICING.plain[size] || 0;
+};
+
+const getSizeCategory = (size) => {
+  if (!size || size === 'No shirt' || size === 'Select Size' || size === 'None yet' || size === '') return 'No Order';
+  
+  const kidsSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12'];
+  const teenSizes = ['TS'];
+  const adultSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL'];
+  
+  if (kidsSizes.includes(size)) return 'Kids';
+  if (teenSizes.includes(size)) return 'Teen';
+  if (adultSizes.includes(size)) return 'Adult';
+  
+  return 'Adult'; // Default fallback
+};
+
+export default { SHIRT_PRICING, getShirtPrice, getSizeCategory };

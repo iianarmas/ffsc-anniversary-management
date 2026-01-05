@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Users, ShoppingBag, CheckSquare, UserCircle, Shield } from 'lucide-react';
+import { Home, Users, ShoppingBag, CheckSquare, UserCircle, Shield, DollarSign } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 
 
@@ -13,14 +13,26 @@ export default function MobileBottomNav({ currentView, setCurrentView, taskCount
     { id: 'profile', icon: UserCircle, label: 'Profile' }
   ];
 
-  // Add Users tab for admin with badge
-  const navItems = profile?.role === 'admin' 
-    ? [
-        ...baseNavItems.slice(0, 4),
-        { id: 'users', icon: Shield, label: 'Users', badge: roleRequestCount },
-        baseNavItems[4]
-      ]
-    : baseNavItems;
+  // Build navigation items based on role
+  let navItems = [...baseNavItems];
+  
+  // Add Collections for committee and admin (after shirts, before tasks)
+  if (profile?.role === 'committee' || profile?.role === 'admin') {
+    navItems = [
+      ...navItems.slice(0, 3), // home, registration, shirts
+      { id: 'collections', icon: DollarSign, label: 'Collections' },
+      ...navItems.slice(3) // tasks, profile
+    ];
+  }
+  
+  // Add Users tab for admin (before profile)
+  if (profile?.role === 'admin') {
+    navItems = [
+      ...navItems.slice(0, -1), // all except profile
+      { id: 'users', icon: Shield, label: 'Users', badge: roleRequestCount },
+      navItems[navItems.length - 1] // profile at the end
+    ];
+  }
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-bottom z-30">
