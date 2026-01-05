@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { DollarSign, TrendingUp, AlertCircle, Download, Search, Filter, X } from 'lucide-react';
 import Header from './Header';
+import Avatar from './Avatar';
+import { useAuth } from './auth/AuthProvider';
 
 const SHIRT_PRICING = {
   plain: {
@@ -36,6 +38,7 @@ const SHIRT_PRICING = {
 };
 
 export default function MobileCollectionsView({ people }) {
+  const { profile } = useAuth();
   const getShirtPrice = (size, hasPrint, isPaid) => {
     if (!size || size === 'No shirt' || size === 'Select Size' || size === 'None yet' || size === '') return 0;
     
@@ -166,24 +169,42 @@ export default function MobileCollectionsView({ people }) {
   return (
     <>
     {/* Fixed Header with Branding */}
-      <div className="sticky top-0 bg-white shadow-md z-20">
+      <div className="fixed top-0 left-0 right-0 bg-[#f9fafa] border-b border-gray-200 shadow-sm z-20">
       {/* Logo and Brand Section */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-          <img 
-            src="/church-logo.svg" 
-            alt="FFSC Logo" 
-            className="w-8 h-8 object-contain flex-shrink-0"
-          />
-          <div>
-            <h1 style={{ fontFamily: 'Moderniz, sans-serif' }} className="text-lg font-bold text-[#001740]">
-              FFSC20
-            </h1>
-            <p className="text-xs text-gray-500">Shirt Payment Collections</p>
+        <div className="flex items-center justify-between gap-3 px-4 py-2">
+          <div className="flex items-center gap-3">
+            <img 
+              src="/church-logo.svg" 
+              alt="FFSC Logo" 
+              className="w-8 h-8 object-contain flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => {
+                const event = new CustomEvent('navigate-to-home');
+                window.dispatchEvent(event);
+              }}
+            />
+            <div>
+              <h1 
+                style={{ fontFamily: 'Moderniz, sans-serif' }} 
+                className="text-sm text-[#001740] cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => {
+                  const event = new CustomEvent('navigate-to-home');
+                  window.dispatchEvent(event);
+                }}
+              >
+                FFSC20
+              </h1>
+              <p className="text-xs text-gray-500 mt-0.5">Collections</p>
+            </div>
           </div>
+          <Avatar 
+            src={profile?.avatar_url} 
+            name={profile?.full_name}
+            size="md"
+          />
         </div>
         </div>
 
-      <div className="pb-20">
+      <div className="pt-14 pb-20">
 
       {/* Stats Cards */}
       <div className="p-4 space-y-3">

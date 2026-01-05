@@ -549,14 +549,19 @@ useEffect(() => {
     // Pending = Total on list - Toddlers - Shirt Only
     const preRegistered = people.length - attendingPeople.filter(p => p.ageBracket === 'Toddler').length - shirtOnlyPeople.length;
     
-    // Shirt counts (includes both attending AND shirt-only)
-    const paid = people.filter(p => p.paid).length;
+    // Shirt counts (only those with actual shirt orders)
+    // People with shirt orders = has size AND size is not "No shirt" AND size is not empty/Select Size
+    const peopleWithShirtOrders = people.filter(p => 
+      p.shirtSize && 
+      p.shirtSize !== 'No shirt' && 
+      p.shirtSize !== 'Select Size' && 
+      p.shirtSize !== ''
+    );
     
-    // Unpaid = Total - Toddlers - "No shirt" people - Paid people
-    const noShirtCount = people.filter(p => p.shirtSize === 'No shirt').length;
-    const unpaid = people.length - toddlersCount - noShirtCount - paid;
-    const shirtsGiven = people.filter(p => p.shirtGiven).length;
-    const shirtsPending = people.filter(p => !p.shirtGiven).length;
+    const paid = peopleWithShirtOrders.filter(p => p.paid).length;
+    const unpaid = peopleWithShirtOrders.filter(p => !p.paid).length;
+    const shirtsGiven = peopleWithShirtOrders.filter(p => p.shirtGiven).length;
+    const shirtsPending = peopleWithShirtOrders.filter(p => !p.shirtGiven).length;
     const maxCapacity = 230;
     
     // Capacity calculation - based on people on the list (not checked in)

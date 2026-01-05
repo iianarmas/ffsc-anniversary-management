@@ -210,9 +210,7 @@ export default function CollectionsView({ people }) {
       {/* Header */}
       <Header 
         viewTitle="Payment Collections"
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        searchPlaceholder="Search by name..."
+        showSearch={false}
       />
 
       <div className="p-4">
