@@ -567,12 +567,6 @@ export default function MobileRegistrationView({
                       <span>{person.ageBracket}</span>
                       <span className="text-gray-400">•</span>
                       <span>{person.location}</span>
-                      {person.attendanceStatus === 'shirt_only' && (
-                        <>
-                          <span className="text-gray-400">•</span>
-                          <span className="text-purple-700 font-medium">Shirt Only</span>
-                        </>
-                      )}
                     </p>
                     
                     {/* Check-in timestamp */}
