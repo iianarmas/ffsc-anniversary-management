@@ -330,7 +330,15 @@ export default function MobileShirtManagementView({
 
       {/* Filter Modal */}
       {showFilters && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-30 animate-fade-in" onClick={() => setShowFilters(false)}>
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 animate-fade-in" 
+          onClick={(e) => {
+            // Only close if clicking the backdrop itself
+            if (e.target === e.currentTarget) {
+              setShowFilters(false);
+            }
+          }}
+        >
           <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 rounded-t-3xl">
