@@ -28,9 +28,9 @@ export default function QuickActionsWidget({ userRole, setCurrentView }) {
     );
   }
 
-  const canRegister = userRole === 'admin' || userRole === 'volunteer';
-  const canManageShirts = userRole === 'admin' || userRole === 'volunteer';
-  const canViewTasks = userRole === 'admin' || userRole === 'volunteer';
+  const canRegister = userRole === 'admin' || userRole === 'committee' || userRole === 'volunteer';
+  const canManageShirts = userRole === 'admin' || userRole === 'committee' || userRole === 'volunteer';
+  const canViewTasks = userRole === 'admin' || userRole === 'committee' || userRole === 'volunteer';
 
   const actions = [
     {

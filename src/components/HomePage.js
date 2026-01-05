@@ -230,7 +230,11 @@ export default function HomePage({
                     overdue: myStats.overdueTasks,
                     dueToday: myStats.dueToday
                   }}
-                  capacity={{ current: stats?.registered || 0, max: 230 }}
+                  capacity={{ 
+                    current: stats?.attendingCountedTowardCapacity || 0, 
+                    max: 230,
+                    slotsRemaining: stats?.slotsRemaining || 0
+                  }}
                 />
               </div>
             </div>
@@ -267,7 +271,11 @@ export default function HomePage({
               overdue: myStats.overdueTasks,
               dueToday: myStats.dueToday
             }}
-            capacity={{ current: stats?.registered || 0, max: 230 }}
+            capacity={{ 
+              current: stats?.attendingCountedTowardCapacity || 0, 
+              max: 230,
+              slotsRemaining: stats?.slotsRemaining || 0
+            }}
           />
           </div>
         )}

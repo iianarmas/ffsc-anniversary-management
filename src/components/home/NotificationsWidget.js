@@ -27,7 +27,7 @@ export default function NotificationsWidget({ taskStats, capacity }) {
     {
       id: 3,
       icon: Info,
-      count: capacity.max - capacity.current,
+      count: capacity.slotsRemaining !== undefined ? capacity.slotsRemaining : (capacity.max - capacity.current),
       label: 'Slots Remaining',
       show: true,
       bgColor: 'bg-sky-500',

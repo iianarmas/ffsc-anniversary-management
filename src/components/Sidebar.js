@@ -76,13 +76,14 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
           })}
         </nav>
 
-        {/* Add Person Button */}
-        <div className="absolute bottom-4 w-full px-2">
-          <div className="relative">
-            <button
-              onClick={() => {
-                onAddPersonClick();
-              }}
+        {/* Add Person Button - Hidden for Viewers */}
+        {userProfile?.role !== 'viewer' && (
+          <div className="absolute bottom-4 w-full px-2">
+            <div className="relative">
+              <button
+                onClick={() => {
+                  onAddPersonClick();
+                }}
               onMouseEnter={() => setHoveredItem('add-person')}
               onMouseLeave={() => setHoveredItem(null)}
               className="w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 text-gray-500 hover:bg-[#e2e8f8]"
@@ -104,6 +105,7 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
             )}
           </div>
         </div>
+        )}
       </div>
 
       {/* Overlay for mobile */}
