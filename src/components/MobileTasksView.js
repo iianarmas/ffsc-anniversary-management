@@ -5,6 +5,7 @@ import NotesDialog from './NotesDialog';
 import { fetchAllTasks, toggleTaskComplete, getUsersForTaskAssignment } from '../services/api';
 import { useAuth } from './auth/AuthProvider';
 import { formatFullName } from '../utils/formatters';
+import Avatar from './Avatar';
 
 export default function MobileTasksView({ onTaskUpdate }) {
   const { profile } = useAuth();
@@ -232,22 +233,50 @@ export default function MobileTasksView({ onTaskUpdate }) {
     <>
       <div className="pb-24 bg-[#f9fafa]">
         {/* Fixed Header with Branding */}
-        <div className="sticky top-0 bg-white shadow-md z-20">
+        <div className="fixed top-0 left-0 right-0 bg-[#f9fafa] border-b border-gray-200 shadow-sm z-20">
           {/* Logo and Brand Section */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-            <img 
-              src="/church-logo.svg" 
-              alt="FFSC Logo" 
-              className="w-8 h-8 object-contain flex-shrink-0"
-            />
-            <div>
-              <h1 style={{ fontFamily: 'Moderniz, sans-serif' }} className="text-lg font-bold text-[#001740]">
-                FFSC20
-              </h1>
-              <p className="text-xs text-gray-500">Task Management</p>
+          <div className="flex items-center justify-between gap-3 px-4 py-2">
+            <div className="flex items-center gap-3">
+              <img 
+                src="/church-logo.svg" 
+                alt="FFSC Logo" 
+                className="w-8 h-8 object-contain flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => {
+                  const event = new CustomEvent('navigate-to-home');
+                  window.dispatchEvent(event);
+                }}
+              />
+              <div>
+                <h1 
+                  style={{ fontFamily: 'Moderniz, sans-serif' }} 
+                  className="text-sm text-[#001740] cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => {
+                    const event = new CustomEvent('navigate-to-home');
+                    window.dispatchEvent(event);
+                  }}
+                >
+                  FFSC20
+                </h1>
+                <p className="text-xs text-gray-500 mt-0.5">Task Management</p>
+              </div>
+            </div>
+            <div
+              onClick={() => {
+                const event = new CustomEvent('navigate-to-profile');
+                window.dispatchEvent(event);
+              }}
+              className="cursor-pointer"
+            >
+              <Avatar 
+                src={profile?.avatar_url} 
+                name={profile?.full_name}
+                size="md"
+              />
             </div>
           </div>
+        </div>
           
+          <div className="pt-14">
           {/* Search and Filter Section */}
           <div className="px-4 pb-3 pt-2">
             {/* Search Bar */}

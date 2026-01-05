@@ -383,11 +383,16 @@ useEffect(() => {
       sessionStorage.setItem('tasks-filter-overdue', 'true');
     };
 
+    const handleOpenAddPerson = () => {
+      setIsAddPersonOpen(true);
+    };
+
     window.addEventListener('navigate-to-tasks', handleNavigateToTasks);
     window.addEventListener('navigate-to-tasks-overdue', handleNavigateToTasksOverdue);
     window.addEventListener('navigate-to-profile', handleNavigateToProfile);
     window.addEventListener('navigate-to-home', handleNavigateToHome);
     window.addEventListener('navigate-to-users', handleNavigateToUsers);
+    window.addEventListener('open-add-person', handleOpenAddPerson);
     
     return () => {
       window.removeEventListener('navigate-to-tasks', handleNavigateToTasks);
@@ -395,6 +400,7 @@ useEffect(() => {
       window.removeEventListener('navigate-to-profile', handleNavigateToProfile);
       window.removeEventListener('navigate-to-home', handleNavigateToHome);
       window.removeEventListener('navigate-to-users', handleNavigateToUsers);
+      window.removeEventListener('open-add-person', handleOpenAddPerson);
     };
   }, []);
 
