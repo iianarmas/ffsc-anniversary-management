@@ -61,6 +61,8 @@ export default function MobileRegistrationView({
 
 
   const activeFiltersCount = [filterAge, filterLocation, filterStatus, filterAttendance].filter(f => f !== 'All').length;
+  const hasActiveSearch = searchTerm.trim() !== '';
+  const hasAnyActiveFilter = activeFiltersCount > 0 || hasActiveSearch;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -135,20 +137,81 @@ export default function MobileRegistrationView({
           </div>
 
           {/* Active Filters Indicator & Reset */}
-          {activeFiltersCount > 0 && (
-            <div className="mt-3 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-              <div className="flex items-center gap-2">
-                <Filter size={14} className="text-blue-600" />
-                <span className="text-xs font-medium text-blue-900">
-                  {activeFiltersCount} {activeFiltersCount === 1 ? 'filter' : 'filters'} active
-                </span>
+          {hasAnyActiveFilter && (
+            <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Filter size={14} className="text-blue-600" />
+                  <span className="text-xs font-medium text-blue-900">
+                    {hasActiveSearch && activeFiltersCount > 0 
+                      ? `Search + ${activeFiltersCount} ${activeFiltersCount === 1 ? 'filter' : 'filters'} active`
+                      : hasActiveSearch 
+                        ? 'Search active'
+                        : `${activeFiltersCount} ${activeFiltersCount === 1 ? 'filter' : 'filters'} active`
+                    }
+                  </span>
+                </div>
+                <button
+                  onClick={onResetFilters}
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                >
+                  Clear All
+                </button>
               </div>
-              <button
-                onClick={onResetFilters}
-                className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-              >
-                Clear All
-              </button>
+              
+              {/* Active Filter Tags */}
+              <div className="flex flex-wrap gap-1.5">
+                {hasActiveSearch && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    Search: "{searchTerm}"
+                    <X 
+                      size={12} 
+                      className="cursor-pointer hover:text-blue-900" 
+                      onClick={() => setSearchTerm('')}
+                    />
+                  </span>
+                )}
+                {filterAge !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    Age: {filterAge}
+                    <X 
+                      size={12} 
+                      className="cursor-pointer hover:text-blue-900" 
+                      onClick={() => setFilterAge('All')}
+                    />
+                  </span>
+                )}
+                {filterLocation !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    Location: {filterLocation}
+                    <X 
+                      size={12} 
+                      className="cursor-pointer hover:text-blue-900" 
+                      onClick={() => setFilterLocation('All')}
+                    />
+                  </span>
+                )}
+                {filterStatus !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    Status: {filterStatus === 'Registered' ? 'Checked In' : 'Pending'}
+                    <X 
+                      size={12} 
+                      className="cursor-pointer hover:text-blue-900" 
+                      onClick={() => setFilterStatus('All')}
+                    />
+                  </span>
+                )}
+                {filterAttendance !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    {filterAttendance === 'attending' ? 'Attending Event' : 'Shirt Only'}
+                    <X 
+                      size={12} 
+                      className="cursor-pointer hover:text-blue-900" 
+                      onClick={() => setFilterAttendance('All')}
+                    />
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -168,7 +231,7 @@ export default function MobileRegistrationView({
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-yellow-600">
-                {people.filter(p => !p.registered && p.attendanceStatus === 'attending').length}
+                {people.length - people.filter(p => p.ageBracket === 'Toddler').length - people.filter(p => p.attendanceStatus === 'shirt_only').length}
               </div>
               <div className="text-xs text-gray-500">Pending</div>
             </div>
@@ -261,8 +324,8 @@ export default function MobileRegistrationView({
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                   >
                     <option value="All">All</option>
-                    <option value="Attending">Attending Event</option>
-                    <option value="ShirtOnly">Shirt Only</option>
+                    <option value="attending">Attending Event</option>
+                    <option value="shirt_only">Shirt Only</option>
                   </select>
                 </div>
               </div>

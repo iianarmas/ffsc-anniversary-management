@@ -544,7 +544,8 @@ useEffect(() => {
     
     const registered = registeredAll.length;
     const registeredCapacity = registeredCounted.length; // Count toward venue capacity
-    const preRegistered = attendingPeople.filter(p => !p.registered).length;
+    // Pending = Total on list - Toddlers - Shirt Only
+    const preRegistered = people.length - attendingPeople.filter(p => p.ageBracket === 'Toddler').length - shirtOnlyPeople.length;
     
     // Shirt counts (includes both attending AND shirt-only)
     const paid = people.filter(p => p.paid).length;

@@ -44,7 +44,8 @@ export default function MobileShirtManagementView({
 
   // Handle back button for filters and edit modal
   useBackHandler(showFilters, () => setShowFilters(false));
-  useBackHandler(!!editingPerson, () => setEditingPerson(null));
+  // Don't use back handler for editing person modal - it interferes with interactions
+  // useBackHandler(!!editingPerson, () => setEditingPerson(null));
 
   const activeFiltersCount = [
     shirtFilterAge,
@@ -55,6 +56,8 @@ export default function MobileShirtManagementView({
     shirtFilterPrint,
     shirtFilterAttendance
   ].filter(f => f !== 'All').length;
+  const hasActiveSearch = shirtSearchTerm.trim() !== '';
+  const hasAnyActiveFilter = activeFiltersCount > 0 || hasActiveSearch;
 
   const shirtSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12', 'TS', 'XS', 'S', 'M', 'L', 'XL', '2XL', 'No shirt', 'None yet'];
 
@@ -71,6 +74,24 @@ export default function MobileShirtManagementView({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Manual back button handler for edit modal
+  useEffect(() => {
+    if (!editingPerson) return;
+
+    const handleBackButton = (e) => {
+      e.preventDefault();
+      setEditingPerson(null);
+      window.history.pushState(null, '', window.location.href);
+    };
+
+    // Push a state for the modal
+    window.history.pushState(null, '', window.location.href);
+    window.addEventListener('popstate', handleBackButton);
+
+    return () => {
+      window.removeEventListener('popstate', handleBackButton);
+    };
+  }, [editingPerson]);
 
   return (
     <div className="pb-24 bg-[#f9fafa]">
@@ -132,20 +153,111 @@ export default function MobileShirtManagementView({
           </div>
 
           {/* Active Filters Indicator & Reset */}
-          {activeFiltersCount > 0 && (
-            <div className="mt-3 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-              <div className="flex items-center gap-2">
-                <Filter size={14} className="text-blue-600" />
-                <span className="text-xs font-medium text-blue-900">
-                  {activeFiltersCount} {activeFiltersCount === 1 ? 'filter' : 'filters'} active
-                </span>
+          {hasAnyActiveFilter && (
+            <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Filter size={14} className="text-blue-600" />
+                  <span className="text-xs font-medium text-blue-900">
+                    {hasActiveSearch && activeFiltersCount > 0 
+                      ? `Search + ${activeFiltersCount} ${activeFiltersCount === 1 ? 'filter' : 'filters'} active`
+                      : hasActiveSearch 
+                        ? 'Search active'
+                        : `${activeFiltersCount} ${activeFiltersCount === 1 ? 'filter' : 'filters'} active`
+                    }
+                  </span>
+                </div>
+                <button
+                  onClick={onResetFilters}
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                >
+                  Clear All
+                </button>
               </div>
-              <button
-                onClick={onResetFilters}
-                className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-              >
-                Clear All
-              </button>
+              
+              {/* Active Filter Tags */}
+              <div className="flex flex-wrap gap-1.5">
+                {hasActiveSearch && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    Search: "{shirtSearchTerm}"
+                    <X 
+                      size={12} 
+                      className="cursor-pointer hover:text-blue-900" 
+                      onClick={() => setShirtSearchTerm('')}
+                    />
+                  </span>
+                )}
+                {shirtFilterAge !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    Age: {shirtFilterAge}
+                    <X 
+                      size={12} 
+                      className="cursor-pointer hover:text-blue-900" 
+                      onClick={() => setShirtFilterAge('All')}
+                    />
+                  </span>
+                )}
+                {shirtFilterLocation !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    Location: {shirtFilterLocation}
+                    <X 
+                      size={12} 
+                      className="cursor-pointer hover:text-blue-900" 
+                      onClick={() => setShirtFilterLocation('All')}
+                    />
+                  </span>
+                )}
+                {shirtFilterPayment !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    Payment: {shirtFilterPayment}
+                    <X 
+                      size={12} 
+                      className="cursor-pointer hover:text-blue-900" 
+                      onClick={() => setShirtFilterPayment('All')}
+                    />
+                  </span>
+                )}
+                {shirtFilterDistribution !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    Distribution: {shirtFilterDistribution}
+                    <X 
+                      size={12} 
+                      className="cursor-pointer hover:text-blue-900" 
+                      onClick={() => setShirtFilterDistribution('All')}
+                    />
+                  </span>
+                )}
+                {shirtFilterSize !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    Size: {shirtFilterSize}
+                    <X 
+                      size={12} 
+                      className="cursor-pointer hover:text-blue-900" 
+                      onClick={() => setShirtFilterSize('All')}
+                    />
+                  </span>
+                )}
+                {shirtFilterPrint !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    {shirtFilterPrint === 'With Print' ? 'With Print' : 'Plain'}
+                    <X 
+                      size={12} 
+                      className="cursor-pointer hover:text-blue-900" 
+                      onClick={() => setShirtFilterPrint('All')}
+                    />
+                  </span>
+                )}
+                {shirtFilterAttendance !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    {shirtFilterAttendance === 'attending' ? 'Attending Event' : 'Shirt Only'}
+                    <X 
+                      size={12} 
+                      className="cursor-pointer hover:text-blue-900" 
+                      onClick={() => setShirtFilterAttendance('All')}
+                    />
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -338,8 +450,16 @@ export default function MobileShirtManagementView({
 
       {/* Edit Person Modal */}
       {editingPerson && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-30 animate-fade-in" onClick={() => setEditingPerson(null)}>
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 animate-fade-in" 
+          onMouseDown={(e) => {
+            // Only close if clicking the backdrop
+            if (e.target === e.currentTarget) {
+              setEditingPerson(null);
+            }
+          }}
+        >
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-slide-up">
             {/* Header */}
             <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 rounded-t-3xl">
               <div className="flex justify-between items-center">
@@ -366,6 +486,8 @@ export default function MobileShirtManagementView({
                     updateShirtSize(editingPerson.id, e.target.value);
                     setEditingPerson({ ...editingPerson, shirtSize: e.target.value });
                   }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                 >
                   <option value="">Select Size</option>
@@ -380,7 +502,8 @@ export default function MobileShirtManagementView({
                 <label className="block text-sm font-medium text-gray-700 mb-2">Attendance Status</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={async () => {
+                    onClick={async (e) => {
+                      e.stopPropagation();
                       const { updateAttendanceStatus } = await import('../services/api');
                       const result = await updateAttendanceStatus(editingPerson.id, 'attending');
                       if (result.success) {
@@ -397,7 +520,8 @@ export default function MobileShirtManagementView({
                     Attending
                   </button>
                   <button
-                    onClick={async () => {
+                    onClick={async (e) => {
+                      e.stopPropagation();
                       const { updateAttendanceStatus } = await import('../services/api');
                       const result = await updateAttendanceStatus(editingPerson.id, 'shirt_only');
                       if (result.success) {
@@ -420,10 +544,13 @@ export default function MobileShirtManagementView({
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       toggleShirtPayment(editingPerson.id);
                       setEditingPerson({ ...editingPerson, paid: !editingPerson.paid });
                     }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
                     className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                       editingPerson.paid
                         ? 'bg-green-600 text-white hover:bg-green-500'
@@ -435,10 +562,13 @@ export default function MobileShirtManagementView({
                     <span>{editingPerson.paid ? '✓ Paid' : 'Unpaid'}</span>
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       toggleShirtGiven(editingPerson.id);
                       setEditingPerson({ ...editingPerson, shirtGiven: !editingPerson.shirtGiven });
                     }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
                     className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                       editingPerson.shirtGiven
                         ? 'bg-green-600 text-white hover:bg-green-700'
@@ -453,10 +583,13 @@ export default function MobileShirtManagementView({
 
                 {/* Print Status Toggle */}
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     toggleShirtPrint(editingPerson.id);
                     setEditingPerson({ ...editingPerson, hasPrint: !editingPerson.hasPrint });
                   }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
                   className={`w-full py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                     editingPerson.hasPrint
                       ? 'bg-blue-600 text-white hover:bg-blue-700'
