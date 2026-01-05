@@ -256,7 +256,7 @@ export default function UserManagement() {
       <div className={`bg-[#f9fafa] min-h-screen ${window.matchMedia('(max-width: 767px)').matches ? 'pt-14 pb-20 p-4' : 'p-6'}`}>
         <div className="max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+      <div className="flex flex-col mt-6 md:flex-row md:justify-between md:items-center gap-4 mb-6">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Users size={24} className="md:block" />

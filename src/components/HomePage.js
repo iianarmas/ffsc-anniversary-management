@@ -115,12 +115,12 @@ export default function HomePage({
         />
       )}
       
-      <div className={`bg-[#f9fafa] min-h-screen ${isMobile ? 'pt-14 pb-20' : 'flex'}`}>
+      <div className={`bg-[#f9fafa] min-h-screen ${isMobile ? 'pt-14 pb-20' : 'flex'} `}>
         {/* MAIN CONTENT AREA - LEFT SIDE */}
         <div className={`flex-1 ${isMobile ? 'p-0' : 'p-6 pr-0'}`}>
 
           {/* Welcome Header */}
-          <div className={`mb-6 ${isMobile ? 'px-4' : 'pr-6'}`}>
+          <div className={`mb-6 ${isMobile ? 'px-4' : 'pr-6'} mt-6 `}>
             <h1 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold text-[#001740]`}>
               Welcome back, {profile?.full_name?.split(' ')[0] || 'User'}!
             </h1>
