@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { DollarSign, TrendingUp, AlertCircle, Download, Filter, Search, StickyNote, CheckSquare, X } from 'lucide-react';
 import Header from './Header';
 import NotesDialog from './NotesDialog';
+import AdvancedFilterDialog from './AdvancedFilterDialog.js';
 
 const SHIRT_PRICING = {
   plain: {
@@ -67,6 +68,8 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
   const [filterLocation, setFilterLocation] = useState('All');
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false);
+  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState(null);
 
   // Calculate collection statistics
   const collectionStats = useMemo(() => {
@@ -150,38 +153,97 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
   }, [people]);
 
   // Filtered people for the table
-  const filteredPeople = useMemo(() => {
-    return people.filter(person => {
-      // Only show people with actual shirt orders (excluding empty, "No shirt", etc.)
-      if (!person.shirtSize || 
-          person.shirtSize === 'No shirt' || 
-          person.shirtSize === 'Select Size' || 
-          person.shirtSize === 'None yet' ||
-          person.shirtSize === '') {
-        return false;
+const filteredPeople = useMemo(() => {
+  return people.filter(person => {
+    // Only show people with actual shirt orders (excluding empty, "No shirt", etc.)
+    if (!person.shirtSize || 
+        person.shirtSize === 'No shirt' || 
+        person.shirtSize === 'Select Size' || 
+        person.shirtSize === 'None yet' ||
+        person.shirtSize === '') {
+      return false;
+    }
+
+    // Apply advanced filters if they exist
+    if (advancedFilters) {
+      const {
+        paymentStatus, printStatus, categories, locations,
+        amountMin, amountMax, nameSearch, hasNotes, hasTasks,
+        hasOverdueTasks, missingContact
+      } = advancedFilters;
+
+      // Payment status
+      if (paymentStatus !== 'All') {
+        if (paymentStatus === 'Paid' && !person.paid) return false;
+        if (paymentStatus === 'Unpaid' && person.paid) return false;
       }
 
-      const matchesSearch = searchTerm === '' || 
-        `${person.firstName} ${person.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesPayment = filterPayment === 'All' || 
-        (filterPayment === 'Paid' ? person.paid : !person.paid);
-      
-      const matchesPrint = filterPrint === 'All' || 
-        (filterPrint === 'With Print' ? person.hasPrint : !person.hasPrint);
-      
-      const category = getSizeCategory(person.shirtSize);
-      const matchesCategory = filterCategory === 'All' || category === filterCategory;
+      // Print status
+      if (printStatus !== 'All') {
+        if (printStatus === 'With Print' && !person.hasPrint) return false;
+        if (printStatus === 'Plain' && person.hasPrint) return false;
+      }
 
-      const matchesLocation = filterLocation === 'All' || person.location === filterLocation;
+      // Categories
+      if (categories && categories.length > 0) {
+        const category = getSizeCategory(person.shirtSize);
+        if (!categories.includes(category)) return false;
+      }
 
-      return matchesSearch && matchesPayment && matchesPrint && matchesCategory && matchesLocation;
-    }).sort((a, b) => {
-      const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
-      const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
-      return nameA.localeCompare(nameB);
-    });
-  }, [people, searchTerm, filterPayment, filterPrint, filterCategory, filterLocation]);
+      // Locations
+      if (locations && locations.length > 0) {
+        if (!locations.includes(person.location)) return false;
+      }
+
+      // Amount range
+      if (amountMin !== '' || amountMax !== '') {
+        const price = getShirtPrice(person.shirtSize, person.hasPrint, person.paid);
+        const min = parseFloat(amountMin) || 0;
+        const max = parseFloat(amountMax) || Infinity;
+        if (price < min || price > max) return false;
+      }
+
+      // Name search
+      if (nameSearch !== '') {
+        const fullName = `${person.firstName} ${person.lastName}`.toLowerCase();
+        if (!fullName.includes(nameSearch.toLowerCase())) return false;
+      }
+
+      // Task/Notes filters
+      const taskInfo = peopleTaskInfo[person.id] || {};
+      if (hasNotes && !taskInfo.hasNotes) return false;
+      if (hasTasks && !taskInfo.hasTasks) return false;
+      if (hasOverdueTasks && (!taskInfo.hasTasks || taskInfo.incompleteTasksCount === 0)) return false;
+
+      // Missing contact
+      if (missingContact && person.contactNumber) return false;
+
+      // If advanced filters passed, skip basic filters
+      return true;
+    }
+
+    // Basic filters (only apply if no advanced filters)
+    const matchesSearch = searchTerm === '' || 
+      `${person.firstName} ${person.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesPayment = filterPayment === 'All' || 
+      (filterPayment === 'Paid' ? person.paid : !person.paid);
+    
+    const matchesPrint = filterPrint === 'All' || 
+      (filterPrint === 'With Print' ? person.hasPrint : !person.hasPrint);
+    
+    const category = getSizeCategory(person.shirtSize);
+    const matchesCategory = filterCategory === 'All' || category === filterCategory;
+
+    const matchesLocation = filterLocation === 'All' || person.location === filterLocation;
+
+    return matchesSearch && matchesPayment && matchesPrint && matchesCategory && matchesLocation;
+  }).sort((a, b) => {
+    const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+    const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+}, [people, searchTerm, filterPayment, filterPrint, filterCategory, filterLocation, advancedFilters, peopleTaskInfo]);
 
   // Export to CSV
   const handleExport = () => {
@@ -425,11 +487,12 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
               setFilterPrint('All');
               setFilterCategory('All');
               setFilterLocation('All');
+              setAdvancedFilters(null);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
           >
             <X size={18} />
-            Reset
+            Reset{advancedFilters && ' All'}
           </button>
 
           <button
@@ -438,6 +501,18 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
           >
             <Download size={18} />
             Export CSV
+          </button>
+                    <button
+            onClick={() => setIsAdvancedFilterOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-800 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            <Filter size={18} />
+            Advanced
+            {advancedFilters && (
+              <span className="ml-1 px-2 py-0.5 bg-purple-700 rounded-full text-xs font-bold">
+                ON
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -546,6 +621,24 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
           setIsNotesDialogOpen(false);
           setTimeout(() => setSelectedPerson(null), 100);
         }}
+      />
+      {/* Advanced Filter Dialog */}
+      <AdvancedFilterDialog
+        isOpen={isAdvancedFilterOpen}
+        onClose={() => setIsAdvancedFilterOpen(false)}
+        onApplyFilters={(filters) => {
+          setAdvancedFilters(filters);
+          setIsAdvancedFilterOpen(false);
+          // Clear basic filters when advanced is applied
+          setSearchTerm('');
+          setFilterPayment('All');
+          setFilterPrint('All');
+          setFilterCategory('All');
+          setFilterLocation('All');
+        }}
+        people={people}
+        viewType="collections"
+        peopleTaskInfo={peopleTaskInfo}
       />
     </>
   );
