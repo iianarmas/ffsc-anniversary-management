@@ -107,6 +107,7 @@ export default function AddPersonSidebar({ isOpen, onClose, onPersonAdded }) {
     const newErrors = {};
     if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
     if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
+    if (!formData.location) newErrors.location = 'Location is required';
     if (formData.age && (isNaN(formData.age) || formData.age < 0 || formData.age > 150)) {
       newErrors.age = 'Please enter a valid age';
     }
@@ -283,17 +284,24 @@ export default function AddPersonSidebar({ isOpen, onClose, onPersonAdded }) {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Location <span className="text-red-500">*</span>
+                </label>
                 <select
                   value={formData.location}
                   onChange={(e) => handleInputChange('location', e.target.value)}
-                  className="custom-select w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0f2a71] focus:border-[#0f2a71] transition bg-white"
+                  className={`custom-select w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0f2a71] focus:border-[#0f2a71] transition bg-white ${
+                    errors.location ? 'border-red-500' : 'border-gray-200'
+                  }`}
                 >
                   <option value="">Select location</option>
                   {locations.map(loc => (
                     <option key={loc} value={loc}>{loc === 'GUEST' ? 'Guest' : loc}</option>
                   ))}
                 </select>
+                {errors.location && (
+                  <p className="text-red-500 text-sm mt-1">{errors.location}</p>
+                )}
               </div>
 
               <div>

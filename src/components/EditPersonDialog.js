@@ -90,6 +90,10 @@ export default function EditPersonDialog({ person, isOpen, onClose }) {
       newErrors.lastName = 'Last name is required';
     }
     
+    if (!formData.location) {
+      newErrors.location = 'Location is required';
+    }
+    
     if (formData.age && (isNaN(formData.age) || formData.age < 0 || formData.age > 150)) {
       newErrors.age = 'Please enter a valid age';
     }
@@ -264,12 +268,14 @@ export default function EditPersonDialog({ person, isOpen, onClose }) {
               <div>
                 <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 mb-1.5">
                   <MapPin size={14} className="text-gray-400" />
-                  Location
+                  Location <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.location}
                   onChange={(e) => handleInputChange('location', e.target.value)}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2a71] bg-white transition-all"
+                  className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2a71] bg-white transition-all ${
+                    errors.location ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
                 >
                   <option value="">Select</option>
                   <option value="Main">Main</option>
@@ -277,6 +283,9 @@ export default function EditPersonDialog({ person, isOpen, onClose }) {
                   <option value="Malacañang">Malacañang</option>
                   <option value="GUEST">Guest</option>
                 </select>
+                {errors.location && (
+                  <p className="text-red-500 text-xs mt-1">{errors.location}</p>
+                )}
               </div>
 
               {/* Contact Number */}

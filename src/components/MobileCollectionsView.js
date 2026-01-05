@@ -141,7 +141,7 @@ export default function MobileCollectionsView({ people, toggleShirtPayment, peop
       const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
       return nameA.localeCompare(nameB);
     });
-  }, [people, searchTerm, filterPayment, filterPrint, filterCategory]);
+  }, [people, searchTerm, filterPayment, filterPrint, filterCategory, filterLocation]);
 
   const formatCurrency = (amount) => {
     return `₱${amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -309,6 +309,20 @@ export default function MobileCollectionsView({ people, toggleShirtPayment, peop
                 {activeFilterCount}
               </span>
             )}
+          </button>
+
+          <button
+            onClick={() => {
+              setSearchTerm('');
+              setFilterPayment('All');
+              setFilterPrint('All');
+              setFilterCategory('All');
+              setFilterLocation('All');
+            }}
+            className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium text-sm flex items-center gap-2"
+          >
+            <X size={16} />
+            Reset
           </button>
 
           <button

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { DollarSign, TrendingUp, AlertCircle, Download, Filter, Search, StickyNote, CheckSquare } from 'lucide-react';
+import { DollarSign, TrendingUp, AlertCircle, Download, Filter, Search, StickyNote, CheckSquare, X } from 'lucide-react';
 import Header from './Header';
 import NotesDialog from './NotesDialog';
 
@@ -181,7 +181,7 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
       const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
       return nameA.localeCompare(nameB);
     });
-  }, [people, searchTerm, filterPayment, filterPrint, filterCategory]);
+  }, [people, searchTerm, filterPayment, filterPrint, filterCategory, filterLocation]);
 
   // Export to CSV
   const handleExport = () => {
@@ -417,6 +417,20 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
             <option value="Malacañang">Malacañang</option>
             <option value="Guest">Guest</option>
           </select>
+
+          <button
+            onClick={() => {
+              setSearchTerm('');
+              setFilterPayment('All');
+              setFilterPrint('All');
+              setFilterCategory('All');
+              setFilterLocation('All');
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            <X size={18} />
+            Reset
+          </button>
 
           <button
             onClick={handleExport}

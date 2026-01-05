@@ -11,7 +11,7 @@ export default function SuccessDialog({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none">
+    <div className="fixed inset-0 z-[60] flex items-start justify-center pt-20 pointer-events-none">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black bg-opacity-30 pointer-events-auto"
@@ -22,7 +22,7 @@ export default function SuccessDialog({
       />
       
       {/* Dialog */}
-      <div className="relative bg-white rounded-xl shadow-2xl w-[calc(100%-2rem)] max-w-md animate-scale-in pointer-events-auto">
+      <div className="relative bg-white rounded-xl shadow-2xl w-[calc(100%-2rem)] max-w-md pointer-events-auto" style={{ animation: 'slideDown 0.3s ease-out' }}>
         <div className="p-6">
           {/* Success Icon with animation */}
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-once">
@@ -50,14 +50,14 @@ export default function SuccessDialog({
       </div>
 
       <style>{`
-        @keyframes scale-in {
+        @keyframes slideDown {
           from {
             opacity: 0;
-            transform: translate(-50%, -50%) scale(0.92);
+            transform: translateY(-20px);
           }
           to {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
+            transform: translateY(0);
           }
         }
         @keyframes bounce-once {
@@ -67,9 +67,6 @@ export default function SuccessDialog({
           50% {
             transform: scale(1.1);
           }
-        }
-        .animate-scale-in {
-          animation: scale-in 0.2s ease-out;
         }
         .animate-bounce-once {
           animation: bounce-once 0.5s ease-in-out;
