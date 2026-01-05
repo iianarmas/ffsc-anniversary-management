@@ -34,6 +34,17 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
         {/* Navigation */}
         <nav className="p-2">
           {menuItems.map((item, idx) => {
+            // If this is just a divider item, render only the divider
+            if (!item.id) {
+              return (
+                <React.Fragment key={`divider-${idx}`}>
+                  {item.showDividerAfter && (
+                    <div className="border-b border-dashed border-gray-300 mx-2 my-2" />
+                  )}
+                </React.Fragment>
+              );
+            }
+
             const Icon = item.icon;
             const isActive = currentView === item.id;
             return (

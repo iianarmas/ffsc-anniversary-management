@@ -5,6 +5,7 @@ import { useAuth } from './auth/AuthProvider';
 import NotesDialog from './NotesDialog';
 import EditPersonDialog from './EditPersonDialog';
 import { useBackHandler } from '../hooks/useBackButton';
+import Header from './Header';
 
 const formatPhilippineTime = (utcTimestamp) => {
   if (!utcTimestamp) return '—';

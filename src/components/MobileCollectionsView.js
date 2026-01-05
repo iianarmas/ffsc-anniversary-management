@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { DollarSign, TrendingUp, AlertCircle, Download, Search, Filter, X } from 'lucide-react';
+import Header from './Header';
 
 const SHIRT_PRICING = {
   plain: {
@@ -163,12 +164,23 @@ export default function MobileCollectionsView({ people }) {
   const activeFilterCount = [filterPayment, filterPrint, filterCategory].filter(f => f !== 'All').length;
 
   return (
-    <div className="pb-20">
+    <>
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4 sticky top-0 z-10">
-        <h1 className="text-xl font-semibold text-gray-900">Collections</h1>
-        <p className="text-xs text-gray-500 mt-0.5">Track shirt payments</p>
-      </div>
+      <Header 
+        viewTitle="Payment Collections"
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        searchPlaceholder="Search by name..."
+        showSearch={false}
+        showBell={false}
+      />
+
+      <div className="pb-20">
+        {/* Page Title */}
+        <div className="bg-white border-b border-gray-200 px-4 py-4">
+          <h1 className="text-xl font-semibold text-gray-900">Payment Collections</h1>
+          <p className="text-xs text-gray-500 mt-0.5">Track shirt order payments</p>
+        </div>
 
       {/* Stats Cards */}
       <div className="p-4 space-y-3">
@@ -367,6 +379,7 @@ export default function MobileCollectionsView({ people }) {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

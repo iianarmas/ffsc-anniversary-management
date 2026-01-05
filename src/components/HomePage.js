@@ -66,38 +66,17 @@ export default function HomePage({
 
   return (
     <>
-      {!isMobile && (
-        <Header 
-          viewTitle="Home" 
-          showSearch={false}
-          onOpenPersonNotes={(personId) => {
-            console.log('Open notes for person:', personId);
-          }}
-        />
-      )}
+      <Header 
+        viewTitle="Home" 
+        showSearch={false}
+        onOpenPersonNotes={(personId) => {
+          console.log('Open notes for person:', personId);
+        }}
+      />
       
       <div className={`bg-[#f9fafa] min-h-screen ${isMobile ? 'pb-20' : 'flex'}`}>
         {/* MAIN CONTENT AREA - LEFT SIDE */}
         <div className={`flex-1 ${isMobile ? 'p-0' : 'p-6 pr-0'}`}>
-          {/* Mobile Header with Branding */}
-          {isMobile && (
-            <div className="sticky top-0 bg-white shadow-md z-20 mb-4">
-              {/* Logo and Brand Section */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-                <img 
-                  src="/church-logo.svg" 
-                  alt="FFSC Logo" 
-                  className="w-8 h-8 object-contain flex-shrink-0"
-                />
-                <div>
-                  <h1 style={{ fontFamily: 'Moderniz, sans-serif' }} className="text-lg font-bold text-[#001740]">
-                    FFSC20
-                  </h1>
-                  <p className="text-xs text-gray-500">Home Dashboard</p>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Welcome Header */}
           <div className={`mb-6 ${isMobile ? 'px-4' : 'pr-6'}`}>

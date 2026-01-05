@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { DollarSign, TrendingUp, AlertCircle, Download, Filter, Search } from 'lucide-react';
+import Header from './Header';
 
 const SHIRT_PRICING = {
   plain: {
@@ -206,24 +207,15 @@ export default function CollectionsView({ people }) {
 
   return (
     <>
-      {/* Header with Logo */}
-      <div className="sticky top-16 z-20 bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center gap-3">
-          <img 
-            src="/church-logo.svg" 
-            alt="FFSC Logo" 
-            className="w-10 h-10 object-contain flex-shrink-0"
-          />
-          <div>
-            <h1 style={{ fontFamily: 'Moderniz, sans-serif' }} className="text-2xl font-bold text-[#001740]">
-              FFSC20
-            </h1>
-            <p className="text-sm text-gray-600">Payment Collections</p>
-          </div>
-        </div>
-      </div>
+      {/* Header */}
+      <Header 
+        viewTitle="Payment Collections"
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        searchPlaceholder="Search by name..."
+      />
 
-      <div className="p-6">
+      <div className="p-4">
         <div className="mb-6">
           <h2 className="text-2xl font-semibold text-gray-900 mb-2">Payment Collections</h2>
           <p className="text-sm text-gray-500">Track shirt order payments and collections for the supplier</p>

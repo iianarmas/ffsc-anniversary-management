@@ -12,6 +12,7 @@ export default function Header({
   setSearchTerm, 
   searchPlaceholder = "Search by name...",
   showSearch = true,
+  showBell = true,
   onOpenPersonNotes
 }) {
   const { profile, signOut } = useAuth();
@@ -185,6 +186,7 @@ export default function Header({
           {/* Right: Bell Icon + User Info */}
           <div className="flex items-center gap-3 flex-shrink-0">
             {/* Bell Icon with Notification Badge */}
+            {showBell && (
             <div className="relative">
               <button
                 ref={bellButtonRef}
@@ -207,6 +209,7 @@ export default function Header({
                 buttonRef={bellButtonRef}
               />
             </div>
+            )}
 
             {/* User Profile Section */}
             <div className="relative">
