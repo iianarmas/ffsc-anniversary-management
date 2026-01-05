@@ -247,7 +247,7 @@ const filteredPeople = useMemo(() => {
 
   // Export to CSV
   const handleExport = () => {
-    const headers = ['Name', 'Location', 'Size', 'Category', 'Print Status', 'Amount', 'Payment Status'];
+    const headers = ['Name', 'Location', 'Size', 'Size Category', 'Print Status', 'Amount', 'Payment Status'];
     const rows = filteredPeople.map(person => [
       `${person.firstName} ${person.lastName}`,
       person.location,
@@ -354,7 +354,7 @@ const filteredPeople = useMemo(() => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* By Category */}
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h3 className="font-semibold text-gray-900 mb-4">Collection by Category</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Collection by Size Category</h3>
           <div className="space-y-3">
             {['Kids', 'Teen', 'Adult'].map(category => (
               <div key={category}>
@@ -463,9 +463,9 @@ const filteredPeople = useMemo(() => {
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="All">All Categories</option>
-            <option value="Kids">Kids</option>
-            <option value="Teen">Teen</option>
-            <option value="Adult">Adult</option>
+            <option value="Kids">Kids Size (#4 - #14)</option>
+            <option value="Teen">Teen Size (TS)</option>
+            <option value="Adult">Adult Size (XS - 2XL)</option>
           </select>
 
           <select
@@ -526,7 +526,7 @@ const filteredPeople = useMemo(() => {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Name</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Location</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Size</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Category</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Size Category</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Print</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Amount</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>

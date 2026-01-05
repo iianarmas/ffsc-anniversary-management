@@ -11,6 +11,7 @@ export default function AdvancedFilterDialog({
 }) {
   // ===== VIEW-SPECIFIC CONFIGURATIONS =====
   const isShirtView = viewType === 'shirts';
+  const isRegistrationView = viewType === 'registration';
   // Core filter states
   const [paymentStatus, setPaymentStatus] = useState('All');
   const [printStatus, setPrintStatus] = useState('All');
@@ -26,6 +27,14 @@ export default function AdvancedFilterDialog({
   const [registrationStatus, setRegistrationStatus] = useState('All');
   const [attendanceStatus, setAttendanceStatus] = useState('All');
   const [missingSize, setMissingSize] = useState(false);
+
+  // Registration-specific states
+  const [checkInStatus, setCheckInStatus] = useState('All');
+  const [registrationDateFrom, setRegistrationDateFrom] = useState('');
+  const [registrationDateTo, setRegistrationDateTo] = useState('');
+  const [registeredBy, setRegisteredBy] = useState('All');
+  const [missingInfo, setMissingInfo] = useState(false);
+  const [hasShirtOrder, setHasShirtOrder] = useState('All');
   
   // Advanced filter states
   const [nameSearch, setNameSearch] = useState('');
@@ -82,6 +91,13 @@ export default function AdvancedFilterDialog({
       setRegistrationStatus('All');
       setAttendanceStatus('All');
       setMissingSize(false);
+      // Reset registration-specific filters
+      setCheckInStatus('All');
+      setRegistrationDateFrom('');
+      setRegistrationDateTo('');
+      setRegisteredBy('All');
+      setMissingInfo(false);
+      setHasShirtOrder('All');
     }
   }, [isOpen]);
 
@@ -217,9 +233,55 @@ export default function AdvancedFilterDialog({
         }
       }
 
+      // === REGISTRATION-SPECIFIC FILTERS ===
+      if (isRegistrationView) {
+        // Check-in status filter
+        if (checkInStatus !== 'All') {
+          if (checkInStatus === 'Checked In' && !person.registered) return false;
+          if (checkInStatus === 'Pending' && person.registered) return false;
+        }
+        
+        // Age bracket filter
+        if (ageBracket !== 'All' && person.ageBracket !== ageBracket) return false;
+        
+        // Attendance status filter
+        if (attendanceStatus !== 'All') {
+          if (attendanceStatus === 'attending' && person.attendanceStatus !== 'attending') return false;
+          if (attendanceStatus === 'shirt_only' && person.attendanceStatus !== 'shirt_only') return false;
+        }
+        
+        // Registration date range filter
+        if (registrationDateFrom || registrationDateTo) {
+          if (person.registeredAt) {
+            const regDate = new Date(person.registeredAt);
+            if (registrationDateFrom && regDate < new Date(registrationDateFrom)) return false;
+            if (registrationDateTo && regDate > new Date(registrationDateTo + 'T23:59:59')) return false;
+          } else if (registrationDateFrom || registrationDateTo) {
+            return false; // Exclude if no registration date when date filter is active
+          }
+        }
+        
+        // Has shirt order filter
+        if (hasShirtOrder !== 'All') {
+          const hasOrder = person.shirtSize && 
+                          person.shirtSize !== '' && 
+                          person.shirtSize !== 'No shirt' && 
+                          person.shirtSize !== 'Select Size' &&
+                          person.shirtSize !== 'None yet';
+          if (hasShirtOrder === 'Yes' && !hasOrder) return false;
+          if (hasShirtOrder === 'No' && hasOrder) return false;
+        }
+        
+        // Missing info filter
+        if (missingInfo) {
+          const isMissing = !person.contactNumber || person.contactNumber === '';
+          if (!isMissing) return false;
+        }
+      }
+
       return true;
     });
-  }, [people, paymentStatus, printStatus, categories, locations, amountMin, amountMax, nameSearch, hasNotes, hasTasks, hasOverdueTasks, missingContact, peopleTaskInfo, isShirtView, shirtSize, distributionStatus, ageBracket, registrationStatus, attendanceStatus, missingSize]);
+  }, [people, paymentStatus, printStatus, categories, locations, amountMin, amountMax, nameSearch, hasNotes, hasTasks, hasOverdueTasks, missingContact, peopleTaskInfo, isShirtView, shirtSize, distributionStatus, ageBracket, registrationStatus, attendanceStatus, missingSize, isRegistrationView, checkInStatus, registrationDateFrom, registrationDateTo, registeredBy, missingInfo, hasShirtOrder]);
 
   // Get result count color
   const getResultColor = () => {
@@ -241,6 +303,9 @@ export default function AdvancedFilterDialog({
     // Shirt-specific presets
     setDistributionStatus(preset.distributionStatus || 'All');
     setMissingSize(preset.missingSize || false);
+    // Registration-specific presets
+    setCheckInStatus(preset.checkInStatus || 'All');
+    setAgeBracket(preset.ageBracket || 'All');
   };
 
   const quickPresets = isShirtView ? [
@@ -249,6 +314,12 @@ export default function AdvancedFilterDialog({
     { name: 'Missing Size', missingSize: true },
     { name: 'Main Location', locations: ['Main'] },
     { name: 'With Print', printStatus: 'With Print' }
+  ] : isRegistrationView ? [
+    { name: 'Checked In Today', checkInStatus: 'Checked In' },
+    { name: 'Pending Check-in', checkInStatus: 'Pending' },
+    { name: 'Kids & Youth', ageBracket: 'Kid' },
+    { name: 'Main Location', locations: ['Main'] },
+    { name: 'Has Tasks', hasTasks: true }
   ] : [
     { name: 'Unpaid Orders', paymentStatus: 'Unpaid' },
     { name: 'High Priority', hasOverdueTasks: true },
@@ -272,6 +343,11 @@ export default function AdvancedFilterDialog({
         ...(isShirtView && {
           shirtSize, distributionStatus, ageBracket,
           registrationStatus, attendanceStatus, missingSize
+        }),
+        // Registration-specific
+        ...(isRegistrationView && {
+          checkInStatus, registrationDateFrom, registrationDateTo,
+          registeredBy, missingInfo, hasShirtOrder, ageBracket, attendanceStatus
         })
       }
     };
@@ -312,6 +388,17 @@ export default function AdvancedFilterDialog({
       setAttendanceStatus(config.attendanceStatus || 'All');
       setMissingSize(config.missingSize || false);
     }
+    // Registration-specific
+    if (isRegistrationView) {
+      setCheckInStatus(config.checkInStatus || 'All');
+      setRegistrationDateFrom(config.registrationDateFrom || '');
+      setRegistrationDateTo(config.registrationDateTo || '');
+      setRegisteredBy(config.registeredBy || 'All');
+      setMissingInfo(config.missingInfo || false);
+      setHasShirtOrder(config.hasShirtOrder || 'All');
+      setAgeBracket(config.ageBracket || 'All');
+      setAttendanceStatus(config.attendanceStatus || 'All');
+    }
   };
 
   // Delete saved filter
@@ -349,6 +436,17 @@ export default function AdvancedFilterDialog({
       setAttendanceStatus('All');
       setMissingSize(false);
     }
+    // Registration-specific
+    if (isRegistrationView) {
+      setCheckInStatus('All');
+      setRegistrationDateFrom('');
+      setRegistrationDateTo('');
+      setRegisteredBy('All');
+      setMissingInfo(false);
+      setHasShirtOrder('All');
+      setAgeBracket('All');
+      setAttendanceStatus('All');
+    }
   };
 
   // Apply filters
@@ -361,6 +459,11 @@ export default function AdvancedFilterDialog({
       ...(isShirtView && {
         shirtSize, distributionStatus, ageBracket,
         registrationStatus, attendanceStatus, missingSize
+      }),
+      // Registration-specific
+      ...(isRegistrationView && {
+        checkInStatus, registrationDateFrom, registrationDateTo,
+        registeredBy, missingInfo, hasShirtOrder, ageBracket, attendanceStatus
       })
     });
   };
@@ -403,6 +506,16 @@ export default function AdvancedFilterDialog({
       registrationStatus !== 'All',
       attendanceStatus !== 'All',
       missingSize
+    ] : []),
+    // Registration-specific
+    ...(isRegistrationView ? [
+      checkInStatus !== 'All',
+      registrationDateFrom !== '' || registrationDateTo !== '',
+      registeredBy !== 'All',
+      missingInfo,
+      hasShirtOrder !== 'All',
+      ageBracket !== 'All',
+      attendanceStatus !== 'All'
     ] : [])
   ].filter(Boolean).length;
 
@@ -691,6 +804,115 @@ export default function AdvancedFilterDialog({
                   </div>
                 </>
               )}
+
+              {/* === REGISTRATION-SPECIFIC FILTERS === */}
+              {isRegistrationView && (
+                <>
+                  {/* Check-in Status */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Check-in Status</label>
+                    <div className="flex gap-2">
+                      {['All', 'Checked In', 'Pending'].map(status => (
+                        <button
+                          key={status}
+                          onClick={() => setCheckInStatus(status)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            checkInStatus === status
+                              ? 'bg-green-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {status}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Age Bracket */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Age Bracket</label>
+                    <div className="flex flex-wrap gap-2">
+                      {['All', 'Toddler', 'Kid', 'Youth', 'Adult'].map(bracket => (
+                        <button
+                          key={bracket}
+                          onClick={() => setAgeBracket(bracket)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            ageBracket === bracket
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {bracket}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Attendance Status */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Attendance Status</label>
+                    <div className="flex gap-2">
+                      {[
+                        { value: 'All', label: 'All' },
+                        { value: 'attending', label: 'Attending Event' },
+                        { value: 'shirt_only', label: 'Shirt Only' }
+                      ].map(option => (
+                        <button
+                          key={option.value}
+                          onClick={() => setAttendanceStatus(option.value)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            attendanceStatus === option.value
+                              ? 'bg-teal-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Registration Date Range */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Registration Date Range</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="date"
+                        value={registrationDateFrom}
+                        onChange={(e) => setRegistrationDateFrom(e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <span className="text-gray-500">to</span>
+                      <input
+                        type="date"
+                        value={registrationDateTo}
+                        onChange={(e) => setRegistrationDateTo(e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Has Shirt Order */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Has Shirt Order</label>
+                    <div className="flex gap-2">
+                      {['All', 'Yes', 'No'].map(option => (
+                        <button
+                          key={option}
+                          onClick={() => setHasShirtOrder(option)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            hasShirtOrder === option
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -759,6 +981,19 @@ export default function AdvancedFilterDialog({
                       className="w-4 h-4 rounded border-gray-300 accent-blue-500"
                     />
                     <span className="text-sm text-gray-700">Missing shirt size</span>
+                  </label>
+                )}
+                
+                {/* Registration-specific checkbox */}
+                {isRegistrationView && (
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={missingInfo}
+                      onChange={(e) => setMissingInfo(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300 accent-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">Missing contact info</span>
                   </label>
                 )}
               </div>

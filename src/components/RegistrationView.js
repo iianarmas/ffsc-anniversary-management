@@ -10,6 +10,7 @@ import Pagination from './Pagination';
 import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
 import { getAllPeopleTaskInfo } from '../services/api';
+import AdvancedFilterDialog from './AdvancedFilterDialog';
 
 export default function RegistrationView({ 
   searchTerm,
@@ -34,11 +35,16 @@ export default function RegistrationView({
   stats
 }) {
 
+  
+
   const { profile } = useAuth();
   const canRegister = canRegisterPeople(profile);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
+
+  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState(null);
 
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState(null);
@@ -125,6 +131,86 @@ export default function RegistrationView({
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Apply advanced filters
+const applyAdvancedFilters = (peopleList, filters) => {
+  if (!filters) return peopleList;
+  
+  return peopleList.filter(person => {
+    // All the same filters from Collections/Shirts views that are relevant
+    // Plus registration-specific filters from AdvancedFilterDialog
+    
+    // Payment status
+    if (filters.paymentStatus !== 'All') {
+      if (filters.paymentStatus === 'Paid' && !person.paid) return false;
+      if (filters.paymentStatus === 'Unpaid' && person.paid) return false;
+    }
+
+    // Print status
+    if (filters.printStatus !== 'All') {
+      if (filters.printStatus === 'With Print' && !person.hasPrint) return false;
+      if (filters.printStatus === 'Plain' && person.hasPrint) return false;
+    }
+
+    // Locations
+    if (filters.locations && filters.locations.length > 0) {
+      if (!filters.locations.includes(person.location)) return false;
+    }
+
+    // Name search
+    if (filters.nameSearch && filters.nameSearch !== '') {
+      const fullName = `${person.firstName} ${person.lastName}`.toLowerCase();
+      if (!fullName.includes(filters.nameSearch.toLowerCase())) return false;
+    }
+
+    // Task/Notes filters
+    const taskInfo = peopleTaskInfo[person.id] || {};
+    if (filters.hasNotes && !taskInfo.hasNotes) return false;
+    if (filters.hasTasks && !taskInfo.hasTasks) return false;
+    if (filters.hasOverdueTasks && (!taskInfo.hasTasks || taskInfo.incompleteTasksCount === 0)) return false;
+
+    // Missing contact
+    if (filters.missingContact && person.contactNumber) return false;
+
+    // Registration-specific filters
+    if (filters.checkInStatus && filters.checkInStatus !== 'All') {
+      if (filters.checkInStatus === 'Checked In' && !person.registered) return false;
+      if (filters.checkInStatus === 'Pending' && person.registered) return false;
+    }
+
+    if (filters.ageBracket && filters.ageBracket !== 'All' && person.ageBracket !== filters.ageBracket) return false;
+
+    if (filters.attendanceStatus && filters.attendanceStatus !== 'All') {
+      if (filters.attendanceStatus === 'attending' && person.attendanceStatus !== 'attending') return false;
+      if (filters.attendanceStatus === 'shirt_only' && person.attendanceStatus !== 'shirt_only') return false;
+    }
+
+    if (filters.registrationDateFrom || filters.registrationDateTo) {
+      if (person.registeredAt) {
+        const regDate = new Date(person.registeredAt);
+        if (filters.registrationDateFrom && regDate < new Date(filters.registrationDateFrom)) return false;
+        if (filters.registrationDateTo && regDate > new Date(filters.registrationDateTo + 'T23:59:59')) return false;
+      } else if (filters.registrationDateFrom || filters.registrationDateTo) {
+        return false;
+      }
+    }
+
+    if (filters.hasShirtOrder && filters.hasShirtOrder !== 'All') {
+      const hasOrder = person.shirtSize && person.shirtSize !== '' && person.shirtSize !== 'No shirt' && person.shirtSize !== 'Select Size' && person.shirtSize !== 'None yet';
+      if (filters.hasShirtOrder === 'Yes' && !hasOrder) return false;
+      if (filters.hasShirtOrder === 'No' && hasOrder) return false;
+    }
+
+    if (filters.missingInfo && person.contactNumber) return false;
+
+    return true;
+  });
+};
+
+// Apply advanced filters first
+const advancedFilteredPeople = applyAdvancedFilters(filteredAndSortedPeople, advancedFilters);
+
+// Then use advancedFilteredPeople for pagination instead of filteredAndSortedPeople
 
   // Pagination logic
   const totalItems = filteredAndSortedPeople.length;
@@ -320,8 +406,13 @@ useEffect(() => {
                   handleBulkRemove={canRegister ? handleBulkRemove : null}
                   handlePrint={handlePrint}
                   handleDeselectAll={() => selectedPeople.forEach(id => handleSelectPerson(id))}
-                  hasActiveFilters={filterAge !== 'All' || filterLocation !== 'All' || filterStatus !== 'All' || filterAttendance !== 'All' || searchTerm.trim() !== ''}
-                  onResetFilters={onResetFilters}
+                  advancedFilters={advancedFilters}
+                  onOpenAdvancedFilters={() => setIsAdvancedFilterOpen(true)}
+                  hasActiveFilters={filterAge !== 'All' || filterLocation !== 'All' || filterStatus !== 'All' || filterAttendance !== 'All' || searchTerm.trim() !== '' || advancedFilters !== null}
+                  onResetFilters={() => {
+                    onResetFilters();
+                    setAdvancedFilters(null);
+                  }}
                   stats={[
                     { Icon: Users, label: 'Total', value: people.length },
                     { 
@@ -419,6 +510,18 @@ useEffect(() => {
         person={notesDialogPerson} 
         isOpen={notesDialogOpen} 
         onClose={handleCloseNotes} 
+      />
+
+      <AdvancedFilterDialog
+        isOpen={isAdvancedFilterOpen}
+        onClose={() => setIsAdvancedFilterOpen(false)}
+        onApplyFilters={(filters) => {
+          setAdvancedFilters(filters);
+          setIsAdvancedFilterOpen(false);
+        }}
+        people={filteredAndSortedPeople}
+        viewType="registration"
+        peopleTaskInfo={peopleTaskInfo}
       />
 
       </div>

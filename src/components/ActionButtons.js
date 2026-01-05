@@ -14,7 +14,9 @@ export default function ActionButtons({
   hasActiveFilters,
   onResetFilters,
   stats = [],
-  readOnly = false
+  readOnly = false,
+  advancedFilters,
+onOpenAdvancedFilters
 }) {
   const { profile } = useAuth();
   const [showPrintTooltip, setShowPrintTooltip] = useState(false);
@@ -106,6 +108,22 @@ export default function ActionButtons({
             View Only - No registration permissions
           </div>
         )}
+
+        <button
+  onClick={onOpenAdvancedFilters}
+  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition text-sm ${
+    advancedFilters
+      ? 'bg-purple-800 text-white hover:bg-purple-700'
+      : 'bg-purple-50 text-purple-800 hover:bg-purple-100 border border-purple-200'
+  }`}
+>
+  Advanced Filters
+  {advancedFilters && (
+    <span className="ml-1 px-2 py-0.5 bg-white bg-opacity-20 rounded-full text-xs font-bold">
+      Active
+    </span>
+  )}
+</button>
         
         {hasActiveFilters && (
           <button
