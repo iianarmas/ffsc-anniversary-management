@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024">
+  <defs>
+    <style>
+      .cls-1 {
+        filter: url(#drop-shadow-1);
+      }
+
+      .cls-1, .cls-2 {
+        fill: #245577;
+      }
+
+      .cls-3 {
+        fill: #fff;
+      }
+
+      .cls-4 {
+        fill: #eae24e;
+        filter: url(#drop-shadow-2);
+      }
+
+      .cls-5 {
+        fill: #3c77a0;
+        filter: url(#drop-shadow-3);
+      }
+    </style>
+    <filter id="drop-shadow-1" x="321.48" y="219.24" width="569.76" height="220.08" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy="7"/>
+      <feGaussianBlur result="blur" stdDeviation="5"/>
+      <feFlood flood-color="#000" flood-opacity=".3"/>
+      <feComposite in2="blur" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="drop-shadow-2" x="428.28" y="438.84" width="332.64" height="136.56" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy="7"/>
+      <feGaussianBlur result="blur-2" stdDeviation="5"/>
+      <feFlood flood-color="#000" flood-opacity=".3"/>
+      <feComposite in2="blur-2" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="drop-shadow-3" x="122.76" y="212.76" width="520.56" height="233.04" filterUnits="userSpaceOnUse">
+      <feOffset dx="7" dy="7"/>
+      <feGaussianBlur result="blur-3" stdDeviation="5"/>
+      <feFlood flood-color="#000" flood-opacity=".3"/>
+      <feComposite in2="blur-3" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="Layer_2" data-name="Layer 2">
+    <rect class="cls-3" width="1024" height="1024"/>
+  </g>
+  <g id="Layer_1" data-name="Layer 1">
+    <polygon class="cls-2" points="605.11 105.9 415.4 105.9 415.4 346.73 605.11 536.44 605.11 105.9"/>
+    <polygon class="cls-2" points="415.4 346.73 415.4 727.22 605.11 918.1 605.11 536.44 415.4 346.73"/>
+    <polygon class="cls-1" points="876.17 227.38 605.32 227.38 336.62 417.09 876.17 417.09 876.17 227.38"/>
+    <polygon class="cls-4" points="745.88 553.21 594.02 553.21 443.38 446.85 745.88 446.85 745.88 553.21"/>
+    <polygon class="cls-5" points="130.92 220.84 333.71 423.63 333.9 423.63 621.13 220.84 130.92 220.84"/>
+  </g>
+</svg>

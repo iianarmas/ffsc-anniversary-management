@@ -9,7 +9,7 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/church-logo.svg",
+      "src": "/icon-gen.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
