@@ -17,6 +17,7 @@ import {
 } from '../../services/api';
 import { supabase } from '../../services/supabase';
 import { useAuth } from '../auth/AuthProvider';
+import Avatar from '../Avatar';
 
 export default function UserManagement() {
   const { profile } = useAuth();
@@ -263,11 +264,11 @@ export default function UserManagement() {
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="flex-shrink-0 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                        <span className="text-blue-600 font-semibold text-lg">
-                          {request.profiles?.full_name?.charAt(0).toUpperCase() || 'U'}
-                        </span>
-                      </div>
+                      <Avatar 
+                        src={request.profiles?.avatar_url}
+                        name={request.profiles?.full_name}
+                        size="lg"
+                      />
                       <div>
                         <h3 className="text-base font-semibold text-gray-900">
                           {request.profiles?.full_name || 'Unknown User'}
@@ -419,11 +420,11 @@ export default function UserManagement() {
                     <tr key={user.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <span className="text-blue-600 font-semibold">
-                              {user.full_name?.charAt(0).toUpperCase() || 'U'}
-                            </span>
-                          </div>
+                          <Avatar 
+                            src={user.avatar_url}
+                            name={user.full_name}
+                            size="md"
+                          />
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">
                               {user.full_name || 'No name'}
@@ -508,11 +509,11 @@ export default function UserManagement() {
               {filteredUsers.map(user => (
                 <div key={user.id} className="p-4 hover:bg-gray-50">
                   <div className="flex items-start gap-3 mb-3">
-                    <div className="flex-shrink-0 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                      <span className="text-blue-600 font-semibold text-lg">
-                        {user.full_name?.charAt(0).toUpperCase() || 'U'}
-                      </span>
-                    </div>
+                    <Avatar 
+                      src={user.avatar_url}
+                      name={user.full_name}
+                      size="lg"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="text-base font-semibold text-gray-900 truncate">
                         {user.full_name || 'No name'}

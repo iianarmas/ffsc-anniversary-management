@@ -54,7 +54,7 @@ export default function ShirtActionButtons({
             className="flex items-center gap-2 px-4 py-2 bg-[#0f2a71] hover:bg-[#1c3b8d] text-white rounded-lg font-medium transition text-sm"
           >
             <Printer size={16} />
-            Print List
+            Print
           </button>
         ) : (
           <>

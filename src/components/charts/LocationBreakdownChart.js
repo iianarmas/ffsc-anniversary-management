@@ -12,7 +12,7 @@ const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
+      <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg z-50 relative">
         <p className="font-semibold text-gray-900 mb-3 text-base">{data.location}</p>
         <div className="space-y-2">
           <div className="flex justify-between items-center gap-6">
@@ -107,7 +107,7 @@ export default function LocationBreakdownChart({ data = [], height = 280, maxCap
             cornerRadius={10}
             animationDuration={1000}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />
           <Legend content={<CustomLegend />} />
         </RadialBarChart>
       </ResponsiveContainer>

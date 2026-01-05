@@ -279,7 +279,7 @@ export default function MobileShirtManagementView({
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-yellow-600">{stats.shirtsPending}</div>
-              <div className="text-xs text-gray-500">Pending</div>
+              <div className="text-xs text-gray-500">Pending Distibution</div>
             </div>
           </div>
         </div>

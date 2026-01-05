@@ -453,7 +453,7 @@ export default function ShirtManagementView({
                   { Icon: DollarSign, label: 'Paid', value: stats.paid },
                   { Icon: DollarSign, label: 'Unpaid', value: stats.unpaid },
                   { Icon: Package, label: 'Given', value: stats.shirtsGiven },
-                  { Icon: Clock, label: 'Pending', value: stats.shirtsPending }
+                  { Icon: Clock, label: 'Pending Distribution', value: stats.shirtsPending }
                 ]}
               />
             </div>

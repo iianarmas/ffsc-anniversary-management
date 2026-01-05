@@ -5,7 +5,7 @@ const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0];
     return (
-      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg z-50 relative">
         <p className="font-semibold text-gray-900 mb-2">{data.name}</p>
         <div className="space-y-1">
           <p className="text-sm text-gray-700">
@@ -47,7 +47,7 @@ export default function AgeBracketChart({ data, height = 320 }) {
     <div className="relative h-full flex items-center justify-center">
       <ResponsiveContainer width="100%" height={height}>
         <PieChart>
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />
           <Pie
             data={dataWithPercentage}
             cx="50%"
