@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ActionButtons from './ActionButtons';
 import { useAuth } from './auth/AuthProvider';
 import { canRegisterPeople } from '../utils/permissions';
@@ -132,92 +132,87 @@ export default function RegistrationView({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Apply advanced filters
-const applyAdvancedFilters = (peopleList, filters) => {
-  if (!filters) return peopleList;
-  
-  return peopleList.filter(person => {
-    // All the same filters from Collections/Shirts views that are relevant
-    // Plus registration-specific filters from AdvancedFilterDialog
-    
-    // Payment status
-    if (filters.paymentStatus !== 'All') {
-      if (filters.paymentStatus === 'Paid' && !person.paid) return false;
-      if (filters.paymentStatus === 'Unpaid' && person.paid) return false;
-    }
+  // Apply advanced filters using useMemo for performance
+  const advancedFilteredPeople = useMemo(() => {
+    if (!advancedFilters) return filteredAndSortedPeople;
 
-    // Print status
-    if (filters.printStatus !== 'All') {
-      if (filters.printStatus === 'With Print' && !person.hasPrint) return false;
-      if (filters.printStatus === 'Plain' && person.hasPrint) return false;
-    }
+    return filteredAndSortedPeople.filter(person => {
+      // All the same filters from Collections/Shirts views that are relevant
+      // Plus registration-specific filters from AdvancedFilterDialog
 
-    // Locations
-    if (filters.locations && filters.locations.length > 0) {
-      if (!filters.locations.includes(person.location)) return false;
-    }
-
-    // Name search
-    if (filters.nameSearch && filters.nameSearch !== '') {
-      const fullName = `${person.firstName} ${person.lastName}`.toLowerCase();
-      if (!fullName.includes(filters.nameSearch.toLowerCase())) return false;
-    }
-
-    // Task/Notes filters
-    const taskInfo = peopleTaskInfo[person.id] || {};
-    if (filters.hasNotes && !taskInfo.hasNotes) return false;
-    if (filters.hasTasks && !taskInfo.hasTasks) return false;
-    if (filters.hasOverdueTasks && (!taskInfo.hasTasks || taskInfo.incompleteTasksCount === 0)) return false;
-
-    // Missing contact
-    if (filters.missingContact && person.contactNumber) return false;
-
-    // Registration-specific filters
-    if (filters.checkInStatus && filters.checkInStatus !== 'All') {
-      if (filters.checkInStatus === 'Checked In' && !person.registered) return false;
-      if (filters.checkInStatus === 'Pending' && person.registered) return false;
-    }
-
-    if (filters.ageBracket && filters.ageBracket !== 'All' && person.ageBracket !== filters.ageBracket) return false;
-
-    if (filters.attendanceStatus && filters.attendanceStatus !== 'All') {
-      if (filters.attendanceStatus === 'attending' && person.attendanceStatus !== 'attending') return false;
-      if (filters.attendanceStatus === 'shirt_only' && person.attendanceStatus !== 'shirt_only') return false;
-    }
-
-    if (filters.registrationDateFrom || filters.registrationDateTo) {
-      if (person.registeredAt) {
-        const regDate = new Date(person.registeredAt);
-        if (filters.registrationDateFrom && regDate < new Date(filters.registrationDateFrom)) return false;
-        if (filters.registrationDateTo && regDate > new Date(filters.registrationDateTo + 'T23:59:59')) return false;
-      } else if (filters.registrationDateFrom || filters.registrationDateTo) {
-        return false;
+      // Payment status
+      if (advancedFilters.paymentStatus !== 'All') {
+        if (advancedFilters.paymentStatus === 'Paid' && !person.paid) return false;
+        if (advancedFilters.paymentStatus === 'Unpaid' && person.paid) return false;
       }
-    }
 
-    if (filters.hasShirtOrder && filters.hasShirtOrder !== 'All') {
-      const hasOrder = person.shirtSize && person.shirtSize !== '' && person.shirtSize !== 'No shirt' && person.shirtSize !== 'Select Size' && person.shirtSize !== 'None yet';
-      if (filters.hasShirtOrder === 'Yes' && !hasOrder) return false;
-      if (filters.hasShirtOrder === 'No' && hasOrder) return false;
-    }
+      // Print status
+      if (advancedFilters.printStatus !== 'All') {
+        if (advancedFilters.printStatus === 'With Print' && !person.hasPrint) return false;
+        if (advancedFilters.printStatus === 'Plain' && person.hasPrint) return false;
+      }
 
-    if (filters.missingInfo && person.contactNumber) return false;
+      // Locations
+      if (advancedFilters.locations && advancedFilters.locations.length > 0) {
+        if (!advancedFilters.locations.includes(person.location)) return false;
+      }
 
-    return true;
-  });
-};
+      // Name search
+      if (advancedFilters.nameSearch && advancedFilters.nameSearch !== '') {
+        const fullName = `${person.firstName} ${person.lastName}`.toLowerCase();
+        if (!fullName.includes(advancedFilters.nameSearch.toLowerCase())) return false;
+      }
 
-// Apply advanced filters first
-const advancedFilteredPeople = applyAdvancedFilters(filteredAndSortedPeople, advancedFilters);
+      // Task/Notes filters
+      const taskInfo = peopleTaskInfo[person.id] || {};
+      if (advancedFilters.hasNotes && !taskInfo.hasNotes) return false;
+      if (advancedFilters.hasTasks && !taskInfo.hasTasks) return false;
+      if (advancedFilters.hasOverdueTasks && (!taskInfo.hasTasks || taskInfo.incompleteTasksCount === 0)) return false;
 
-// Then use advancedFilteredPeople for pagination instead of filteredAndSortedPeople
+      // Missing contact
+      if (advancedFilters.missingContact && person.contactNumber) return false;
+
+      // Registration-specific filters
+      if (advancedFilters.checkInStatus && advancedFilters.checkInStatus !== 'All') {
+        if (advancedFilters.checkInStatus === 'Checked In' && !person.registered) return false;
+        if (advancedFilters.checkInStatus === 'Pending' && person.registered) return false;
+      }
+
+      if (advancedFilters.ageBracket && advancedFilters.ageBracket !== 'All' && person.ageBracket !== advancedFilters.ageBracket) return false;
+
+      if (advancedFilters.attendanceStatus && advancedFilters.attendanceStatus !== 'All') {
+        if (advancedFilters.attendanceStatus === 'attending' && person.attendanceStatus !== 'attending') return false;
+        if (advancedFilters.attendanceStatus === 'shirt_only' && person.attendanceStatus !== 'shirt_only') return false;
+      }
+
+      if (advancedFilters.registrationDateFrom || advancedFilters.registrationDateTo) {
+        if (person.registeredAt) {
+          const regDate = new Date(person.registeredAt);
+          if (advancedFilters.registrationDateFrom && regDate < new Date(advancedFilters.registrationDateFrom)) return false;
+          if (advancedFilters.registrationDateTo && regDate > new Date(advancedFilters.registrationDateTo + 'T23:59:59')) return false;
+        } else if (advancedFilters.registrationDateFrom || advancedFilters.registrationDateTo) {
+          return false;
+        }
+      }
+
+      if (advancedFilters.hasShirtOrder && advancedFilters.hasShirtOrder !== 'All') {
+        const hasOrder = person.shirtSize && person.shirtSize !== '' && person.shirtSize !== 'No shirt' && person.shirtSize !== 'Select Size' && person.shirtSize !== 'None yet';
+        if (advancedFilters.hasShirtOrder === 'Yes' && !hasOrder) return false;
+        if (advancedFilters.hasShirtOrder === 'No' && hasOrder) return false;
+      }
+
+      if (advancedFilters.missingInfo && person.contactNumber) return false;
+
+      return true;
+    });
+  }, [filteredAndSortedPeople, advancedFilters, peopleTaskInfo]);
 
   // Pagination logic
-  const totalItems = filteredAndSortedPeople.length;
+  const totalItems = advancedFilteredPeople.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredAndSortedPeople.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = advancedFilteredPeople.slice(indexOfFirstItem, indexOfLastItem);
 
 // Ensure current page is within bounds
 useEffect(() => {
@@ -228,7 +223,7 @@ useEffect(() => {
 
 
   const handlePageChange = (pageNumber) => {
-    if (pageNumber < 1 || pageNumber > Math.ceil(filteredAndSortedPeople.length / itemsPerPage)) return;
+    if (pageNumber < 1 || pageNumber > Math.ceil(advancedFilteredPeople.length / itemsPerPage)) return;
     setCurrentPage(pageNumber);
     tableContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -283,7 +278,7 @@ useEffect(() => {
       resizeObserver.disconnect();
       window.removeEventListener('resize', measureHeights);
     };
-  }, [filteredAndSortedPeople.length, itemsPerPage, currentPage]);
+  }, [advancedFilteredPeople.length, itemsPerPage, currentPage]);
 
   
 
@@ -382,8 +377,8 @@ useEffect(() => {
                 </div>
                 <div className="text-sm text-gray-500 flex items-baseline gap-2">
                   <Users size={18} className="text-gray-400" />
-                  <span className="font-semibold text-gray-900 text-lg">{filteredAndSortedPeople.length}</span>
-                  <span className="text-gray-500">{filteredAndSortedPeople.length === 1 ? 'person' : 'people'}</span>
+                  <span className="font-semibold text-gray-900 text-lg">{advancedFilteredPeople.length}</span>
+                  <span className="text-gray-500">{advancedFilteredPeople.length === 1 ? 'person' : 'people'}</span>
                 </div>
               </div>
             </div>
@@ -401,7 +396,7 @@ useEffect(() => {
                 <ActionButtons
                   handleSelectAll={handleSelectAll}
                   selectedPeople={selectedPeople}
-                  filteredPeopleLength={filteredAndSortedPeople.length}
+                  filteredPeopleLength={advancedFilteredPeople.length}
                   handleBulkRegister={canRegister ? handleBulkRegister : null}
                   handleBulkRemove={canRegister ? handleBulkRemove : null}
                   handlePrint={handlePrint}
@@ -415,26 +410,26 @@ useEffect(() => {
                   }}
                   stats={[
                     { Icon: Users, label: 'Total', value: people.length },
-                    { 
-                      Icon: CheckCircle, 
-                      label: 'Checked In', 
+                    {
+                      Icon: CheckCircle,
+                      label: 'Checked In',
                       value: `${stats.registeredCapacity || 0} / ${stats.maxCapacity || 230}`,
                       subtitle: stats.registered !== stats.registeredCapacity ? `(${stats.registered} total, ${stats.toddlersCount} ${stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})` : null
                     },
                     { Icon: Clock, label: 'Pending', value: stats.preRegistered || 0 },
-                    { 
-                      Icon: Users, 
-                      label: 'Slots Remaining', 
+                    {
+                      Icon: Users,
+                      label: 'Slots Remaining',
                       value: stats.slotsRemaining || 0
                     }
                   ]}
                   readOnly={!canRegister}
-                
+
                 />
               </div>
 
               <PeopleTable
-                filteredAndSortedPeople={filteredAndSortedPeople}
+                filteredAndSortedPeople={advancedFilteredPeople}
                 pagePeople={currentItems}
                 selectedPeople={selectedPeople}
                 handleSelectPerson={handleSelectPerson}
@@ -458,7 +453,7 @@ useEffect(() => {
             {useFixedPagination && (
               <div ref={paginationRefEl} className="absolute bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200">
                 <Pagination
-                  totalItems={filteredAndSortedPeople.length}
+                  totalItems={advancedFilteredPeople.length}
                   itemsPerPage={itemsPerPage}
                   currentPage={currentPage}
                   onPageChange={handlePageChange}
@@ -472,7 +467,7 @@ useEffect(() => {
           {!useFixedPagination && (
             <div className="mt-4">
               <Pagination
-                totalItems={filteredAndSortedPeople.length}
+                totalItems={advancedFilteredPeople.length}
                 itemsPerPage={itemsPerPage}
                 currentPage={currentPage}
                 onPageChange={handlePageChange}
