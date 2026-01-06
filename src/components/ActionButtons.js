@@ -3,12 +3,12 @@ import { createPortal } from 'react-dom';
 import { UserPlus, UserMinus, Printer, RotateCcw, Lock } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 
-export default function ActionButtons({ 
-  handleSelectAll, 
-  selectedPeople, 
-  filteredPeopleLength, 
-  handleBulkRegister, 
-  handleBulkRemove, 
+export default function ActionButtons({
+  handleSelectAll,
+  selectedPeople,
+  filteredPeopleLength,
+  handleBulkRegister,
+  handleBulkRemove,
   handlePrint,
   handleDeselectAll,
   hasActiveFilters,
@@ -16,7 +16,7 @@ export default function ActionButtons({
   stats = [],
   readOnly = false,
   advancedFilters,
-onOpenAdvancedFilters
+  onOpenAdvancedFilters,
 }) {
   const { profile } = useAuth();
   const [showPrintTooltip, setShowPrintTooltip] = useState(false);
@@ -32,20 +32,19 @@ onOpenAdvancedFilters
   };
 
   return (
-    <div className="bg-white px-4 py-3 flex items-center justify-between min-h-[60px]">
+    <div className="bg-white px-4 py-3 flex items-center justify-between min-h-[60px] border-b border-gray-100">
       <div className="flex items-center gap-4">
         {/* Compact stat badges (neutral, unobtrusive) */}
         {stats.length > 0 && (
-          <div className="flex items-center gap-4 text-sm text-gray-600 mr-2">
+          <div className="flex items-center gap-3 text-sm text-gray-600 mr-2">
             {stats.map((s, i) => (
-              <div key={i} className="flex items-center gap-2 whitespace-nowrap">
-                {s.Icon && <s.Icon size={14} className="text-gray-400" />}
+              <div key={i} className="flex items-center gap-2 whitespace-nowrap px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+                {s.Icon && <s.Icon size={14} className="text-gray-500" />}
                 <span className="font-semibold text-gray-900">{s.value}</span>
-                <span className="text-gray-500">{s.label}</span>
+                <span className="text-gray-600 text-xs">{s.label}</span>
                 {s.subtitle && (
                   <span className="text-xs text-gray-400 ml-1">{s.subtitle}</span>
                 )}
-                {i < stats.length - 1 && <span className="text-gray-300">|</span>}
               </div>
             ))}
           </div>
@@ -57,88 +56,94 @@ onOpenAdvancedFilters
             <div className="flex items-center gap-2 text-sm">
               <button
                 onClick={handleSelectAll}
-                className="text-gray-700 hover:text-gray-900"
+                className="text-primary-main hover:text-primary-hover font-medium transition-colors"
               >
                 Select All
               </button>
-              <span className="text-gray-400">|</span>
+              <span className="text-gray-300">•</span>
               <button
                 onClick={handleDeselectAll}
-                className="text-gray-700 hover:text-gray-900"
+                className="text-primary-main hover:text-primary-hover font-medium transition-colors"
               >
                 Deselect
               </button>
             </div>
 
             {/* Counter */}
-            <div className="text-sm text-gray-700">
-              Selected: <span className="font-medium">{selectedPeople.length}</span>
-              <span className="text-gray-400"> / </span>
-              <span>{filteredPeopleLength}</span>
+            <div className="px-3 py-1.5 bg-primary-lighter rounded-lg border border-primary-light">
+              <span className="text-sm text-gray-600">Selected:</span>{' '}
+              <span className="font-semibold text-primary-main">{selectedPeople.length}</span>
+              <span className="text-gray-400 mx-1">/</span>
+              <span className="text-sm text-gray-600">{filteredPeopleLength}</span>
             </div>
           </>
         )}
       </div>
 
 
-      {/* Right side buttons */}
+      {/* Right: Action Buttons */}
       <div className="flex items-center gap-2">
+        {/* Bulk Actions (Register/Remove) */}
         {selectedPeople.length > 0 && !readOnly && handleBulkRegister && handleBulkRemove && (
           <>
             <button
               onClick={handleBulkRegister}
-              className="flex items-center gap-2 px-4 py-2 border border-[#0f2a71] hover:border-[#1c3b8d] text-slate-600 hover:text-[#1c3b8d] rounded-lg font-medium transition text-sm"
+              className="flex items-center gap-2 px-4 py-2 border-2 border-[#0f2a71] hover:border-[#1c3b8d] text-[#0f2a71] hover:text-[#1c3b8d] bg-white rounded-button font-semibold transition-all duration-200 text-sm active:scale-95"
             >
               <UserPlus size={16} />
               Register
             </button>
             <button
               onClick={handleBulkRemove}
-              className="flex items-center gap-2 px-4 py-2 border border-[#0f2a71] hover:border-[#1c3b8d] text-slate-600 hover:text-[#1c3b8d] rounded-lg font-medium transition text-sm"
+              className="flex items-center gap-2 px-4 py-2 border-2 border-[#0f2a71] hover:border-[#1c3b8d] text-[#0f2a71] hover:text-[#1c3b8d] bg-white rounded-button font-semibold transition-all duration-200 text-sm active:scale-95"
             >
               <UserMinus size={16} />
               Remove
             </button>
           </>
         )}
-        
+
+        {/* Read-Only Notice */}
         {readOnly && selectedPeople.length > 0 && (
           <div className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm flex items-center gap-2">
-            <span className="text-xs">👁️</span>
+            <Lock size={14} />
             View Only - No registration permissions
           </div>
         )}
 
+        {/* Advanced Filters */}
         <button
-  onClick={onOpenAdvancedFilters}
-  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition text-sm ${
-    advancedFilters
-      ? 'bg-purple-800 text-white hover:bg-purple-700'
-      : 'bg-purple-50 text-purple-800 hover:bg-purple-100 border border-purple-200'
-  }`}
->
-  Advanced Filters
-  {advancedFilters && (
-    <span className="ml-1 px-2 py-0.5 bg-white bg-opacity-20 rounded-full text-xs font-bold">
-      Active
-    </span>
-  )}
-</button>
-        
+          onClick={onOpenAdvancedFilters}
+          className={`flex items-center gap-2 px-4 py-2 rounded-button font-semibold transition-all duration-200 text-sm shadow-sm active:scale-95 ${
+            advancedFilters
+              ? 'bg-[#0f2a71] text-white hover:bg-[#1c3b8d] hover:shadow-card'
+              : 'bg-white text-[#0f2a71] hover:bg-[#f5f7fb] border-2 border-[#0f2a71]'
+          }`}
+        >
+          Advanced Filters
+          {advancedFilters && (
+            <span className="ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs font-bold">
+              Active
+            </span>
+          )}
+        </button>
+
+        {/* Reset Filters */}
         {hasActiveFilters && (
           <button
             onClick={onResetFilters}
-            className="flex items-center gap-2 px-4 py-2 bg-[#0f204e] hover:bg-[#1c3b8d] text-white rounded-lg font-medium transition text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-[#0f2a71] hover:bg-[#1c3b8d] text-white rounded-button font-semibold transition-all duration-200 text-sm shadow-sm hover:shadow-card active:scale-95"
           >
             <RotateCcw size={16} />
             Reset
           </button>
         )}
 
+        {/* Print Button */}
         {profile?.role !== 'viewer' ? (
           <button
             onClick={handlePrint}
-            className="flex items-center gap-2 px-4 py-2 bg-[#0f2a71] hover:bg-[#1c3b8d] text-white rounded-lg font-medium transition text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-[#0f2a71] hover:bg-[#1c3b8d] text-white rounded-button font-semibold transition-all duration-200 text-sm shadow-sm hover:shadow-card active:scale-95"
           >
             <Printer size={16} />
             Print
@@ -149,24 +154,25 @@ onOpenAdvancedFilters
               disabled
               onMouseEnter={handleMouseEnter}
               onMouseLeave={() => setShowPrintTooltip(false)}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-500 rounded-lg font-medium transition text-sm cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-500 rounded-button font-semibold transition-all duration-200 text-sm cursor-not-allowed opacity-60"
             >
               <Lock size={16} />
               Print
             </button>
-            {showPrintTooltip && createPortal(
-              <div
-                className="fixed px-3 py-2 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap pointer-events-none z-[9999]"
-                style={{
-                  top: `${tooltipPosition.top}px`,
-                  left: `${tooltipPosition.left}px`,
-                  transform: 'translate(-50%, -100%)'
-                }}
-              >
-                Contact admin for print access
-              </div>,
-              document.body
-            )}
+            {showPrintTooltip &&
+              createPortal(
+                <div
+                  className="fixed px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-dropdown whitespace-nowrap pointer-events-none z-dropdown animate-fade-in"
+                  style={{
+                    top: `${tooltipPosition.top}px`,
+                    left: `${tooltipPosition.left}px`,
+                    transform: 'translate(-50%, -100%)',
+                  }}
+                >
+                  Contact admin for print access
+                </div>,
+                document.body
+              )}
           </>
         )}
       </div>

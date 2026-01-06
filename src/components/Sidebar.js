@@ -20,14 +20,14 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 bg-[#001740] text-white p-3 rounded-lg"
+        className="md:hidden fixed top-4 left-4 z-sidebar bg-[#001740] text-white p-3 rounded-lg"
       >
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {/* Sidebar - Always Collapsed on Desktop */}
       <div
-        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#edf1fa] text-white transform transition-all duration-300 ease-in-out z-40 ${
+        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#edf1fa] text-white transform transition-all duration-300 ease-in-out z-sidebar ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0 w-16`}
       >

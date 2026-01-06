@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { formatFullName } from '../utils/formatters';
 import { createPortal } from 'react-dom';
-import { Filter, StickyNote, CheckSquare, CheckCircle, Lock } from 'lucide-react';
+import { Filter, StickyNote, CheckSquare, CheckCircle, Lock, RotateCcw } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 
 const formatPhilippineTime = (utcTimestamp) => {
@@ -311,7 +311,15 @@ export default function PeopleTable({
           <tbody>
             {pagePeople.length > 0 ? (
               pagePeople.map((person, index) => (
-                <tr key={person.id} className={`hover:bg-blue-50 transition ${index % 2 === 1 ? 'bg-slate-50' : ''} border-t-0`}>
+                <tr key={person.id} className={`
+                  transition-colors
+                  ${selectedPeople.includes(person.id)
+                    ? 'bg-[#e8edf7] border-l-4 border-l-[#0f2a71]'
+                    : index % 2 === 1 ? 'bg-slate-50' : ''
+                  }
+                  hover:bg-blue-50
+                  border-t-0
+                `}>
                   <td className="px-3 py-3 border-r border-l text-center w-30">
                     <input
                       type="checkbox"
@@ -414,37 +422,38 @@ export default function PeopleTable({
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center border-r">
-                    {person.registered ? (
-                      <button
-                        onClick={async () => {
-                          const { removeCheckIn } = await import('../services/api');
-                          await removeCheckIn(person.id, profile?.id);
-                        }}
-                        disabled={profile?.role === 'viewer'}
-                        className={`inline-block px-3 py-1 text-xs font-semibold rounded-full transition ${
-                          profile?.role === 'viewer'
-                            ? 'bg-green-700 text-white cursor-not-allowed opacity-50'
-                            : 'bg-green-700 text-white hover:bg-green-800 cursor-pointer active:scale-95'
-                        }`}
-                      >
-                        Checked In
-                      </button>
-                    ) : (
-                      <button
-                        onClick={async () => {
-                          const { checkInPerson } = await import('../services/api');
-                          await checkInPerson(person.id, profile?.id);
-                        }}
-                        disabled={profile?.role === 'viewer'}
-                        className={`inline-block px-3 py-1 text-xs font-semibold rounded-full transition ${
-                          profile?.role === 'viewer'
-                            ? 'bg-yellow-500 text-white cursor-not-allowed opacity-50'
-                            : 'bg-yellow-500 text-white hover:bg-yellow-600 cursor-pointer active:scale-95'
-                        }`}
-                      >
-                        Pending
-                      </button>
-                    )}
+                    <div className="flex items-center justify-center gap-2">
+                      {/* Status Badge (visual indicator only) */}
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full ${
+                        person.registered
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          person.registered ? 'bg-green-600' : 'bg-yellow-600'
+                        }`} />
+                        {person.registered ? 'Checked In' : 'Pending'}
+                      </span>
+
+                      {/* Action Button (toggle status) */}
+                      {profile?.role !== 'viewer' && (
+                        <button
+                          onClick={async () => {
+                            if (person.registered) {
+                              const { removeCheckIn } = await import('../services/api');
+                              await removeCheckIn(person.id, profile?.id);
+                            } else {
+                              const { checkInPerson } = await import('../services/api');
+                              await checkInPerson(person.id, profile?.id);
+                            }
+                          }}
+                          className="p-1 hover:bg-gray-100 rounded transition active:scale-95"
+                          title={person.registered ? 'Remove check-in' : 'Check in'}
+                        >
+                          <RotateCcw size={14} className="text-gray-600" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-left border-r">
                     {person.registered && person.registeredAt ? (

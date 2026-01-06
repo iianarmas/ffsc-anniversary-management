@@ -287,7 +287,7 @@ export default function AdvancedFilterDialog({
   const getResultColor = () => {
     const count = filteredResults.length;
     if (count <= 10) return 'text-white bg-red-600';
-    if (count <= 50) return 'text-white bg-orange-500';
+    if (count <= 50) return 'text-white bg-[#db8916]';
     return 'text-white bg-green-600';
   };
 
@@ -522,20 +522,20 @@ export default function AdvancedFilterDialog({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-modal-backdrop flex items-center justify-center">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm"
         onClick={onClose}
       />
       
       {/* Dialog */}
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col animate-scale-in">
+      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col animate-scale-in z-modal">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-50 rounded-lg">
-              <Filter size={20} className="text-purple-800" />
+            <div className="p-2 bg-[#e8edf7] rounded-lg">
+              <Filter size={20} className="text-[#0f2a71]" />
             </div>
             <div>
               <h2 className="text-xl font-semibold text-[#001740]">Advanced Filters</h2>
@@ -557,7 +557,7 @@ export default function AdvancedFilterDialog({
           {/* Quick Presets */}
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-              <Sparkles size={16} className="text-purple-800" />
+              <Sparkles size={16} className="text-[#0f2a71]" />
               Quick Filters
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -565,7 +565,7 @@ export default function AdvancedFilterDialog({
                 <button
                   key={index}
                   onClick={() => applyPreset(preset)}
-                  className="px-3 py-1.5 bg-gray-50 hover:bg-purple-50 hover:text-purple-700 text-gray-700 rounded-lg text-sm font-medium transition border border-gray-200 hover:border-purple-300"
+                  className="px-3 py-1.5 bg-gray-50 hover:bg-[#e8edf7] hover:text-[#0f2a71] text-gray-700 rounded-lg text-sm font-medium transition border border-gray-200 hover:border-[#0f2a71]"
                 >
                   {preset.name}
                 </button>
@@ -587,7 +587,7 @@ export default function AdvancedFilterDialog({
                       onClick={() => setPaymentStatus(status)}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                         paymentStatus === status
-                          ? 'bg-sky-800 text-white'
+                          ? 'bg-[#0f2a71] text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -607,7 +607,7 @@ export default function AdvancedFilterDialog({
                       onClick={() => setPrintStatus(status)}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                         printStatus === status
-                          ? 'bg-purple-800 text-white'
+                          ? 'bg-[#0f2a71] text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -626,7 +626,7 @@ export default function AdvancedFilterDialog({
                       key={category}
                       className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition ${
                         categories.includes(category)
-                          ? 'bg-green-600 text-white'
+                          ? 'bg-[#0f2a71] text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -651,7 +651,7 @@ export default function AdvancedFilterDialog({
                       key={location}
                       className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition ${
                         locations.includes(location)
-                          ? 'bg-orange-500 text-white'
+                          ? 'bg-[#0f2a71] text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -729,7 +729,7 @@ export default function AdvancedFilterDialog({
                           onClick={() => setDistributionStatus(status)}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                             distributionStatus === status
-                              ? 'bg-green-600 text-white'
+                              ? 'bg-[#0f2a71] text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -749,7 +749,7 @@ export default function AdvancedFilterDialog({
                           onClick={() => setAgeBracket(bracket)}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                             ageBracket === bracket
-                              ? 'bg-blue-600 text-white'
+                              ? 'bg-[#0f2a71] text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -769,7 +769,7 @@ export default function AdvancedFilterDialog({
                           onClick={() => setRegistrationStatus(status)}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                             registrationStatus === status
-                              ? 'bg-indigo-600 text-white'
+                              ? 'bg-[#0f2a71] text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -793,7 +793,7 @@ export default function AdvancedFilterDialog({
                           onClick={() => setAttendanceStatus(option.value)}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                             attendanceStatus === option.value
-                              ? 'bg-teal-600 text-white'
+                              ? 'bg-[#0f2a71] text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -838,7 +838,7 @@ export default function AdvancedFilterDialog({
                           onClick={() => setAgeBracket(bracket)}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                             ageBracket === bracket
-                              ? 'bg-blue-600 text-white'
+                              ? 'bg-[#0f2a71] text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -862,7 +862,7 @@ export default function AdvancedFilterDialog({
                           onClick={() => setAttendanceStatus(option.value)}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                             attendanceStatus === option.value
-                              ? 'bg-teal-600 text-white'
+                              ? 'bg-[#0f2a71] text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -1004,7 +1004,7 @@ export default function AdvancedFilterDialog({
           <div className="mb-6">
             <button
               onClick={() => setShowSaveSection(!showSaveSection)}
-              className="text-sm font-semibold text-purple-800 hover:text-purple-700 flex items-center gap-2 mb-3"
+              className="text-sm font-semibold text-[#0f2a71] hover:text-[#1c3b8d] flex items-center gap-2 mb-3"
             >
               <Save size={16} />
               {showSaveSection ? 'Hide' : 'Save'} This Filter
@@ -1017,12 +1017,12 @@ export default function AdvancedFilterDialog({
                   placeholder="Filter name..."
                   value={filterName}
                   onChange={(e) => setFilterName(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0f2a71]"
                 />
                 <button
                   onClick={handleSaveFilter}
                   disabled={!filterName.trim()}
-                  className="px-4 py-2 bg-purple-800 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-[#0f2a71] text-white rounded-lg text-sm font-medium hover:bg-[#1c3b8d] transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Save
                 </button>
@@ -1042,7 +1042,7 @@ export default function AdvancedFilterDialog({
                   >
                     <button
                       onClick={() => loadSavedFilter(filter)}
-                      className="flex-1 text-left text-sm font-medium text-gray-700 hover:text-purple-600 transition"
+                      className="flex-1 text-left text-sm font-medium text-gray-700 hover:text-[#0f2a71] transition"
                     >
                       {filter.name}
                     </button>
@@ -1082,7 +1082,7 @@ export default function AdvancedFilterDialog({
             </button>
             <button
               onClick={handleApplyFilters}
-              className="flex-1 px-4 py-2.5 bg-purple-800 text-white rounded-lg font-medium hover:bg-purple-700 transition flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 bg-[#0f2a71] text-white rounded-lg font-medium hover:bg-[#1c3b8d] transition flex items-center justify-center gap-2"
             >
               <Filter size={18} />
               Apply Filters
