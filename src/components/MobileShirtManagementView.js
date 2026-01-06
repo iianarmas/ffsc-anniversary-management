@@ -34,6 +34,58 @@ export default function MobileShirtManagementView({
   peopleTaskInfo = {}
 }) {
   const { profile } = useAuth();
+
+  // Helper function to determine shirt category based on shirt size
+  const getShirtCategory = (shirtSize) => {
+    // No shirt size selected yet
+    if (!shirtSize || shirtSize === '' || shirtSize === 'Select Size' || shirtSize === 'None yet') {
+      return 'Unknown';
+    }
+    // Explicitly set to "No shirt"
+    if (shirtSize === 'No shirt') {
+      return '-';
+    }
+
+    // Kids sizes: #4 (XS) 1-2 to #14 (2XL) 11-12
+    const kidsSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12'];
+    if (kidsSizes.includes(shirtSize)) {
+      return 'Kids';
+    }
+
+    // Teen size: TS
+    if (shirtSize === 'TS') {
+      return 'Teen';
+    }
+
+    // Adult sizes: XS to 2XL
+    const adultSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL'];
+    if (adultSizes.includes(shirtSize)) {
+      return 'Adult';
+    }
+
+    return 'Unknown';
+  };
+
+  // Helper function to get mobile-friendly category label with 'Size' suffix
+  const getShirtCategoryLabel = (shirtSize) => {
+    const category = getShirtCategory(shirtSize);
+    if (category === 'Unknown') {
+      return 'Unknown';
+    }
+    if (category === '-') {
+      return '-';
+    }
+    if (category === 'Kids') {
+      return 'Kids Size';
+    }
+    if (category === 'Teen') {
+      return 'Teen Size';
+    }
+    if (category === 'Adult') {
+      return 'Adult Size';
+    }
+    return category;
+  };
   const [showFilters, setShowFilters] = useState(false);
   const [editingPerson, setEditingPerson] = useState(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -592,16 +644,20 @@ export default function MobileShirtManagementView({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleShirtPayment(editingPerson.id);
-                      setEditingPerson({ ...editingPerson, paid: !editingPerson.paid });
+                      const hasValidSize = editingPerson.shirtSize && editingPerson.shirtSize !== 'No shirt' && editingPerson.shirtSize !== 'Select Size' && editingPerson.shirtSize !== 'None yet' && editingPerson.shirtSize !== '';
+                      if (hasValidSize) {
+                        toggleShirtPayment(editingPerson.id);
+                        setEditingPerson({ ...editingPerson, paid: !editingPerson.paid });
+                      }
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
+                    disabled={!editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === ''}
                     className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                       editingPerson.paid
                         ? 'bg-green-600 text-white hover:bg-green-500'
                         : 'bg-red-600 text-white hover:bg-red-500'
-                    }`}
+                    } ${!editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
                     style={{ minHeight: '48px' }}
                   >
                     <DollarSign size={18} />
@@ -610,16 +666,20 @@ export default function MobileShirtManagementView({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleShirtGiven(editingPerson.id);
-                      setEditingPerson({ ...editingPerson, shirtGiven: !editingPerson.shirtGiven });
+                      const hasValidSize = editingPerson.shirtSize && editingPerson.shirtSize !== 'No shirt' && editingPerson.shirtSize !== 'Select Size' && editingPerson.shirtSize !== 'None yet' && editingPerson.shirtSize !== '';
+                      if (hasValidSize) {
+                        toggleShirtGiven(editingPerson.id);
+                        setEditingPerson({ ...editingPerson, shirtGiven: !editingPerson.shirtGiven });
+                      }
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
+                    disabled={!editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === ''}
                     className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                       editingPerson.shirtGiven
                         ? 'bg-green-600 text-white hover:bg-green-700'
                         : 'bg-yellow-500 text-white hover:bg-yellow-400'
-                    }`}
+                    } ${!editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
                     style={{ minHeight: '48px' }}
                   >
                     <Package size={18} />
@@ -631,16 +691,20 @@ export default function MobileShirtManagementView({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleShirtPrint(editingPerson.id);
-                    setEditingPerson({ ...editingPerson, hasPrint: !editingPerson.hasPrint });
+                    const hasValidSize = editingPerson.shirtSize && editingPerson.shirtSize !== 'No shirt' && editingPerson.shirtSize !== 'Select Size' && editingPerson.shirtSize !== 'None yet' && editingPerson.shirtSize !== '';
+                    if (hasValidSize) {
+                      toggleShirtPrint(editingPerson.id);
+                      setEditingPerson({ ...editingPerson, hasPrint: !editingPerson.hasPrint });
+                    }
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
+                  disabled={!editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === ''}
                   className={`w-full py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                     editingPerson.hasPrint
                       ? 'bg-blue-600 text-white hover:bg-blue-700'
                       : 'bg-gray-400 text-white hover:bg-gray-500'
-                  }`}
+                  } ${!editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
                   style={{ minHeight: '48px' }}
                 >
                   <Shirt size={18} />
@@ -791,11 +855,11 @@ export default function MobileShirtManagementView({
                     })()}
                   </div>
                   
-                  {/* Age, Age Bracket, Location, Attendance, and Shirt Size */}
+                  {/* Age, Shirt Category, Location, Attendance, and Shirt Size */}
                   <div className="flex items-center gap-1.5 mt-1.5 text-sm text-gray-600 flex-wrap">
                     <span>{person.age} years old</span>
                     <span className="text-gray-300">•</span>
-                    <span>{person.ageBracket}</span>
+                    <span>{getShirtCategoryLabel(person.shirtSize)}</span>
                     <span className="text-gray-300">•</span>
                     <span>{person.location}</span>
                     {person.attendanceStatus === 'shirt_only' && (
