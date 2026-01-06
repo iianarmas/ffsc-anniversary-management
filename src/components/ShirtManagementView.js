@@ -588,7 +588,7 @@ export default function ShirtManagementView({
                         />
                       </div>
                     </th>
-                    <th className="px-4 py-2 border-r text-left text-sm font-semibold text-gray-700">
+                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Payment Status</span>
                         <FilterDropdown 
