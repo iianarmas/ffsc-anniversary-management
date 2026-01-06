@@ -74,21 +74,12 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
   // Calculate collection statistics
   const collectionStats = useMemo(() => {
     // Only include people with actual shirt sizes (not "No shirt", "Select Size", etc.)
-    const peopleWithShirts = people.filter(p => 
-      p.shirtSize && 
-      p.shirtSize !== 'No shirt' && 
-      p.shirtSize !== 'Select Size' && 
+    const peopleWithShirts = people.filter(p =>
+      p.shirtSize &&
+      p.shirtSize !== 'No shirt' &&
+      p.shirtSize !== 'Select Size' &&
       p.shirtSize !== 'None yet'
     );
-
-    // Debug: Log first person to see data structure
-    if (peopleWithShirts.length > 0) {
-      console.log('First person with shirt:', peopleWithShirts[0]);
-      console.log('Shirt size:', peopleWithShirts[0].shirtSize);
-      console.log('Has print:', peopleWithShirts[0].hasPrint);
-      console.log('Is paid:', peopleWithShirts[0].paid);
-      console.log('Calculated price:', getShirtPrice(peopleWithShirts[0].shirtSize, peopleWithShirts[0].hasPrint, peopleWithShirts[0].paid));
-    }
 
     const totalToCollect = peopleWithShirts.reduce((sum, person) => {
       const price = getShirtPrice(person.shirtSize, person.hasPrint, false);

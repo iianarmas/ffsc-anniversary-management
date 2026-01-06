@@ -76,9 +76,7 @@ export default function TaskNotificationDropdown({ isOpen, onClose, onTaskClick,
     // Filter to only show tasks assigned to current user
     const myOverdue = overdue.filter(task => task.assigned_to_user === profile.id);
     const myToday = today.filter(task => task.assigned_to_user === profile.id);
-    
-    console.log('My overdue tasks:', myOverdue);
-    console.log('My today tasks:', myToday);
+
     setOverdueTasks(myOverdue);
     setTodayTasks(myToday);
     

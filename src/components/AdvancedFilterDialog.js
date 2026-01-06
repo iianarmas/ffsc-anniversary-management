@@ -59,7 +59,7 @@ export default function AdvancedFilterDialog({
           setSavedFilters(filters);
         }
       } catch (error) {
-        console.log('No saved filters found');
+        // No saved filters found
       }
     };
     
