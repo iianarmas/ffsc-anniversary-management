@@ -88,14 +88,14 @@ export default function ActionButtons({
           <>
             <button
               onClick={handleBulkRegister}
-              className="flex items-center gap-2 px-4 py-2 border-2 border-[#0f2a71] hover:border-[#1c3b8d] text-[#0f2a71] hover:text-[#1c3b8d] bg-white rounded-button font-semibold transition-all duration-200 text-sm active:scale-95"
+              className="flex items-center gap-2 px-4 py-2 border border-[#0f2a71] hover:border-[#1c3b8d] text-[#0f2a71] hover:text-[#1c3b8d] bg-white rounded-button font-semibold transition-all duration-200 text-sm active:scale-95"
             >
               <UserPlus size={16} />
               Register
             </button>
             <button
               onClick={handleBulkRemove}
-              className="flex items-center gap-2 px-4 py-2 border-2 border-[#0f2a71] hover:border-[#1c3b8d] text-[#0f2a71] hover:text-[#1c3b8d] bg-white rounded-button font-semibold transition-all duration-200 text-sm active:scale-95"
+              className="flex items-center gap-2 px-4 py-2 border border-[#0f2a71] hover:border-[#1c3b8d] text-[#0f2a71] hover:text-[#1c3b8d] bg-white rounded-button font-semibold transition-all duration-200 text-sm active:scale-95"
             >
               <UserMinus size={16} />
               Remove
@@ -116,16 +116,11 @@ export default function ActionButtons({
           onClick={onOpenAdvancedFilters}
           className={`flex items-center gap-2 px-4 py-2 rounded-button font-semibold transition-all duration-200 text-sm shadow-sm active:scale-95 ${
             advancedFilters
-              ? 'bg-[#0f2a71] text-white hover:bg-[#1c3b8d] hover:shadow-card'
-              : 'bg-white text-[#0f2a71] hover:bg-[#f5f7fb] border-2 border-[#0f2a71]'
+              ? 'bg-[#0f2a71] text-white hover:bg-[#0f2a71]/90 border border-[#0f2a71]'
+              : 'bg-white text-[#0f2a71] hover:bg-[#f5f7fb] border border-[#0f2a71]'
           }`}
         >
           Advanced Filters
-          {advancedFilters && (
-            <span className="ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs font-bold">
-              Active
-            </span>
-          )}
         </button>
 
         {/* Reset Filters */}

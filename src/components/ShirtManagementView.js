@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from './auth/AuthProvider';
 import { canManageShirts } from '../utils/permissions';
@@ -11,6 +11,8 @@ import Pagination from './Pagination';
 import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
 import { getAllPeopleTaskInfo } from '../services/api';
+import { applyFilterGroups } from '../services/filterEngine';
+import { migrateFiltersIfNeeded } from '../utils/filterMigration';
 
 export default function ShirtManagementView({
   people,
@@ -301,129 +303,22 @@ export default function ShirtManagementView({
     );
   };
 
-  // Apply advanced filters to people list
-  const applyAdvancedFilters = (peopleList, filters) => {
-    if (!filters) return peopleList;
+  // Apply advanced filters using the new filter engine
+  // Supports both old filter format (backward compatibility) and new filter group format
+  const filteredPeople = useMemo(() => {
+    if (!advancedFilters) return people;
 
-    return peopleList.filter(person => {
-      // Payment status
-      if (filters.paymentStatus !== 'All') {
-        if (filters.paymentStatus === 'Paid' && !person.paid) return false;
-        if (filters.paymentStatus === 'Unpaid' && person.paid) return false;
-      }
+    try {
+      // Auto-migrate old filter format to new format if needed
+      const migratedFilters = migrateFiltersIfNeeded(advancedFilters);
 
-      // Print status
-      if (filters.printStatus !== 'All') {
-        if (filters.printStatus === 'With Print' && !person.hasPrint) return false;
-        if (filters.printStatus === 'Plain' && person.hasPrint) return false;
-      }
-
-      // Categories (Kids/Teen/Adult based on size)
-      if (filters.categories && filters.categories.length > 0) {
-        const getSizeCategory = (size) => {
-          if (!size || size === 'No shirt' || size === 'Select Size' || size === '') return 'No Order';
-          const kidsSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12'];
-          const teenSizes = ['TS'];
-          if (kidsSizes.includes(size)) return 'Kids';
-          if (teenSizes.includes(size)) return 'Teen';
-          return 'Adult';
-        };
-        const category = getSizeCategory(person.shirtSize);
-        if (!filters.categories.includes(category)) return false;
-      }
-
-      // Locations
-      if (filters.locations && filters.locations.length > 0) {
-        if (!filters.locations.includes(person.location)) return false;
-      }
-
-      // Amount range
-      if (filters.amountMin !== '' || filters.amountMax !== '') {
-        const getShirtPrice = (p) => {
-          if (!p.shirtSize || p.shirtSize === 'No shirt' || p.shirtSize === 'Select Size' || p.shirtSize === '') return 0;
-          const SHIRT_PRICING = {
-            plain: {
-              '#4 (XS) 1-2': 86, '#6 (S) 3-4': 89, '#8 (M) 5-6': 92, '#10 (L) 7-8': 94,
-              '#12 (XL) 9-10': 97, '#14 (2XL) 11-12': 99, 'TS': 105, 'XS': 109,
-              'S': 115, 'M': 119, 'L': 123, 'XL': 127, '2XL': 131
-            },
-            withPrint: {
-              '#4 (XS) 1-2': 220, '#6 (S) 3-4': 220, '#8 (M) 5-6': 220, '#10 (L) 7-8': 220,
-              '#12 (XL) 9-10': 220, '#14 (2XL) 11-12': 220, 'TS': 220, 'XS': 240,
-              'S': 240, 'M': 240, 'L': 240, 'XL': 240, '2XL': 240
-            }
-          };
-          if (p.hasPrint) return SHIRT_PRICING.withPrint[p.shirtSize] || 0;
-          return SHIRT_PRICING.plain[p.shirtSize] || 0;
-        };
-        const price = getShirtPrice(person);
-        const min = parseFloat(filters.amountMin) || 0;
-        const max = parseFloat(filters.amountMax) || Infinity;
-        if (price < min || price > max) return false;
-      }
-
-      // Name search
-      if (filters.nameSearch && filters.nameSearch !== '') {
-        const fullName = `${person.firstName} ${person.lastName}`.toLowerCase();
-        if (!fullName.includes(filters.nameSearch.toLowerCase())) return false;
-      }
-
-      // Task/Notes filters
-      const taskInfo = peopleTaskInfo[person.id] || {};
-      if (filters.hasNotes && !taskInfo.hasNotes) return false;
-      if (filters.hasTasks && !taskInfo.hasTasks) return false;
-      if (filters.hasOverdueTasks) {
-        if (!taskInfo.hasTasks || taskInfo.incompleteTasksCount === 0) return false;
-      }
-
-      // Missing contact
-      if (filters.missingContact && person.contactNumber) return false;
-
-      // === SHIRT-SPECIFIC FILTERS ===
-      // Shirt size
-      if (filters.shirtSize && filters.shirtSize !== 'All') {
-        if (person.shirtSize !== filters.shirtSize) return false;
-      }
-
-      // Distribution status
-      if (filters.distributionStatus && filters.distributionStatus !== 'All') {
-        if (filters.distributionStatus === 'Given' && !person.shirtGiven) return false;
-        if (filters.distributionStatus === 'Pending' && person.shirtGiven) return false;
-      }
-
-      // Age bracket
-      if (filters.ageBracket && filters.ageBracket !== 'All') {
-        if (person.ageBracket !== filters.ageBracket) return false;
-      }
-
-      // Registration status
-      if (filters.registrationStatus && filters.registrationStatus !== 'All') {
-        const hasRegistration = person.registrationStatus === 'Registered' || person.checkInStatus === 'Checked In';
-        if (filters.registrationStatus === 'Registered' && !hasRegistration) return false;
-        if (filters.registrationStatus === 'Not Registered' && hasRegistration) return false;
-      }
-
-      // Attendance status
-      if (filters.attendanceStatus && filters.attendanceStatus !== 'All') {
-        if (filters.attendanceStatus === 'attending' && person.attendanceStatus !== 'attending') return false;
-        if (filters.attendanceStatus === 'shirt_only' && person.attendanceStatus !== 'shirt_only') return false;
-      }
-
-      // Missing size
-      if (filters.missingSize) {
-        const hasMissingSize = !person.shirtSize || 
-                               person.shirtSize === '' || 
-                               person.shirtSize === 'Select Size' || 
-                               person.shirtSize === 'None yet';
-        if (!hasMissingSize) return false;
-      }
-
-      return true;
-    });
-  };
-
-  // Apply advanced filters first, then paginate
-  const filteredPeople = applyAdvancedFilters(people, advancedFilters);
+      // Use the new filter engine to apply filters
+      return applyFilterGroups(people, migratedFilters, peopleTaskInfo);
+    } catch (error) {
+      console.error('Error applying filters:', error);
+      return people;
+    }
+  }, [people, advancedFilters, peopleTaskInfo]);
 
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { DollarSign, TrendingUp, AlertCircle, Download, Filter, Search, StickyNote, CheckSquare, X } from 'lucide-react';
+import { DollarSign, TrendingUp, AlertCircle, Download, Search, StickyNote, CheckSquare, X } from 'lucide-react';
 import Header from './Header';
 import NotesDialog from './NotesDialog';
 import AdvancedFilterDialog from './AdvancedFilterDialog.js';
@@ -487,23 +487,22 @@ const filteredPeople = useMemo(() => {
           </button>
 
           <button
+            onClick={() => setIsAdvancedFilterOpen(true)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors border ${
+              advancedFilters
+                ? 'bg-[#0f2a71] text-white border-[#0f2a71] hover:bg-[#0f2a71]/90'
+                : 'bg-white text-[#0f2a71] border-[#0f2a71] hover:bg-gray-50'
+            }`}
+          >
+            Advanced Filters
+          </button>
+
+          <button
             onClick={handleExport}
             className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
           >
             <Download size={18} />
             Export CSV
-          </button>
-                    <button
-            onClick={() => setIsAdvancedFilterOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-800 text-white rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            <Filter size={18} />
-            Advanced
-            {advancedFilters && (
-              <span className="ml-1 px-2 py-0.5 bg-purple-700 rounded-full text-xs font-bold">
-                ON
-              </span>
-            )}
           </button>
         </div>
       </div>
