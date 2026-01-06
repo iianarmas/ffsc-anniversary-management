@@ -55,15 +55,15 @@ export default function QueryBuilderMain({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Filter className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Query Builder</h3>
+          <Filter className="w-5 h-5 text-[#0f2a71]" />
+          <h3 className="text-lg font-semibold text-[#0f2a71]">Query Builder</h3>
         </div>
 
         {/* Reset Button */}
         {hasActiveFilters && (
           <button
             onClick={handleReset}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-[#0f2a71] hover:bg-gray-100 rounded-md transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
             Reset
@@ -86,11 +86,11 @@ export default function QueryBuilderMain({
 
       {/* Preview */}
       {showPreview && (
-        <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+        <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Preview</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-[#0f2a71]">Preview</p>
+              <p className="text-2xl font-bold text-[#0f2a71]">
                 {matchedCount.toLocaleString()}
                 <span className="text-sm font-normal text-gray-600 ml-2">
                   / {people.length.toLocaleString()} people
@@ -100,8 +100,8 @@ export default function QueryBuilderMain({
 
             {/* Percentage Indicator */}
             <div className="text-right">
-              <p className="text-sm text-gray-600">Match Rate</p>
-              <p className="text-xl font-semibold text-blue-600">
+              <p className="text-sm text-[#0f2a71]">Match Rate</p>
+              <p className="text-xl font-semibold text-[#0f2a71]">
                 {people.length > 0
                   ? Math.round((matchedCount / people.length) * 100)
                   : 0}%
@@ -112,7 +112,7 @@ export default function QueryBuilderMain({
           {/* Progress Bar */}
           <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+              className="h-full bg-[#0f2a71] transition-all duration-300"
               style={{
                 width: people.length > 0
                   ? `${(matchedCount / people.length) * 100}%`
@@ -124,8 +124,8 @@ export default function QueryBuilderMain({
       )}
 
       {/* Help Text */}
-      <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-xs text-blue-800">
+      <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <p className="text-xs text-[#0f2a71]">
           💡 <strong>Tip:</strong> Use <strong>AND</strong> when all conditions must be true.
           Use <strong>OR</strong> when any condition can be true.
           You can nest groups for complex queries like: (A AND B) OR (C AND D)

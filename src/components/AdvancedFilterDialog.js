@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { X, Filter } from 'lucide-react';
-import ActionPresetsPanel from './ActionPresets/ActionPresetsPanel';
 import SavedViewsPanel from './SavedViews/SavedViewsPanel';
 import SaveViewDialog from './SavedViews/SaveViewDialog';
 import QueryBuilderMain from './FilterQueryBuilder/QueryBuilderMain';
@@ -10,36 +9,40 @@ import { supabase } from '../services/supabase';
 
 /**
  * Enhanced Advanced Filter Dialog
- * Integrates action presets, query builder, and saved views
+ * Query builder and saved views for filtering
  */
 export default function AdvancedFilterDialog({
   isOpen,
   onClose,
   onApplyFilters,
+  onClearFilters,
   people = [],
   viewType = 'collections',
-  peopleTaskInfo = {}
+  peopleTaskInfo = {},
+  initialFilters = null
 }) {
-  // Mode toggle: 'simple' or 'advanced'
-  const [mode, setMode] = useState('simple');
-
   // Filter state - using new filter group format
-  const [filterGroup, setFilterGroup] = useState({
-    id: `group_${Date.now()}`,
-    operator: 'AND',
-    conditions: [],
-    nestedGroups: [],
+  // Initialize with initialFilters if provided, otherwise use empty filter
+  const [filterGroup, setFilterGroup] = useState(() => {
+    if (initialFilters && (initialFilters.conditions || initialFilters.operator)) {
+      return initialFilters;
+    }
+    return {
+      id: `group_${Date.now()}`,
+      operator: 'AND',
+      conditions: [],
+      nestedGroups: [],
+    };
   });
-
-  // Legacy simple mode filters
-  const [simpleFilters, setSimpleFilters] = useState({});
 
   // UI states
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [editingView, setEditingView] = useState(null);
-  const [activePresetId, setActivePresetId] = useState(null);
   const [activeViewId, setActiveViewId] = useState(null);
   const [userId, setUserId] = useState(null);
+
+  // Ref for SavedViewsPanel to refresh after save
+  const savedViewsPanelRef = useRef(null);
 
   // Get current user ID
   useEffect(() => {
@@ -55,37 +58,19 @@ export default function AdvancedFilterDialog({
     }
   }, [isOpen]);
 
-  // Reset state when dialog closes
+  // Sync with initialFilters when dialog opens
   useEffect(() => {
-    if (!isOpen) {
-      setMode('simple');
-      setActivePresetId(null);
-      setActiveViewId(null);
-      setSimpleFilters({});
-      setFilterGroup({
-        id: `group_${Date.now()}`,
-        operator: 'AND',
-        conditions: [],
-        nestedGroups: [],
-      });
+    if (isOpen && initialFilters && (initialFilters.conditions !== undefined || initialFilters.operator !== undefined)) {
+      setFilterGroup(initialFilters);
     }
-  }, [isOpen]);
-
-  const handlePresetSelect = (preset) => {
-    setActivePresetId(preset.id);
-    setActiveViewId(null);
-    setFilterGroup(preset.filterConfig);
-    setMode('advanced'); // Switch to advanced mode to show the query builder
-  };
+  }, [isOpen, initialFilters]);
 
   const handleViewSelect = (view) => {
     setActiveViewId(view.id);
-    setActivePresetId(null);
 
     // Migrate old filter format if needed
     const migratedFilters = migrateFiltersIfNeeded(view.filters);
     setFilterGroup(migratedFilters);
-    setMode('advanced');
   };
 
   const handleSaveView = async (viewData) => {
@@ -110,6 +95,11 @@ export default function AdvancedFilterDialog({
 
       setShowSaveDialog(false);
       setEditingView(null);
+
+      // Refresh saved views list to show the newly saved/updated view
+      if (savedViewsPanelRef.current) {
+        savedViewsPanelRef.current.refresh();
+      }
     } catch (error) {
       console.error('Error saving view:', error);
       throw error;
@@ -122,34 +112,30 @@ export default function AdvancedFilterDialog({
   };
 
   const handleApply = () => {
-    if (mode === 'advanced') {
-      // Apply advanced filter group
-      onApplyFilters(filterGroup);
-    } else {
-      // Apply simple filters (legacy format)
-      onApplyFilters(simpleFilters);
-    }
+    // Always apply advanced filter group
+    onApplyFilters(filterGroup);
     onClose();
   };
 
   const handleClear = () => {
-    setFilterGroup({
+    const emptyFilter = {
       id: `group_${Date.now()}`,
       operator: 'AND',
       conditions: [],
       nestedGroups: [],
-    });
-    setSimpleFilters({});
-    setActivePresetId(null);
+    };
+    setFilterGroup(emptyFilter);
     setActiveViewId(null);
+
+    // Notify parent to clear filters
+    if (onClearFilters) {
+      onClearFilters();
+    }
   };
 
   const hasActiveFilters = useMemo(() => {
-    if (mode === 'advanced') {
-      return filterGroup.conditions.length > 0 || filterGroup.nestedGroups?.length > 0;
-    }
-    return Object.keys(simpleFilters).length > 0;
-  }, [mode, filterGroup, simpleFilters]);
+    return filterGroup.conditions.length > 0 || filterGroup.nestedGroups?.length > 0;
+  }, [filterGroup]);
 
   if (!isOpen) return null;
 
@@ -158,93 +144,41 @@ export default function AdvancedFilterDialog({
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[95vh] flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <div className="flex items-center gap-3">
-              <Filter className="w-6 h-6 text-blue-600" />
-              <h1 className="text-xl font-semibold text-gray-900">Advanced Filters</h1>
+              <Filter className="w-5 h-5 text-[#0f2a71]" />
+              <h1 className="text-xl font-semibold text-[#0f2a71]">Advanced Filters</h1>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Mode Toggle */}
-              <div className="inline-flex rounded-md">
-                <button
-                  onClick={() => setMode('simple')}
-                  className={`
-                    px-4 py-2 text-sm font-medium rounded-l-md border transition-colors
-                    ${mode === 'simple'
-                      ? 'bg-[#0f2a71] text-white border-[#0f2a71]'
-                      : 'bg-white text-[#0f2a71] border-[#0f2a71] hover:bg-gray-50'
-                    }
-                  `}
-                >
-                  Simple
-                </button>
-                <button
-                  onClick={() => setMode('advanced')}
-                  className={`
-                    px-4 py-2 text-sm font-medium rounded-r-md border-t border-r border-b transition-colors
-                    ${mode === 'advanced'
-                      ? 'bg-[#0f2a71] text-white border-[#0f2a71]'
-                      : 'bg-white text-[#0f2a71] border-[#0f2a71] hover:bg-gray-50'
-                    }
-                  `}
-                >
-                  Query Builder
-                </button>
-              </div>
-
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-200 rounded-md transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
           </div>
 
           {/* Content */}
           <div className="flex-1 overflow-hidden flex">
             {/* Main Content Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Action Presets Section */}
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4">
-                <ActionPresetsPanel
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+              {/* Query Builder */}
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <QueryBuilderMain
+                  filterGroup={filterGroup}
+                  onChange={setFilterGroup}
+                  viewType={viewType}
                   people={people}
                   peopleTaskInfo={peopleTaskInfo}
-                  onPresetSelect={handlePresetSelect}
-                  activePresetId={activePresetId}
+                  showPreview={true}
                 />
               </div>
-
-              {/* Filter Builder Section */}
-              {mode === 'simple' ? (
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Filter className="w-5 h-5 text-blue-600" />
-                    <h2 className="text-lg font-semibold text-gray-900">Simple Filters</h2>
-                  </div>
-                  <p className="text-gray-600">
-                    Simple filter UI coming soon. For now, use Query Builder mode or Action Presets above.
-                  </p>
-                  {/* TODO: Implement simple filter UI that maintains backward compatibility */}
-                </div>
-              ) : (
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <QueryBuilderMain
-                    filterGroup={filterGroup}
-                    onChange={setFilterGroup}
-                    viewType={viewType}
-                    people={people}
-                    peopleTaskInfo={peopleTaskInfo}
-                    showPreview={true}
-                  />
-                </div>
-              )}
             </div>
 
             {/* Sidebar - Saved Views */}
-            <div className="w-80 border-l border-gray-200 bg-gray-50 overflow-y-auto p-4">
+            <div className="w-80 border-l border-gray-200 bg-white overflow-y-auto p-4">
               <SavedViewsPanel
+                ref={savedViewsPanelRef}
                 viewType={viewType}
                 people={people}
                 peopleTaskInfo={peopleTaskInfo}
@@ -261,10 +195,10 @@ export default function AdvancedFilterDialog({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between p-4 border-t border-gray-200">
             <button
               onClick={handleClear}
-              className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-md transition-colors"
+              className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
             >
               Clear All
             </button>
@@ -273,14 +207,14 @@ export default function AdvancedFilterDialog({
               <button
                 onClick={() => setShowSaveDialog(true)}
                 disabled={!hasActiveFilters}
-                className="px-4 py-2 text-sm bg-white border border-[#0f2a71] text-[#0f2a71] rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Save View
               </button>
 
               <button
                 onClick={handleApply}
-                className="px-6 py-2 text-sm bg-[#0f2a71] text-white border border-[#0f2a71] rounded-md hover:bg-[#0f2a71]/90 transition-colors"
+                className="px-6 py-2 text-sm bg-[#0f2a71] text-white rounded-md hover:bg-[#0f2a71]/90 transition-colors"
               >
                 Apply Filters
               </button>

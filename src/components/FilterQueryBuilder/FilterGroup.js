@@ -103,14 +103,10 @@ export default function FilterGroup({
     });
   };
 
-  const operatorColor = group.operator === 'OR' ? 'purple' : 'blue';
-  const borderColor = group.operator === 'OR' ? 'border-purple-300' : 'border-blue-300';
-  const bgColor = group.operator === 'OR' ? 'bg-purple-50' : 'bg-blue-50';
-
   return (
     <div
       className={`
-        p-4 rounded-lg border-2 ${borderColor} ${bgColor}
+        p-4 rounded-lg border border-gray-300 bg-gray-50
         ${isNested ? 'ml-4' : ''}
       `}
     >
@@ -124,7 +120,7 @@ export default function FilterGroup({
               className={`
                 px-4 py-2 text-sm font-medium rounded-l-md border transition-colors
                 ${group.operator === 'AND'
-                  ? 'bg-blue-600 text-white border-blue-600'
+                  ? 'bg-[#0f2a71] text-white border-[#0f2a71]'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                 }
               `}
@@ -136,7 +132,7 @@ export default function FilterGroup({
               className={`
                 px-4 py-2 text-sm font-medium rounded-r-md border-t border-r border-b transition-colors
                 ${group.operator === 'OR'
-                  ? 'bg-purple-600 text-white border-purple-600'
+                  ? 'bg-[#0f2a71] text-white border-[#0f2a71]'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                 }
               `}

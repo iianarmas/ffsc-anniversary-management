@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { BookmarkCheck, Search, Plus } from 'lucide-react';
 import SavedViewCard from './SavedViewCard';
+import ConfirmDialog from '../ConfirmDialog';
 import { getSavedViews, updateViewUsage, toggleFavorite, deleteSavedView } from '../../services/savedViews';
 import { applyFilterGroups } from '../../services/filterEngine';
 
@@ -8,7 +9,7 @@ import { applyFilterGroups } from '../../services/filterEngine';
  * SavedViewsPanel Component
  * Displays and manages saved filter views
  */
-export default function SavedViewsPanel({
+const SavedViewsPanel = React.forwardRef(function SavedViewsPanel({
   viewType = 'collections',
   people = [],
   peopleTaskInfo = {},
@@ -17,10 +18,12 @@ export default function SavedViewsPanel({
   onCreateNew,
   onEditView,
   activeViewId = null,
-}) {
+}, ref) {
   const [savedViews, setSavedViews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [viewToDelete, setViewToDelete] = useState(null);
 
   // Load saved views
   useEffect(() => {
@@ -41,6 +44,11 @@ export default function SavedViewsPanel({
 
     setLoading(false);
   };
+
+  // Expose refresh method to parent via ref
+  React.useImperativeHandle(ref, () => ({
+    refresh: loadSavedViews
+  }));
 
   // Calculate counts for all saved views
   const viewCounts = useMemo(() => {
@@ -108,27 +116,32 @@ export default function SavedViewsPanel({
     }
   };
 
-  const handleDeleteView = async (view) => {
-    if (!window.confirm(`Delete "${view.name}"? This cannot be undone.`)) {
-      return;
-    }
+  const handleDeleteView = (view) => {
+    setViewToDelete(view);
+    setDeleteConfirmOpen(true);
+  };
 
-    const { success, error } = await deleteSavedView(view.id);
+  const confirmDelete = async () => {
+    if (!viewToDelete) return;
+
+    const { success, error } = await deleteSavedView(viewToDelete.id);
 
     if (error) {
       console.error('Error deleting view:', error);
       alert('Failed to delete view. Please try again.');
     } else {
       // Remove from local state
-      setSavedViews(prev => prev.filter(v => v.id !== view.id));
+      setSavedViews(prev => prev.filter(v => v.id !== viewToDelete.id));
     }
+
+    setViewToDelete(null);
   };
 
   if (loading) {
     return (
       <div className="saved-views-panel p-4">
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0f2a71]"></div>
         </div>
       </div>
     );
@@ -139,14 +152,14 @@ export default function SavedViewsPanel({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <BookmarkCheck className="w-5 h-5 text-blue-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Saved Views</h2>
+          <BookmarkCheck className="w-5 h-5 text-[#0f2a71]" />
+          <h2 className="text-lg font-semibold text-[#0f2a71]">Saved Views</h2>
         </div>
 
         {/* Create New Button */}
         <button
           onClick={onCreateNew}
-          className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-[#0f2a71] text-white rounded-md hover:bg-[#0f2a71]/90 transition-colors"
           title="Create new saved view"
         >
           <Plus className="w-4 h-4" />
@@ -163,7 +176,7 @@ export default function SavedViewsPanel({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search saved views..."
-            className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0f2a71] text-sm"
           />
         </div>
       )}
@@ -173,7 +186,7 @@ export default function SavedViewsPanel({
         {/* Favorites */}
         {groupedViews.favorites.length > 0 && (
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+            <h3 className="text-sm font-medium text-[#0f2a71] mb-2 flex items-center gap-1">
               <BookmarkCheck className="w-4 h-4" />
               Favorites
             </h3>
@@ -198,7 +211,7 @@ export default function SavedViewsPanel({
         {/* My Views */}
         {groupedViews.myViews.length > 0 && (
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2">My Views</h3>
+            <h3 className="text-sm font-medium text-[#0f2a71] mb-2">My Views</h3>
             <div className="space-y-2">
               {groupedViews.myViews.map(view => (
                 <SavedViewCard
@@ -220,7 +233,7 @@ export default function SavedViewsPanel({
         {/* Team Views */}
         {groupedViews.teamViews.length > 0 && (
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Team Views</h3>
+            <h3 className="text-sm font-medium text-[#0f2a71] mb-2">Team Views</h3>
             <div className="space-y-2">
               {groupedViews.teamViews.map(view => (
                 <SavedViewCard
@@ -247,7 +260,7 @@ export default function SavedViewsPanel({
           <p className="mb-2">No saved views yet</p>
           <button
             onClick={onCreateNew}
-            className="inline-flex items-center gap-1 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-1 px-4 py-2 text-sm bg-[#0f2a71] text-white rounded-md hover:bg-[#0f2a71]/90 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Create Your First View
@@ -262,6 +275,23 @@ export default function SavedViewsPanel({
           <p>No views match "{searchQuery}"</p>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setViewToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Delete Saved View"
+        message={`Are you sure you want to delete "${viewToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </div>
   );
-}
+});
+
+export default SavedViewsPanel;

@@ -11,6 +11,7 @@ import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
 import { getAllPeopleTaskInfo } from '../services/api';
 import AdvancedFilterDialog from './AdvancedFilterDialog';
+import { applyFilterGroups } from '../services/filterEngine';
 
 export default function RegistrationView({ 
   searchTerm,
@@ -136,10 +137,14 @@ export default function RegistrationView({
   const advancedFilteredPeople = useMemo(() => {
     if (!advancedFilters) return filteredAndSortedPeople;
 
-    return filteredAndSortedPeople.filter(person => {
-      // All the same filters from Collections/Shirts views that are relevant
-      // Plus registration-specific filters from AdvancedFilterDialog
+    // Check if it's the new filter group format
+    if (advancedFilters.conditions !== undefined || advancedFilters.operator !== undefined) {
+      // Use new filter engine
+      return applyFilterGroups(filteredAndSortedPeople, advancedFilters, peopleTaskInfo);
+    }
 
+    // Legacy filter format - keep old logic for backward compatibility
+    return filteredAndSortedPeople.filter(person => {
       // Payment status
       if (advancedFilters.paymentStatus !== 'All') {
         if (advancedFilters.paymentStatus === 'Paid' && !person.paid) return false;
@@ -512,11 +517,14 @@ useEffect(() => {
         onClose={() => setIsAdvancedFilterOpen(false)}
         onApplyFilters={(filters) => {
           setAdvancedFilters(filters);
-          setIsAdvancedFilterOpen(false);
+        }}
+        onClearFilters={() => {
+          setAdvancedFilters(null);
         }}
         people={filteredAndSortedPeople}
         viewType="registration"
         peopleTaskInfo={peopleTaskInfo}
+        initialFilters={advancedFilters}
       />
 
       </div>

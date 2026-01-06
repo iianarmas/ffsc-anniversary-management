@@ -933,11 +933,14 @@ export default function ShirtManagementView({
         onClose={() => setIsAdvancedFilterOpen(false)}
         onApplyFilters={(filters) => {
           setAdvancedFilters(filters);
-          setIsAdvancedFilterOpen(false);
+        }}
+        onClearFilters={() => {
+          setAdvancedFilters(null);
         }}
         people={people}
         viewType="shirts"
         peopleTaskInfo={peopleTaskInfo}
+        initialFilters={advancedFilters}
       />
 
       <style>{`
