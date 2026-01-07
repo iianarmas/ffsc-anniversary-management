@@ -106,7 +106,7 @@ export default function FilterGroup({
   return (
     <div
       className={`
-        p-4 rounded-lg border border-gray-300 bg-gray-50
+        relative p-4 rounded-lg border border-gray-300 bg-gray-50
         ${isNested ? 'ml-4' : ''}
       `}
     >

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Shirt, Menu, X, BarChart3, ChevronRight, Plus, CheckSquare, Shield, Home, DollarSign } from 'lucide-react';
+import { Users, Shirt, Menu, X, BarChart3, ChevronRight, Plus, CheckSquare, Shield, Home, DollarSign, Settings } from 'lucide-react';
 
 export default function Sidebar({ currentView, setCurrentView, onAddPersonClick, taskStats, userProfile }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -12,7 +12,10 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
     { id: 'registration', label: 'Registration', icon: Users },
     { id: 'shirts', label: 'Shirt Management', icon: Shirt },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, badge: taskStats?.incomplete || 0 },
-    ...(userProfile?.role === 'admin' ? [{ id: 'users', label: 'Manage Users', icon: Shield }] : []),
+    ...(userProfile?.role === 'admin' ? [
+      { id: 'users', label: 'Manage Users', icon: Shield },
+      { id: 'system-settings', label: 'System Settings', icon: Settings }
+    ] : []),
   ].filter(item => item.id || item.showDividerAfter); // Filter out empty objects
 
   return (

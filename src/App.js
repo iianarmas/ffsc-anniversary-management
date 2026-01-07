@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './components/auth/AuthProvider';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { SystemSettingsProvider } from './components/SystemSettingsProvider';
 import LoginPage from './components/auth/LoginPage';
 import RegisterPage from './components/auth/RegisterPage';
 import Header from './components/Header';
@@ -16,6 +17,7 @@ import LoadingOverlay from './components/LoadingOverlay';
 import TasksView from './components/TasksView';
 import MobileTasksView from './components/MobileTasksView';
 import UserManagement from './components/admin/UserManagement';
+import SystemSettings from './components/admin/SystemSettings';
 import ProfileSettings from './components/ProfileSettings';
 import HomePage from './components/HomePage';
 import WelcomeModal from './components/WelcomeModal';
@@ -884,6 +886,10 @@ useEffect(() => {
           <UserManagement />
         )}
 
+        {currentView === 'system-settings' && profile?.role === 'admin' && (
+          <SystemSettings />
+        )}
+
         {currentView === 'profile' && (
           <ProfileSettings />
         )}
@@ -1022,24 +1028,26 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          
-          {/* Protected routes - all app content */}
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute>
-                <AppContent />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Redirect root to home */}
-          <Route path="/" element={<Navigate to="/home" replace />} />
-        </Routes>
+        <SystemSettingsProvider>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+
+            {/* Protected routes - all app content */}
+            <Route
+              path="/*"
+              element={
+                <ProtectedRoute>
+                  <AppContent />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Redirect root to home */}
+            <Route path="/" element={<Navigate to="/home" replace />} />
+          </Routes>
+        </SystemSettingsProvider>
       </AuthProvider>
     </Router>
   );

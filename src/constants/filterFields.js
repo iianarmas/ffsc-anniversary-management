@@ -74,56 +74,53 @@ export const OPERATORS = {
 
 /**
  * Filter field categories for grouping in UI
+ * Order matters - categories appear in this order in the UI
  */
 export const FILTER_CATEGORIES = {
   PAYMENT: 'Payment & Amount',
   SHIRT: 'Shirt Details',
-  LOCATION: 'Location & Category',
-  CONTACT: 'Contact & Notes',
   REGISTRATION: 'Registration',
   ATTENDANCE: 'Attendance',
+  LOCATION: 'Location & Age',
+  CONTACT: 'Contact & Notes',
 };
 
 /**
- * Common filter fields across all views
+ * Category display order for each view type
+ * This determines which categories appear first in the field selector
+ */
+export const CATEGORY_ORDER_BY_VIEW = {
+  registration: [
+    'Registration',
+    'Attendance',
+    'Location & Age',
+    'Contact & Notes',
+  ],
+  shirts: [
+    'Shirt Details',
+    'Payment & Amount',
+    'Attendance',
+    'Location & Age',
+    'Contact & Notes',
+  ],
+  collections: [
+    'Payment & Amount',
+    'Shirt Details',
+    'Location & Age',
+    'Contact & Notes',
+  ],
+};
+
+/**
+ * Common filter fields - Name and Contact fields available in all views
  */
 export const COMMON_FILTER_FIELDS = {
-  paymentStatus: {
-    label: 'Payment Status',
-    type: FIELD_TYPES.SELECT,
-    category: FILTER_CATEGORIES.PAYMENT,
-    options: [
-      { value: 'paid', label: 'Paid' },
-      { value: 'unpaid', label: 'Unpaid' },
-    ],
-    defaultOperator: OPERATORS.EQUALS,
-    availableOperators: [OPERATORS.EQUALS, OPERATORS.NOT_EQUALS],
-  },
-
-  printStatus: {
-    label: 'Print Status',
-    type: FIELD_TYPES.SELECT,
-    category: FILTER_CATEGORIES.SHIRT,
-    options: [
-      { value: 'withPrint', label: 'With Print' },
-      { value: 'plain', label: 'Plain' },
-    ],
-    defaultOperator: OPERATORS.EQUALS,
-    availableOperators: [OPERATORS.EQUALS, OPERATORS.NOT_EQUALS],
-  },
-
-  categories: {
-    label: 'Category (Kids/Teen/Adult)',
-    type: FIELD_TYPES.MULTI_SELECT,
-    category: FILTER_CATEGORIES.LOCATION,
-    options: [
-      { value: 'Kids', label: 'Kids' },
-      { value: 'Teen', label: 'Teen' },
-      { value: 'Adult', label: 'Adult' },
-      { value: 'No Order', label: 'No Order' },
-    ],
-    defaultOperator: OPERATORS.IN,
-    availableOperators: [OPERATORS.IN, OPERATORS.NOT_IN],
+  name: {
+    label: 'Name',
+    type: FIELD_TYPES.TEXT,
+    category: FILTER_CATEGORIES.CONTACT,
+    defaultOperator: OPERATORS.CONTAINS,
+    availableOperators: [OPERATORS.CONTAINS, OPERATORS.NOT_CONTAINS, OPERATORS.STARTS_WITH, OPERATORS.ENDS_WITH, OPERATORS.EQUALS],
   },
 
   location: {
@@ -132,32 +129,12 @@ export const COMMON_FILTER_FIELDS = {
     category: FILTER_CATEGORIES.LOCATION,
     options: [
       { value: 'Main', label: 'Main' },
-      { value: 'Annex 2', label: 'Annex 2' },
-      { value: 'Annex 3', label: 'Annex 3' },
-      { value: 'Online', label: 'Online' },
-      { value: 'Other', label: 'Other' },
+      { value: 'Cobol', label: 'Cobol' },
+      { value: 'Malacañang', label: 'Malacañang' },
+      { value: 'Guest', label: 'Guest' },
     ],
     defaultOperator: OPERATORS.IN,
     availableOperators: [OPERATORS.IN, OPERATORS.NOT_IN],
-  },
-
-  amount: {
-    label: 'Amount',
-    type: FIELD_TYPES.RANGE,
-    category: FILTER_CATEGORIES.PAYMENT,
-    min: 0,
-    max: 300,
-    step: 1,
-    defaultOperator: OPERATORS.BETWEEN,
-    availableOperators: [OPERATORS.BETWEEN, OPERATORS.GREATER_THAN, OPERATORS.LESS_THAN, OPERATORS.EQUALS],
-  },
-
-  name: {
-    label: 'Name',
-    type: FIELD_TYPES.TEXT,
-    category: FILTER_CATEGORIES.CONTACT,
-    defaultOperator: OPERATORS.CONTAINS,
-    availableOperators: [OPERATORS.CONTAINS, OPERATORS.NOT_CONTAINS, OPERATORS.STARTS_WITH, OPERATORS.ENDS_WITH, OPERATORS.EQUALS],
   },
 
   hasNotes: {
@@ -194,20 +171,110 @@ export const COMMON_FILTER_FIELDS = {
 };
 
 /**
- * Shirt-specific filter fields
+ * Collections view filter fields (Payment & Shirt details for collection)
+ */
+export const COLLECTIONS_FILTER_FIELDS = {
+  paymentStatus: {
+    label: 'Payment Status',
+    type: FIELD_TYPES.SELECT,
+    category: FILTER_CATEGORIES.PAYMENT,
+    options: [
+      { value: 'paid', label: 'Paid' },
+      { value: 'unpaid', label: 'Unpaid' },
+    ],
+    defaultOperator: OPERATORS.EQUALS,
+    availableOperators: [OPERATORS.EQUALS, OPERATORS.NOT_EQUALS],
+  },
+
+  printStatus: {
+    label: 'Print Status',
+    type: FIELD_TYPES.SELECT,
+    category: FILTER_CATEGORIES.SHIRT,
+    options: [
+      { value: 'withPrint', label: 'With Print' },
+      { value: 'plain', label: 'Plain' },
+    ],
+    defaultOperator: OPERATORS.EQUALS,
+    availableOperators: [OPERATORS.EQUALS, OPERATORS.NOT_EQUALS],
+  },
+
+  shirtCategory: {
+    label: 'Shirt Category',
+    type: FIELD_TYPES.MULTI_SELECT,
+    category: FILTER_CATEGORIES.SHIRT,
+    options: [
+      { value: 'Kids', label: 'Kids' },
+      { value: 'Teen', label: 'Teen' },
+      { value: 'Adult', label: 'Adult' },
+    ],
+    defaultOperator: OPERATORS.IN,
+    availableOperators: [OPERATORS.IN, OPERATORS.NOT_IN],
+  },
+
+  amount: {
+    label: 'Amount',
+    type: FIELD_TYPES.RANGE,
+    category: FILTER_CATEGORIES.PAYMENT,
+    min: 0,
+    max: 300,
+    step: 1,
+    defaultOperator: OPERATORS.BETWEEN,
+    availableOperators: [OPERATORS.BETWEEN, OPERATORS.GREATER_THAN, OPERATORS.LESS_THAN, OPERATORS.EQUALS],
+  },
+};
+
+/**
+ * Shirt management view filter fields
  */
 export const SHIRT_FILTER_FIELDS = {
   shirtSize: {
     label: 'Shirt Size',
-    type: FIELD_TYPES.SELECT,
+    type: FIELD_TYPES.MULTI_SELECT,
     category: FILTER_CATEGORIES.SHIRT,
     options: [
       ...KIDS_SIZES.map(size => ({ value: size, label: size })),
       ...TEEN_SIZES.map(size => ({ value: size, label: size })),
       ...ADULT_SIZES.map(size => ({ value: size, label: size })),
     ],
+    defaultOperator: OPERATORS.IN,
+    availableOperators: [OPERATORS.IN, OPERATORS.NOT_IN],
+  },
+
+  shirtCategory: {
+    label: 'Shirt Category',
+    type: FIELD_TYPES.MULTI_SELECT,
+    category: FILTER_CATEGORIES.SHIRT,
+    options: [
+      { value: 'Kids', label: 'Kids' },
+      { value: 'Teen', label: 'Teen' },
+      { value: 'Adult', label: 'Adult' },
+    ],
+    defaultOperator: OPERATORS.IN,
+    availableOperators: [OPERATORS.IN, OPERATORS.NOT_IN],
+  },
+
+  printStatus: {
+    label: 'Print Status',
+    type: FIELD_TYPES.SELECT,
+    category: FILTER_CATEGORIES.SHIRT,
+    options: [
+      { value: 'withPrint', label: 'With Print' },
+      { value: 'plain', label: 'Plain' },
+    ],
     defaultOperator: OPERATORS.EQUALS,
-    availableOperators: [OPERATORS.EQUALS, OPERATORS.NOT_EQUALS, OPERATORS.IN, OPERATORS.NOT_IN],
+    availableOperators: [OPERATORS.EQUALS, OPERATORS.NOT_EQUALS],
+  },
+
+  paymentStatus: {
+    label: 'Payment Status',
+    type: FIELD_TYPES.SELECT,
+    category: FILTER_CATEGORIES.PAYMENT,
+    options: [
+      { value: 'paid', label: 'Paid' },
+      { value: 'unpaid', label: 'Unpaid' },
+    ],
+    defaultOperator: OPERATORS.EQUALS,
+    availableOperators: [OPERATORS.EQUALS, OPERATORS.NOT_EQUALS],
   },
 
   distributionStatus: {
@@ -230,43 +297,44 @@ export const SHIRT_FILTER_FIELDS = {
     availableOperators: [OPERATORS.IS_TRUE, OPERATORS.IS_FALSE],
   },
 
-  ageBracket: {
-    label: 'Age Bracket',
+  attendanceStatus: {
+    label: 'Attendance Status',
     type: FIELD_TYPES.SELECT,
-    category: FILTER_CATEGORIES.REGISTRATION,
+    category: FILTER_CATEGORIES.ATTENDANCE,
     options: [
-      { value: 'kids', label: 'Kids' },
-      { value: 'youth', label: 'Youth' },
-      { value: 'adults', label: 'Adults' },
-    ],
-    defaultOperator: OPERATORS.EQUALS,
-    availableOperators: [OPERATORS.EQUALS, OPERATORS.NOT_EQUALS, OPERATORS.IN],
-  },
-};
-
-/**
- * Registration-specific filter fields
- */
-export const REGISTRATION_FILTER_FIELDS = {
-  registrationStatus: {
-    label: 'Registration Status',
-    type: FIELD_TYPES.SELECT,
-    category: FILTER_CATEGORIES.REGISTRATION,
-    options: [
-      { value: 'registered', label: 'Registered' },
-      { value: 'notRegistered', label: 'Not Registered' },
+      { value: 'attending', label: 'Attending' },
+      { value: 'shirt_only', label: 'Shirt Only' },
     ],
     defaultOperator: OPERATORS.EQUALS,
     availableOperators: [OPERATORS.EQUALS, OPERATORS.NOT_EQUALS],
   },
+};
 
-  checkInStatus: {
+/**
+ * Registration view filter fields
+ */
+export const REGISTRATION_FILTER_FIELDS = {
+  ageBracket: {
+    label: 'Age Bracket',
+    type: FIELD_TYPES.MULTI_SELECT,
+    category: FILTER_CATEGORIES.LOCATION,
+    options: [
+      { value: 'Toddler', label: 'Toddler (0-3)' },
+      { value: 'Kid', label: 'Kid (4-12)' },
+      { value: 'Youth', label: 'Youth (13-20)' },
+      { value: 'Adult', label: 'Adult (21+)' },
+    ],
+    defaultOperator: OPERATORS.IN,
+    availableOperators: [OPERATORS.IN, OPERATORS.NOT_IN],
+  },
+
+  registrationStatus: {
     label: 'Check-in Status',
     type: FIELD_TYPES.SELECT,
-    category: FILTER_CATEGORIES.ATTENDANCE,
+    category: FILTER_CATEGORIES.REGISTRATION,
     options: [
-      { value: 'checkedIn', label: 'Checked In' },
-      { value: 'notCheckedIn', label: 'Not Checked In' },
+      { value: 'registered', label: 'Checked In' },
+      { value: 'notRegistered', label: 'Not Checked In' },
     ],
     defaultOperator: OPERATORS.EQUALS,
     availableOperators: [OPERATORS.EQUALS, OPERATORS.NOT_EQUALS],
@@ -277,7 +345,7 @@ export const REGISTRATION_FILTER_FIELDS = {
     type: FIELD_TYPES.SELECT,
     category: FILTER_CATEGORIES.ATTENDANCE,
     options: [
-      { value: 'attending', label: 'Attending' },
+      { value: 'attending', label: 'Attending Event' },
       { value: 'shirt_only', label: 'Shirt Only' },
     ],
     defaultOperator: OPERATORS.EQUALS,
@@ -295,15 +363,7 @@ export const REGISTRATION_FILTER_FIELDS = {
   hasShirtOrder: {
     label: 'Has Shirt Order',
     type: FIELD_TYPES.BOOLEAN,
-    category: FILTER_CATEGORIES.SHIRT,
-    defaultOperator: OPERATORS.IS_TRUE,
-    availableOperators: [OPERATORS.IS_TRUE, OPERATORS.IS_FALSE],
-  },
-
-  missingInfo: {
-    label: 'Missing Information',
-    type: FIELD_TYPES.BOOLEAN,
-    category: FILTER_CATEGORIES.CONTACT,
+    category: FILTER_CATEGORIES.REGISTRATION,
     defaultOperator: OPERATORS.IS_TRUE,
     availableOperators: [OPERATORS.IS_TRUE, OPERATORS.IS_FALSE],
   },
@@ -317,22 +377,27 @@ export function getFilterFieldsForView(viewType) {
 
   switch (viewType) {
     case 'shirts':
+      // Shirt management: Common fields + shirt-specific fields
       return { ...baseFields, ...SHIRT_FILTER_FIELDS };
     case 'registration':
+      // Registration: Common fields + registration-specific fields
       return { ...baseFields, ...REGISTRATION_FILTER_FIELDS };
     case 'collections':
+      // Collections: Common fields + collection-specific fields (payment & shirt details)
+      return { ...baseFields, ...COLLECTIONS_FILTER_FIELDS };
     default:
       return baseFields;
   }
 }
 
 /**
- * Get grouped filter fields by category
+ * Get grouped filter fields by category with view-specific ordering
  */
 export function getGroupedFilterFields(viewType) {
   const fields = getFilterFieldsForView(viewType);
   const grouped = {};
 
+  // First, group all fields by category
   Object.entries(fields).forEach(([key, field]) => {
     const category = field.category || 'Other';
     if (!grouped[category]) {
@@ -341,5 +406,23 @@ export function getGroupedFilterFields(viewType) {
     grouped[category].push({ key, ...field });
   });
 
-  return grouped;
+  // Get the category order for this view type
+  const categoryOrder = CATEGORY_ORDER_BY_VIEW[viewType] || Object.values(FILTER_CATEGORIES);
+
+  // Return grouped fields sorted by category order
+  const sortedGrouped = {};
+  categoryOrder.forEach(category => {
+    if (grouped[category]) {
+      sortedGrouped[category] = grouped[category];
+    }
+  });
+
+  // Add any remaining categories not in the order list
+  Object.keys(grouped).forEach(category => {
+    if (!sortedGrouped[category]) {
+      sortedGrouped[category] = grouped[category];
+    }
+  });
+
+  return sortedGrouped;
 }

@@ -151,8 +151,9 @@ export function getFieldValue(person, field, peopleTaskInfo = {}) {
     case 'amount':
       return getShirtPrice(person);
 
-    // Categories
+    // Categories (for collections view - shirt category based on size)
     case 'categories':
+    case 'shirtCategory':
       return getSizeCategory(person.shirtSize);
 
     case 'location':

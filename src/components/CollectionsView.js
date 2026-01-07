@@ -505,7 +505,7 @@ const filteredPeople = useMemo(() => {
 
           <button
             onClick={() => setIsAdvancedFilterOpen(true)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors border ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors border font-medium text-sm ${
               advancedFilters
                 ? 'bg-[#0f2a71] text-white border-[#0f2a71] hover:bg-[#0f2a71]/90'
                 : 'bg-white text-[#0f2a71] border-[#0f2a71] hover:bg-gray-50'
@@ -516,7 +516,7 @@ const filteredPeople = useMemo(() => {
 
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[#0f2a71] text-white rounded-lg hover:bg-[#0f2a71]/90 transition-colors font-medium text-sm"
           >
             <Download size={18} />
             Export CSV
