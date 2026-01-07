@@ -115,7 +115,7 @@ export default function HomePage({
         />
       )}
       
-      <div className={`bg-[#f9fafa] min-h-screen ${isMobile ? 'pt-14 pb-20 overflow-y-auto' : 'flex'} `}>
+      <div className={`bg-[#f9fafa] min-h-screen ${isMobile ? 'pt-14 pb-20' : 'flex'} `}>
         {/* MAIN CONTENT AREA - LEFT SIDE */}
         <div className={`flex-1 ${isMobile ? 'p-0' : 'p-6 pr-0'}`}>
 

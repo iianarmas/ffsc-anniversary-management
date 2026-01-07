@@ -255,7 +255,7 @@ export default function Dashboard({ people = [], stats = {} }) {
         showSearch={false}
       />
       
-      <div className="p-6 bg-[#f9fafa] min-h-screen overflow-y-auto">
+      <div className="p-6 bg-[#f9fafa] min-h-screen">
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#001740]">Dashboard</h1>

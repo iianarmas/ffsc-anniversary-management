@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Users, Shirt, Menu, X, BarChart3, ChevronRight, Plus, CheckSquare, Shield, Home, DollarSign, Settings } from 'lucide-react';
 
 export default function Sidebar({ currentView, setCurrentView, onAddPersonClick, taskStats, userProfile }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState(null);
+  const buttonRefs = useRef({});
 
   const menuItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -54,6 +57,7 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
               <React.Fragment key={item.id}>
                 <div className="relative">
                   <button
+                    ref={el => buttonRefs.current[item.id] = el}
                     onClick={() => {
                       if (item.isAction && item.id === 'add-person') {
                         onAddPersonClick();
@@ -64,8 +68,20 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
                         setIsMobileMenuOpen(false);
                       }
                     }}
-                    onMouseEnter={() => setHoveredItem(item.id)}
-                    onMouseLeave={() => setHoveredItem(null)}
+                    onMouseEnter={() => {
+                      setHoveredItem(item.id);
+                      if (buttonRefs.current[item.id]) {
+                        const rect = buttonRefs.current[item.id].getBoundingClientRect();
+                        setTooltipPosition({
+                          top: rect.top + rect.height / 2,
+                          left: rect.right + 8
+                        });
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      setHoveredItem(null);
+                      setTooltipPosition(null);
+                    }}
                     className={`w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 relative ${
                       isActive
                         ? 'bg-[#e2e8f8] text-[#0f204e]'
@@ -74,18 +90,27 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
                   >
                     <Icon size={18} />
                   </button>
-                  
-                  {/* Modern Tooltip */}
-                  {hoveredItem === item.id && (
-                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
-                      <div className="bg-[#001740] text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap shadow-lg animate-slide-in">
+
+                  {/* Modern Tooltip - Using Portal */}
+                  {hoveredItem === item.id && tooltipPosition && createPortal(
+                    <div
+                      className="fixed pointer-events-none"
+                      style={{
+                        top: `${tooltipPosition.top}px`,
+                        left: `${tooltipPosition.left}px`,
+                        transform: 'translateY(-50%)',
+                        zIndex: 99999
+                      }}
+                    >
+                      <div className="bg-[#001740] text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap shadow-lg">
                         {item.label}
                         {/* Tooltip arrow */}
                         <div className="absolute right-full top-1/2 -translate-y-1/2">
                           <div className="w-0 h-0 border-t-4 border-t-transparent border-r-4 border-r-[#001740] border-b-4 border-b-transparent"></div>
                         </div>
                       </div>
-                    </div>
+                    </div>,
+                    document.body
                   )}
                 </div>
                 {item.showDividerAfter && (

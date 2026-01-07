@@ -23,10 +23,10 @@ module.exports = {
         }
       },
       zIndex: {
-        'mobile-nav': '30',
-        'mobile-header': '20',
-        'sidebar': '40',
-        'header': '30',
+        'mobile-nav': '40',
+        'mobile-header': '35',
+        'sidebar': '30',
+        'header': '10',
         'modal-backdrop': '50',
         'modal': '60',
         'dropdown': '70',

@@ -736,7 +736,7 @@ useEffect(() => {
   }, [currentView]);
 
   return (
-    <div className="min-h-screen bg-white flex" style={{ background: 'white', boxShadow: 'none' }}>
+    <div className="h-screen bg-white flex overflow-hidden" style={{ background: 'white', boxShadow: 'none' }}>
       {/* Welcome Modal */}
       <WelcomeModal
         isOpen={showWelcome}

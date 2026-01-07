@@ -82,14 +82,14 @@ export default function MobileRegistrationView({
 
   return (
     <div className="pb-24 bg-[#f9fafa]">
-      {/* Fixed Header with Branding */}
-      <div className="fixed top-0 left-0 right-0 bg-[#f9fafa] border-b border-gray-200 shadow-sm z-mobile-header">
+      {/* Fixed Header with Branding, Search, Filters, and Stats */}
+      <div className="fixed top-0 left-0 right-0 bg-[#f9fafa] z-mobile-header">
         {/* Logo and Brand Section */}
-        <div className="flex items-center justify-between gap-3 px-4 py-2">
+        <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <img 
-              src="/church-logo.svg" 
-              alt="FFSC Logo" 
+            <img
+              src="/church-logo.svg"
+              alt="FFSC Logo"
               className="w-8 h-8 object-contain flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => {
                 const event = new CustomEvent('navigate-to-home');
@@ -97,8 +97,8 @@ export default function MobileRegistrationView({
               }}
             />
             <div>
-              <h1 
-                style={{ fontFamily: 'Moderniz, sans-serif' }} 
+              <h1
+                style={{ fontFamily: 'Moderniz, sans-serif' }}
                 className="text-sm text-[#001740] cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => {
                   const event = new CustomEvent('navigate-to-home');
@@ -130,19 +130,17 @@ export default function MobileRegistrationView({
               }}
               className="cursor-pointer"
             >
-              <Avatar 
-                src={profile?.avatar_url} 
+              <Avatar
+                src={profile?.avatar_url}
                 name={profile?.full_name}
                 size="md"
               />
             </div>
           </div>
         </div>
-      </div>
-        
-        <div className="pt-14">
+
         {/* Search and Filter Section */}
-        <div className="px-4 pb-3 pt-2">
+        <div className="px-4 pb-3 pt-2 bg-[#f9fafa]">
           {/* Search Bar */}
           <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -260,9 +258,9 @@ export default function MobileRegistrationView({
             </div>
           )}
         </div>
-        
-        {/* Compact Stats Row - Now inside sticky header */}
-        <div className="bg-white px-4 py-3 border-b border-gray-100">
+
+        {/* Compact Stats Row */}
+        <div className="bg-white px-4 py-3 border-t border-gray-100">
           <div className="grid grid-cols-5 gap-2">
             <div className="text-center">
               <div className="text-lg font-bold text-[#001740]">{people.length}</div>
@@ -295,6 +293,9 @@ export default function MobileRegistrationView({
           </div>
         </div>
       </div>
+
+      {/* Spacer for fixed header */}
+      <div style={{ height: 'var(--header-height, 240px)' }}></div>
 
       {/* Filter Modal */}
       {showFilters && (

@@ -243,7 +243,7 @@ export default function ShirtManagementView({
   }, [openFilter]);
 
   const FilterDropdown = ({ column, options, value, onChange }) => {
-    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+    const [dropdownPosition, setDropdownPosition] = useState(null);
 
     useEffect(() => {
       if (openFilter === column && filterRefs.current[column]) {
@@ -261,6 +261,8 @@ export default function ShirtManagementView({
           window.removeEventListener('scroll', updatePosition, true);
           window.removeEventListener('resize', updatePosition);
         };
+      } else {
+        setDropdownPosition(null);
       }
     }, [openFilter, column]);
 
@@ -276,8 +278,8 @@ export default function ShirtManagementView({
           <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         )}
       </div>
-        {openFilter === column && createPortal(
-          <div 
+        {openFilter === column && dropdownPosition && createPortal(
+          <div
             ref={el => dropdownRefs.current[column] = el}
             className="fixed w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
             style={{

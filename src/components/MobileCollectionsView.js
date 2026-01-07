@@ -243,7 +243,7 @@ export default function MobileCollectionsView({ people, systemSettings, toggleSh
         </div>
       </div>
 
-      <div className="pt-14 pb-20">
+      <div className="pt-14 pb-20 min-h-screen">
 
       {/* Stats Cards */}
       <div className="p-4 space-y-3">
