@@ -273,11 +273,8 @@ React.useEffect(() => {
       <>
         {!isMobile && (
           <Header 
-            viewTitle="Profile Settings" 
+            viewTitle="Profile Settings"
             showSearch={false}
-            onOpenPersonNotes={(personId) => {
-              console.log('Open notes for person:', personId);
-            }}
           />
         )}
 

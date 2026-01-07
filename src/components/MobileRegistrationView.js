@@ -81,7 +81,7 @@ export default function MobileRegistrationView({
   return (
     <div className="pb-24 bg-[#f9fafa]">
       {/* Fixed Header with Branding */}
-      <div className="fixed top-0 left-0 right-0 bg-[#f9fafa] border-b border-gray-200 shadow-sm z-20">
+      <div className="fixed top-0 left-0 right-0 bg-[#f9fafa] border-b border-gray-200 shadow-sm z-mobile-header">
         {/* Logo and Brand Section */}
         <div className="flex items-center justify-between gap-3 px-4 py-2">
           <div className="flex items-center gap-3">

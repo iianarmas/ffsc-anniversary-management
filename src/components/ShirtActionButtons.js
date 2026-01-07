@@ -6,7 +6,9 @@ import { useAuth } from './auth/AuthProvider';
 export default function ShirtActionButtons({ 
   hasActiveFilters,
   onResetFilters,
-  stats = []
+  stats = [],
+  advancedFilters,
+  onOpenAdvancedFilters
 }) {
   const { profile } = useAuth();
   const [showPrintTooltip, setShowPrintTooltip] = useState(false);
@@ -36,8 +38,21 @@ export default function ShirtActionButtons({
           </div>
         )}
       </div>
+      
 
       <div className="flex items-center gap-2">
+        {/* Advanced Filters Button */}
+        <button
+          onClick={onOpenAdvancedFilters}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition text-sm ${
+            advancedFilters
+              ? 'bg-[#0f2a71] text-white border border-[#0f2a71] hover:bg-[#0f2a71]/90'
+              : 'text-[#0f2a71] bg-white hover:bg-gray-50 border border-[#0f2a71]'
+          }`}
+        >
+          Advanced Filters
+        </button>
+
         {hasActiveFilters && (
           <button
             onClick={onResetFilters}

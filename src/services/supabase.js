@@ -44,20 +44,17 @@ export const signUp = async (email, password, fullName) => {
 
 // Alternative signup that uses admin API
 export const signUpAlternative = async (email, password, fullName) => {
-  console.log('Starting alternative signup for:', email); // DEBUG
-  
   try {
     // First check if user already exists
     const { data: existingUsers } = await supabase
       .from('profiles')
       .select('email')
       .eq('email', email);
-    
+
     if (existingUsers && existingUsers.length > 0) {
-      console.log('User already exists');
       return { data: null, error: { message: 'User already exists with this email' } };
     }
-    
+
     // Create auth user with autoconfirm
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -69,8 +66,6 @@ export const signUpAlternative = async (email, password, fullName) => {
         emailRedirectTo: undefined
       }
     });
-    
-    console.log('Auth signup response:', { data, error });
     
     // Return immediately without waiting
     return { data, error };

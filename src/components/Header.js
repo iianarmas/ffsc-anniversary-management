@@ -137,7 +137,7 @@ export default function Header({
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-30 bg-[#f9fafa] border-b border-gray-200 shadow-sm">
+    <div className="fixed top-0 left-0 right-0 z-header bg-[#f9fafa] border-b border-gray-200 shadow-sm">
       <div className="px-6 py-1">
         <div className="flex items-center justify-between gap-6">
           {/* Left: Logo and Title */}
@@ -175,7 +175,7 @@ export default function Header({
                       placeholder={searchPlaceholder}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#f4d642] focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2a71] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -235,8 +235,8 @@ export default function Header({
 
               {/* Profile Dropdown Menu - Using Portal */}
               {showProfileMenu && createPortal(
-                <div 
-                  className="profile-dropdown-portal fixed w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[9999]"
+                <div
+                  className="profile-dropdown-portal fixed w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-dropdown"
                   style={{
                     top: `${profileMenuPosition.top}px`,
                     right: `${profileMenuPosition.right}px`

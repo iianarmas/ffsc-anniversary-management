@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { DollarSign, TrendingUp, AlertCircle, Download, Filter, Search, StickyNote, CheckSquare, X } from 'lucide-react';
+import { DollarSign, TrendingUp, AlertCircle, Download, Search, StickyNote, CheckSquare, X } from 'lucide-react';
 import Header from './Header';
 import NotesDialog from './NotesDialog';
+import AdvancedFilterDialog from './AdvancedFilterDialog.js';
+import { applyFilterGroups } from '../services/filterEngine';
 
 const SHIRT_PRICING = {
   plain: {
@@ -67,25 +69,18 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
   const [filterLocation, setFilterLocation] = useState('All');
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false);
+  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState(null);
 
   // Calculate collection statistics
   const collectionStats = useMemo(() => {
     // Only include people with actual shirt sizes (not "No shirt", "Select Size", etc.)
-    const peopleWithShirts = people.filter(p => 
-      p.shirtSize && 
-      p.shirtSize !== 'No shirt' && 
-      p.shirtSize !== 'Select Size' && 
+    const peopleWithShirts = people.filter(p =>
+      p.shirtSize &&
+      p.shirtSize !== 'No shirt' &&
+      p.shirtSize !== 'Select Size' &&
       p.shirtSize !== 'None yet'
     );
-
-    // Debug: Log first person to see data structure
-    if (peopleWithShirts.length > 0) {
-      console.log('First person with shirt:', peopleWithShirts[0]);
-      console.log('Shirt size:', peopleWithShirts[0].shirtSize);
-      console.log('Has print:', peopleWithShirts[0].hasPrint);
-      console.log('Is paid:', peopleWithShirts[0].paid);
-      console.log('Calculated price:', getShirtPrice(peopleWithShirts[0].shirtSize, peopleWithShirts[0].hasPrint, peopleWithShirts[0].paid));
-    }
 
     const totalToCollect = peopleWithShirts.reduce((sum, person) => {
       const price = getShirtPrice(person.shirtSize, person.hasPrint, false);
@@ -150,42 +145,117 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
   }, [people]);
 
   // Filtered people for the table
-  const filteredPeople = useMemo(() => {
-    return people.filter(person => {
-      // Only show people with actual shirt orders (excluding empty, "No shirt", etc.)
-      if (!person.shirtSize || 
-          person.shirtSize === 'No shirt' || 
-          person.shirtSize === 'Select Size' || 
-          person.shirtSize === 'None yet' ||
-          person.shirtSize === '') {
-        return false;
-      }
+const filteredPeople = useMemo(() => {
+  // First filter to only show people with actual shirt orders
+  const peopleWithShirts = people.filter(person => {
+    if (!person.shirtSize ||
+        person.shirtSize === 'No shirt' ||
+        person.shirtSize === 'Select Size' ||
+        person.shirtSize === 'None yet' ||
+        person.shirtSize === '') {
+      return false;
+    }
+    return true;
+  });
 
-      const matchesSearch = searchTerm === '' || 
+  let filtered = peopleWithShirts;
+
+  // Apply advanced filters if they exist
+  if (advancedFilters) {
+    // Check if it's the new filter group format
+    if (advancedFilters.conditions !== undefined || advancedFilters.operator !== undefined) {
+      // Use new filter engine
+      filtered = applyFilterGroups(peopleWithShirts, advancedFilters, peopleTaskInfo);
+    } else {
+      // Legacy filter format - keep old logic for backward compatibility
+      const {
+        paymentStatus, printStatus, categories, locations,
+        amountMin, amountMax, nameSearch, hasNotes, hasTasks,
+        hasOverdueTasks, missingContact
+      } = advancedFilters;
+
+      filtered = peopleWithShirts.filter(person => {
+        // Payment status
+        if (paymentStatus !== 'All') {
+          if (paymentStatus === 'Paid' && !person.paid) return false;
+          if (paymentStatus === 'Unpaid' && person.paid) return false;
+        }
+
+        // Print status
+        if (printStatus !== 'All') {
+          if (printStatus === 'With Print' && !person.hasPrint) return false;
+          if (printStatus === 'Plain' && person.hasPrint) return false;
+        }
+
+        // Categories
+        if (categories && categories.length > 0) {
+          const category = getSizeCategory(person.shirtSize);
+          if (!categories.includes(category)) return false;
+        }
+
+        // Locations
+        if (locations && locations.length > 0) {
+          if (!locations.includes(person.location)) return false;
+        }
+
+        // Amount range
+        if (amountMin !== '' || amountMax !== '') {
+          const price = getShirtPrice(person.shirtSize, person.hasPrint, person.paid);
+          const min = parseFloat(amountMin) || 0;
+          const max = parseFloat(amountMax) || Infinity;
+          if (price < min || price > max) return false;
+        }
+
+        // Name search
+        if (nameSearch && nameSearch !== '') {
+          const fullName = `${person.firstName} ${person.lastName}`.toLowerCase();
+          if (!fullName.includes(nameSearch.toLowerCase())) return false;
+        }
+
+        // Task/Notes filters
+        const taskInfo = peopleTaskInfo[person.id] || {};
+        if (hasNotes && !taskInfo.hasNotes) return false;
+        if (hasTasks && !taskInfo.hasTasks) return false;
+        if (hasOverdueTasks && (!taskInfo.hasTasks || taskInfo.incompleteTasksCount === 0)) return false;
+
+        // Missing contact
+        if (missingContact && person.contactNumber) return false;
+
+        return true;
+      });
+    }
+  } else {
+    // Basic filters (only apply if no advanced filters)
+    filtered = peopleWithShirts.filter(person => {
+      const matchesSearch = searchTerm === '' ||
         `${person.firstName} ${person.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesPayment = filterPayment === 'All' || 
+
+      const matchesPayment = filterPayment === 'All' ||
         (filterPayment === 'Paid' ? person.paid : !person.paid);
-      
-      const matchesPrint = filterPrint === 'All' || 
+
+      const matchesPrint = filterPrint === 'All' ||
         (filterPrint === 'With Print' ? person.hasPrint : !person.hasPrint);
-      
+
       const category = getSizeCategory(person.shirtSize);
       const matchesCategory = filterCategory === 'All' || category === filterCategory;
 
       const matchesLocation = filterLocation === 'All' || person.location === filterLocation;
 
       return matchesSearch && matchesPayment && matchesPrint && matchesCategory && matchesLocation;
-    }).sort((a, b) => {
-      const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
-      const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
-      return nameA.localeCompare(nameB);
     });
-  }, [people, searchTerm, filterPayment, filterPrint, filterCategory, filterLocation]);
+  }
+
+  // Sort by name
+  return filtered.sort((a, b) => {
+    const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+    const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+}, [people, searchTerm, filterPayment, filterPrint, filterCategory, filterLocation, advancedFilters, peopleTaskInfo]);
 
   // Export to CSV
   const handleExport = () => {
-    const headers = ['Name', 'Location', 'Size', 'Category', 'Print Status', 'Amount', 'Payment Status'];
+    const headers = ['Name', 'Location', 'Size', 'Size Category', 'Print Status', 'Amount', 'Payment Status'];
     const rows = filteredPeople.map(person => [
       `${person.firstName} ${person.lastName}`,
       person.location,
@@ -292,7 +362,7 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* By Category */}
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h3 className="font-semibold text-gray-900 mb-4">Collection by Category</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Collection by Size Category</h3>
           <div className="space-y-3">
             {['Kids', 'Teen', 'Adult'].map(category => (
               <div key={category}>
@@ -401,9 +471,9 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="All">All Categories</option>
-            <option value="Kids">Kids</option>
-            <option value="Teen">Teen</option>
-            <option value="Adult">Adult</option>
+            <option value="Kids">Kids Size (#4 - #14)</option>
+            <option value="Teen">Teen Size (TS)</option>
+            <option value="Adult">Adult Size (XS - 2XL)</option>
           </select>
 
           <select
@@ -425,16 +495,28 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
               setFilterPrint('All');
               setFilterCategory('All');
               setFilterLocation('All');
+              setAdvancedFilters(null);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
           >
             <X size={18} />
-            Reset
+            Reset{advancedFilters && ' All'}
+          </button>
+
+          <button
+            onClick={() => setIsAdvancedFilterOpen(true)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors border font-medium text-sm ${
+              advancedFilters
+                ? 'bg-[#0f2a71] text-white border-[#0f2a71] hover:bg-[#0f2a71]/90'
+                : 'bg-white text-[#0f2a71] border-[#0f2a71] hover:bg-gray-50'
+            }`}
+          >
+            Advanced Filters
           </button>
 
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[#0f2a71] text-white rounded-lg hover:bg-[#0f2a71]/90 transition-colors font-medium text-sm"
           >
             <Download size={18} />
             Export CSV
@@ -451,7 +533,7 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Name</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Location</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Size</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Category</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Size Category</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Print</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Amount</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
@@ -546,6 +628,27 @@ export default function CollectionsView({ people, toggleShirtPayment, peopleTask
           setIsNotesDialogOpen(false);
           setTimeout(() => setSelectedPerson(null), 100);
         }}
+      />
+      {/* Advanced Filter Dialog */}
+      <AdvancedFilterDialog
+        isOpen={isAdvancedFilterOpen}
+        onClose={() => setIsAdvancedFilterOpen(false)}
+        onApplyFilters={(filters) => {
+          setAdvancedFilters(filters);
+          // Clear basic filters when advanced is applied
+          setSearchTerm('');
+          setFilterPayment('All');
+          setFilterPrint('All');
+          setFilterCategory('All');
+          setFilterLocation('All');
+        }}
+        onClearFilters={() => {
+          setAdvancedFilters(null);
+        }}
+        people={people}
+        viewType="collections"
+        peopleTaskInfo={peopleTaskInfo}
+        initialFilters={advancedFilters}
       />
     </>
   );

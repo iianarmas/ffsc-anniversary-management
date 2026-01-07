@@ -49,16 +49,12 @@ export default function UserManagement() {
         schema: 'public',
         table: 'role_change_requests'
       }, (payload) => {
-        console.log('Role request change detected:', payload);
         // Reload pending requests when any change occurs
         getPendingRoleRequests().then((data) => {
-          console.log('Loaded pending requests:', data);
           setPendingRequests(data);
         });
       })
-      .subscribe((status) => {
-        console.log('Realtime subscription status:', status);
-      });
+      .subscribe();
     
     return () => {
       supabase.removeChannel(channel);
@@ -202,9 +198,6 @@ export default function UserManagement() {
         <Header 
           viewTitle="Dashboard" 
           showSearch={false}
-          onOpenPersonNotes={(personId) => {
-            console.log('Open notes for person:', personId);
-          }}
         />
       )}
 

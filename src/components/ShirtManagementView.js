@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from './auth/AuthProvider';
 import { canManageShirts } from '../utils/permissions';
-import { ChevronUp, Search, Filter, DollarSign, Package, Clock, Users, StickyNote, CheckSquare, CheckCircle, Lock } from 'lucide-react';
+import { ChevronUp, Search, Filter, DollarSign, Package, Clock, Users, StickyNote, CheckSquare, CheckCircle, Lock, Sparkles } from 'lucide-react';
+import AdvancedFilterDialog from './AdvancedFilterDialog';
 import Header from './Header';
 import StatsBar from './StatsBar';
 import ShirtActionButtons from './ShirtActionButtons';
@@ -10,12 +11,14 @@ import Pagination from './Pagination';
 import AccountSidebar from './AccountSidebar';
 import NotesDialog from './NotesDialog';
 import { getAllPeopleTaskInfo } from '../services/api';
+import { applyFilterGroups } from '../services/filterEngine';
+import { migrateFiltersIfNeeded } from '../utils/filterMigration';
 
-export default function ShirtManagementView({ 
+export default function ShirtManagementView({
   people,
-  stats, 
-  updateShirtSize, 
-  toggleShirtPayment, 
+  stats,
+  updateShirtSize,
+  toggleShirtPayment,
   toggleShirtGiven,
   toggleShirtPrint,
   shirtSearchTerm,
@@ -40,8 +43,43 @@ export default function ShirtManagementView({
   const { profile } = useAuth();
   const canManage = canManageShirts(profile);
 
+  // Helper function to determine shirt category based on shirt size
+  const getShirtCategory = (shirtSize) => {
+    // No shirt size selected yet
+    if (!shirtSize || shirtSize === '' || shirtSize === 'Select Size' || shirtSize === 'None yet') {
+      return 'Unknown';
+    }
+    // Explicitly set to "No shirt"
+    if (shirtSize === 'No shirt') {
+      return '-';
+    }
+
+    // Kids sizes: #4 (XS) 1-2 to #14 (2XL) 11-12
+    const kidsSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12'];
+    if (kidsSizes.includes(shirtSize)) {
+      return 'Kids';
+    }
+
+    // Teen size: TS
+    if (shirtSize === 'TS') {
+      return 'Teen';
+    }
+
+    // Adult sizes: XS to 2XL
+    const adultSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL'];
+    if (adultSizes.includes(shirtSize)) {
+      return 'Adult';
+    }
+
+    return 'Unknown';
+  };
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
+
+  // Advanced filter state
+  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState(null);
 
   // Pagination measurement for fixed pagination layout
   const paginationRef = useRef(null);
@@ -265,10 +303,27 @@ export default function ShirtManagementView({
     );
   };
 
+  // Apply advanced filters using the new filter engine
+  // Supports both old filter format (backward compatibility) and new filter group format
+  const filteredPeople = useMemo(() => {
+    if (!advancedFilters) return people;
+
+    try {
+      // Auto-migrate old filter format to new format if needed
+      const migratedFilters = migrateFiltersIfNeeded(advancedFilters);
+
+      // Use the new filter engine to apply filters
+      return applyFilterGroups(people, migratedFilters, peopleTaskInfo);
+    } catch (error) {
+      console.error('Error applying filters:', error);
+      return people;
+    }
+  }, [people, advancedFilters, peopleTaskInfo]);
+
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = people.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredPeople.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -460,8 +515,13 @@ export default function ShirtManagementView({
               </div>
               <div className="text-sm text-gray-500 flex items-baseline gap-2">
                 <Users size={18} className="text-gray-400" />
-                <span className="font-semibold text-gray-900 text-lg">{people.length}</span>
-                <span className="text-gray-500">{people.length === 1 ? 'person' : 'people'}</span>
+                <span className="font-semibold text-gray-900 text-lg">{filteredPeople.length}</span>
+                <span className="text-gray-500">{filteredPeople.length === 1 ? 'person' : 'people'}</span>
+                {advancedFilters && filteredPeople.length !== people.length && (
+                  <span className="text-xs text-purple-600 font-medium">
+                    (filtered from {people.length})
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -486,15 +546,21 @@ export default function ShirtManagementView({
                   shirtFilterDistribution !== 'All' || 
                   shirtFilterSize !== 'All' ||
                   shirtFilterPrint !== 'All' ||
-                  shirtFilterAttendance !== 'All'
+                  shirtFilterAttendance !== 'All' ||
+                  advancedFilters !== null
                 }
-                onResetFilters={onResetFilters}
+                onResetFilters={() => {
+                  onResetFilters();
+                  setAdvancedFilters(null);
+                }}
                 stats={[
                   { Icon: DollarSign, label: 'Paid', value: stats.paid },
                   { Icon: DollarSign, label: 'Unpaid', value: stats.unpaid },
                   { Icon: Package, label: 'Given', value: stats.shirtsGiven },
                   { Icon: Clock, label: 'Pending Distribution', value: stats.shirtsPending }
                 ]}
+                advancedFilters={advancedFilters}
+                onOpenAdvancedFilters={() => setIsAdvancedFilterOpen(true)}
               />
             </div>
 
@@ -513,15 +579,15 @@ export default function ShirtManagementView({
                     </th>
                     <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700 sticky z-10">
                       <div className="flex items-center justify-between">
-                        <span>Age Bracket</span>
-                        <FilterDropdown 
-                          column="ageBracket"
+                        <span>Shirt Category</span>
+                        <FilterDropdown
+                          column="shirtCategory"
                           options={[
-                            { value: 'All', label: 'All Ages' },
-                            { value: 'Toddler', label: 'Toddlers' },
-                            { value: 'Kid', label: 'Kids' },
-                            { value: 'Youth', label: 'Youths' },
-                            { value: 'Adult', label: 'Adults' }
+                            { value: 'All', label: 'All Categories' },
+                            { value: 'Kids', label: 'Kids' },
+                            { value: 'Teen', label: 'Teen' },
+                            { value: 'Adult', label: 'Adult' },
+                            { value: 'No shirt', label: 'No shirt' }
                           ]}
                           value={shirtFilterAge}
                           onChange={setShirtFilterAge}
@@ -606,7 +672,7 @@ export default function ShirtManagementView({
                     <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
                       <div className="flex items-center justify-between">
                         <span>Distribution Status</span>
-                        <FilterDropdown 
+                        <FilterDropdown
                           column="distribution"
                           options={[
                             { value: 'All', label: 'All Distribution' },
@@ -615,21 +681,6 @@ export default function ShirtManagementView({
                           ]}
                           value={shirtFilterDistribution}
                           onChange={setShirtFilterDistribution}
-                        />
-                      </div>
-                    </th>
-                    <th className="px-4 py-2 border text-left text-sm font-semibold text-gray-700">
-                      <div className="flex items-center justify-between">
-                        <span>Attendance</span>
-                        <FilterDropdown 
-                          column="attendance"
-                          options={[
-                            { value: 'All', label: 'All' },
-                            { value: 'attending', label: 'Attending Event' },
-                            { value: 'shirt_only', label: 'Shirt Only' }
-                          ]}
-                          value={shirtFilterAttendance}
-                          onChange={setShirtFilterAttendance}
                         />
                       </div>
                     </th>
@@ -713,7 +764,7 @@ export default function ShirtManagementView({
                           <div className="text-sm text-gray-700">{person.age}</div>
                         </td>
                         <td className="px-4 py-3 border-r">
-                          <div className="text-sm text-gray-700">{person.ageBracket}</div>
+                          <div className="text-sm text-gray-700">{getShirtCategory(person.shirtSize)}</div>
                         </td>
                         <td className="px-4 py-3 border-r">
                           <div className="text-sm text-gray-700">{person.location}</div>
@@ -744,53 +795,63 @@ export default function ShirtManagementView({
                         </td>
                         <td className="px-4 py-3 border-r text-center">
                           <button
-                            onClick={() => canManage && toggleShirtPrint(person.id)}
-                            disabled={!canManage}
+                            onClick={() => {
+                              const hasValidSize = person.shirtSize && person.shirtSize !== 'No shirt' && person.shirtSize !== 'Select Size' && person.shirtSize !== 'None yet' && person.shirtSize !== '';
+                              if (canManage && hasValidSize) {
+                                toggleShirtPrint(person.id);
+                              }
+                            }}
+                            disabled={!canManage || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === ''}
                             className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
                               person.hasPrint
                                 ? 'bg-blue-600 text-white hover:bg-blue-700'
                                 : 'bg-gray-400 text-white hover:bg-gray-500'
-                            } ${!canManage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            } ${!canManage || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             {person.hasPrint ? 'With Print' : 'Plain'}
                           </button>
                         </td>
                         <td className="px-4 py-3 border-r text-center">
                           <button
-                            onClick={() => canManage && toggleShirtPayment(person.id)}
-                            disabled={!canManage}
+                            onClick={() => {
+                              const hasValidSize = person.shirtSize && person.shirtSize !== 'No shirt' && person.shirtSize !== 'Select Size' && person.shirtSize !== 'None yet' && person.shirtSize !== '';
+                              if (canManage && hasValidSize) {
+                                toggleShirtPayment(person.id);
+                              }
+                            }}
+                            disabled={!canManage || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === ''}
                             className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
                               person.paid
                                 ? 'bg-green-600 text-white hover:bg-green-500'
                                 : 'bg-red-600 text-white hover:bg-red-500'
-                            } ${!canManage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            } ${!canManage || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             {person.paid ? 'Paid' : 'Unpaid'}
                           </button>
                         </td>
                         <td className="px-4 py-3 border-r text-center">
                           <button
-                            onClick={() => canManage && toggleShirtGiven(person.id)}
-                            disabled={!canManage}
+                            onClick={() => {
+                              const hasValidSize = person.shirtSize && person.shirtSize !== 'No shirt' && person.shirtSize !== 'Select Size' && person.shirtSize !== 'None yet' && person.shirtSize !== '';
+                              if (canManage && hasValidSize) {
+                                toggleShirtGiven(person.id);
+                              }
+                            }}
+                            disabled={!canManage || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === ''}
                             className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
                               person.shirtGiven
                                 ? 'bg-green-600 text-white hover:bg-green-700'
                                 : 'bg-yellow-500 text-white hover:bg-yellow-400'
-                            } ${!canManage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            } ${!canManage || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             {person.shirtGiven ? 'Given' : 'Pending'}
                           </button>
-                        </td>
-                        <td className="px-4 py-3 border-r text-center">
-                          <div className="text-sm text-gray-700">
-                            {person.attendanceStatus === 'shirt_only' ? 'Shirt Only' : 'Attending'}
-                          </div>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={9} className="text-center py-12 text-gray-500">
+                      <td colSpan={8} className="text-center py-12 text-gray-500">
                         No people found matching your search criteria
                       </td>
                     </tr>
@@ -805,7 +866,7 @@ export default function ShirtManagementView({
           {!useFixedPagination && (
             <div className="mt-4 px-4">
               <Pagination
-                totalItems={people.length}
+                totalItems={filteredPeople.length}
                 itemsPerPage={itemsPerPage}
                 currentPage={currentPage}
                 onPageChange={handlePageChange}
@@ -818,7 +879,7 @@ export default function ShirtManagementView({
           {useFixedPagination && (
             <div ref={paginationRef} className="absolute bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200">
               <Pagination
-                totalItems={people.length}
+                totalItems={filteredPeople.length}
                 itemsPerPage={itemsPerPage}
                 currentPage={currentPage}
                 onPageChange={handlePageChange}
@@ -863,6 +924,24 @@ export default function ShirtManagementView({
           onClose={handleCloseNotes} 
         />
       </div>
+
+      
+
+      {/* Advanced Filter Dialog */}
+      <AdvancedFilterDialog
+        isOpen={isAdvancedFilterOpen}
+        onClose={() => setIsAdvancedFilterOpen(false)}
+        onApplyFilters={(filters) => {
+          setAdvancedFilters(filters);
+        }}
+        onClearFilters={() => {
+          setAdvancedFilters(null);
+        }}
+        people={people}
+        viewType="shirts"
+        peopleTaskInfo={peopleTaskInfo}
+        initialFilters={advancedFilters}
+      />
 
       <style>{`
         @media print {
