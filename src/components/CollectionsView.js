@@ -38,7 +38,9 @@ const SHIRT_PRICING = {
   }
 };
 
-export default function CollectionsView({ people, toggleShirtPayment, peopleTaskInfo = {} }) {
+export default function CollectionsView({ people, systemSettings, toggleShirtPayment, peopleTaskInfo = {} }) {
+  const canChangePayment = systemSettings?.allowPaymentChange !== false;
+
   const getShirtPrice = (size, hasPrint, isPaid) => {
     if (!size || size === 'No shirt' || size === 'Select Size' || size === 'None yet' || size === '') return 0;
     
@@ -296,7 +298,7 @@ const filteredPeople = useMemo(() => {
 
   const handlePaymentClick = (person, e) => {
     e.stopPropagation();
-    if (toggleShirtPayment) {
+    if (canChangePayment && toggleShirtPayment) {
       toggleShirtPayment(person.id);
     }
   };
@@ -597,11 +599,12 @@ const filteredPeople = useMemo(() => {
                     <td className="px-4 py-3 text-center">
                       <button
                         onClick={(e) => handlePaymentClick(person, e)}
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer ${
-                          person.paid 
-                            ? 'bg-green-600 text-white hover:bg-green-500' 
+                        disabled={!canChangePayment}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          person.paid
+                            ? 'bg-green-600 text-white hover:bg-green-500'
                             : 'bg-red-600 text-white hover:bg-red-500'
-                        }`}
+                        } ${canChangePayment ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
                       >
                         {person.paid ? 'Paid' : 'Unpaid'}
                       </button>

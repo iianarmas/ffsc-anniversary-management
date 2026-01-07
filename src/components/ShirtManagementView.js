@@ -17,6 +17,7 @@ import { migrateFiltersIfNeeded } from '../utils/filterMigration';
 export default function ShirtManagementView({
   people,
   stats,
+  systemSettings,
   updateShirtSize,
   toggleShirtPayment,
   toggleShirtGiven,
@@ -42,6 +43,12 @@ export default function ShirtManagementView({
 
   const { profile } = useAuth();
   const canManage = canManageShirts(profile);
+
+  // Combine permission checks with system settings
+  const canChangeShirtSize = canManage && systemSettings?.allowShirtSizeChange !== false;
+  const canChangePrint = canManage && systemSettings?.allowPrintChange !== false;
+  const canChangePayment = canManage && systemSettings?.allowPaymentChange !== false;
+  const canChangeDistribution = canManage && systemSettings?.allowDistributionChange !== false;
 
   // Helper function to determine shirt category based on shirt size
   const getShirtCategory = (shirtSize) => {
@@ -772,9 +779,9 @@ export default function ShirtManagementView({
                         <td className="px-4 py-3 border-r text-center">
                           <select
                             value={person.shirtSize || ''}
-                            onChange={(e) => canManage && updateShirtSize(person.id, e.target.value)}
-                            disabled={!canManage}
-                            className={`px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${!canManage ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            onChange={(e) => canChangeShirtSize && updateShirtSize(person.id, e.target.value)}
+                            disabled={!canChangeShirtSize}
+                            className={`px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${!canChangeShirtSize ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           >
                             <option value="">Select Size</option>
                             <option value="#4 (XS) 1-2">#4 (XS) 1-2</option>
@@ -797,16 +804,16 @@ export default function ShirtManagementView({
                           <button
                             onClick={() => {
                               const hasValidSize = person.shirtSize && person.shirtSize !== 'No shirt' && person.shirtSize !== 'Select Size' && person.shirtSize !== 'None yet' && person.shirtSize !== '';
-                              if (canManage && hasValidSize) {
+                              if (canChangePrint && hasValidSize) {
                                 toggleShirtPrint(person.id);
                               }
                             }}
-                            disabled={!canManage || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === ''}
+                            disabled={!canChangePrint || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === ''}
                             className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
                               person.hasPrint
                                 ? 'bg-blue-600 text-white hover:bg-blue-700'
                                 : 'bg-gray-400 text-white hover:bg-gray-500'
-                            } ${!canManage || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            } ${!canChangePrint || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             {person.hasPrint ? 'With Print' : 'Plain'}
                           </button>
@@ -815,16 +822,16 @@ export default function ShirtManagementView({
                           <button
                             onClick={() => {
                               const hasValidSize = person.shirtSize && person.shirtSize !== 'No shirt' && person.shirtSize !== 'Select Size' && person.shirtSize !== 'None yet' && person.shirtSize !== '';
-                              if (canManage && hasValidSize) {
+                              if (canChangePayment && hasValidSize) {
                                 toggleShirtPayment(person.id);
                               }
                             }}
-                            disabled={!canManage || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === ''}
+                            disabled={!canChangePayment || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === ''}
                             className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
                               person.paid
                                 ? 'bg-green-600 text-white hover:bg-green-500'
                                 : 'bg-red-600 text-white hover:bg-red-500'
-                            } ${!canManage || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            } ${!canChangePayment || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             {person.paid ? 'Paid' : 'Unpaid'}
                           </button>
@@ -833,16 +840,16 @@ export default function ShirtManagementView({
                           <button
                             onClick={() => {
                               const hasValidSize = person.shirtSize && person.shirtSize !== 'No shirt' && person.shirtSize !== 'Select Size' && person.shirtSize !== 'None yet' && person.shirtSize !== '';
-                              if (canManage && hasValidSize) {
+                              if (canChangeDistribution && hasValidSize) {
                                 toggleShirtGiven(person.id);
                               }
                             }}
-                            disabled={!canManage || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === ''}
+                            disabled={!canChangeDistribution || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === ''}
                             className={`px-4 py-1 rounded-full text-xs font-semibold transition ${
                               person.shirtGiven
                                 ? 'bg-green-600 text-white hover:bg-green-700'
                                 : 'bg-yellow-500 text-white hover:bg-yellow-400'
-                            } ${!canManage || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            } ${!canChangeDistribution || !person.shirtSize || person.shirtSize === 'No shirt' || person.shirtSize === 'Select Size' || person.shirtSize === 'None yet' || person.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             {person.shirtGiven ? 'Given' : 'Pending'}
                           </button>

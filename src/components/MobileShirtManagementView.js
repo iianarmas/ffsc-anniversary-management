@@ -6,6 +6,7 @@ import NotesDialog from './NotesDialog';
 import EditPersonDialog from './EditPersonDialog';
 import { useBackHandler } from '../hooks/useBackButton';
 import Avatar from './Avatar';
+import { useSystemSettings } from './SystemSettingsProvider';
 
 export default function MobileShirtManagementView({
   people,
@@ -34,6 +35,13 @@ export default function MobileShirtManagementView({
   peopleTaskInfo = {}
 }) {
   const { profile } = useAuth();
+  const { settings } = useSystemSettings();
+
+  // Combine permission checks with system settings
+  const canChangeShirtSize = settings?.allowShirtSizeChange !== false;
+  const canChangePrint = settings?.allowPrintChange !== false;
+  const canChangePayment = settings?.allowPaymentChange !== false;
+  const canChangeDistribution = settings?.allowDistributionChange !== false;
 
   // Helper function to determine shirt category based on shirt size
   const getShirtCategory = (shirtSize) => {
@@ -177,7 +185,7 @@ export default function MobileShirtManagementView({
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {profile?.role !== 'viewer' && (
+            {profile?.role !== 'viewer' && settings.allowAddPerson && (
               <button
                 onClick={() => {
                   const event = new CustomEvent('open-add-person');
@@ -581,12 +589,15 @@ export default function MobileShirtManagementView({
                 <select
                   value={editingPerson.shirtSize || ''}
                   onChange={(e) => {
-                    updateShirtSize(editingPerson.id, e.target.value);
-                    setEditingPerson({ ...editingPerson, shirtSize: e.target.value });
+                    if (canChangeShirtSize) {
+                      updateShirtSize(editingPerson.id, e.target.value);
+                      setEditingPerson({ ...editingPerson, shirtSize: e.target.value });
+                    }
                   }}
+                  disabled={!canChangeShirtSize}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg ${!canChangeShirtSize ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 >
                   <option value="">Select Size</option>
                   {shirtSizes.map(size => (
@@ -645,19 +656,19 @@ export default function MobileShirtManagementView({
                     onClick={(e) => {
                       e.stopPropagation();
                       const hasValidSize = editingPerson.shirtSize && editingPerson.shirtSize !== 'No shirt' && editingPerson.shirtSize !== 'Select Size' && editingPerson.shirtSize !== 'None yet' && editingPerson.shirtSize !== '';
-                      if (hasValidSize) {
+                      if (canChangePayment && hasValidSize) {
                         toggleShirtPayment(editingPerson.id);
                         setEditingPerson({ ...editingPerson, paid: !editingPerson.paid });
                       }
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
-                    disabled={!editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === ''}
+                    disabled={!canChangePayment || !editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === ''}
                     className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                       editingPerson.paid
                         ? 'bg-green-600 text-white hover:bg-green-500'
                         : 'bg-red-600 text-white hover:bg-red-500'
-                    } ${!editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    } ${!canChangePayment || !editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
                     style={{ minHeight: '48px' }}
                   >
                     <DollarSign size={18} />
@@ -667,19 +678,19 @@ export default function MobileShirtManagementView({
                     onClick={(e) => {
                       e.stopPropagation();
                       const hasValidSize = editingPerson.shirtSize && editingPerson.shirtSize !== 'No shirt' && editingPerson.shirtSize !== 'Select Size' && editingPerson.shirtSize !== 'None yet' && editingPerson.shirtSize !== '';
-                      if (hasValidSize) {
+                      if (canChangeDistribution && hasValidSize) {
                         toggleShirtGiven(editingPerson.id);
                         setEditingPerson({ ...editingPerson, shirtGiven: !editingPerson.shirtGiven });
                       }
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
-                    disabled={!editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === ''}
+                    disabled={!canChangeDistribution || !editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === ''}
                     className={`py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                       editingPerson.shirtGiven
                         ? 'bg-green-600 text-white hover:bg-green-700'
                         : 'bg-yellow-500 text-white hover:bg-yellow-400'
-                    } ${!editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    } ${!canChangeDistribution || !editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
                     style={{ minHeight: '48px' }}
                   >
                     <Package size={18} />
@@ -692,19 +703,19 @@ export default function MobileShirtManagementView({
                   onClick={(e) => {
                     e.stopPropagation();
                     const hasValidSize = editingPerson.shirtSize && editingPerson.shirtSize !== 'No shirt' && editingPerson.shirtSize !== 'Select Size' && editingPerson.shirtSize !== 'None yet' && editingPerson.shirtSize !== '';
-                    if (hasValidSize) {
+                    if (canChangePrint && hasValidSize) {
                       toggleShirtPrint(editingPerson.id);
                       setEditingPerson({ ...editingPerson, hasPrint: !editingPerson.hasPrint });
                     }
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  disabled={!editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === ''}
+                  disabled={!canChangePrint || !editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === ''}
                   className={`w-full py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                     editingPerson.hasPrint
                       ? 'bg-blue-600 text-white hover:bg-blue-700'
                       : 'bg-gray-400 text-white hover:bg-gray-500'
-                  } ${!editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  } ${!canChangePrint || !editingPerson.shirtSize || editingPerson.shirtSize === 'No shirt' || editingPerson.shirtSize === 'Select Size' || editingPerson.shirtSize === 'None yet' || editingPerson.shirtSize === '' ? 'opacity-50 cursor-not-allowed' : ''}`}
                   style={{ minHeight: '48px' }}
                 >
                   <Shirt size={18} />

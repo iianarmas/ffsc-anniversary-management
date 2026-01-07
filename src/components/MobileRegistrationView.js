@@ -6,6 +6,7 @@ import NotesDialog from './NotesDialog';
 import EditPersonDialog from './EditPersonDialog';
 import { useBackHandler } from '../hooks/useBackButton';
 import Avatar from './Avatar';
+import { useSystemSettings } from './SystemSettingsProvider';
 
 const formatPhilippineTime = (utcTimestamp) => {
   if (!utcTimestamp) return '—';
@@ -50,6 +51,7 @@ export default function MobileRegistrationView({
   peopleTaskInfo = {}
 }) {
   const { profile } = useAuth();
+  const { settings } = useSystemSettings();
   const [showFilters, setShowFilters] = useState(false);
   // Handle back button for filters
   useBackHandler(showFilters, () => setShowFilters(false));
@@ -109,7 +111,7 @@ export default function MobileRegistrationView({
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {profile?.role !== 'viewer' && (
+            {profile?.role !== 'viewer' && settings.allowAddPerson && (
               <button
                 onClick={() => {
                   const event = new CustomEvent('open-add-person');

@@ -38,8 +38,10 @@ const SHIRT_PRICING = {
   }
 };
 
-export default function MobileCollectionsView({ people, toggleShirtPayment, peopleTaskInfo = {} }) {
+export default function MobileCollectionsView({ people, systemSettings, toggleShirtPayment, peopleTaskInfo = {} }) {
   const { profile } = useAuth();
+  const canChangePayment = systemSettings?.allowPaymentChange !== false;
+
   const getShirtPrice = (size, hasPrint, isPaid) => {
     if (!size || size === 'No shirt' || size === 'Select Size' || size === 'None yet' || size === '') return 0;
     
@@ -187,7 +189,7 @@ export default function MobileCollectionsView({ people, toggleShirtPayment, peop
 
   const handlePaymentClick = (person, e) => {
     e.stopPropagation();
-    if (toggleShirtPayment) {
+    if (canChangePayment && toggleShirtPayment) {
       toggleShirtPayment(person.id);
     }
   };
@@ -490,11 +492,12 @@ export default function MobileCollectionsView({ people, toggleShirtPayment, peop
                 </div>
                 <button
                   onClick={(e) => handlePaymentClick(person, e)}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer transition-all active:scale-95 ${
-                    person.paid 
-                      ? 'bg-green-100 text-green-800 active:bg-green-200' 
+                  disabled={!canChangePayment}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                    person.paid
+                      ? 'bg-green-100 text-green-800 active:bg-green-200'
                       : 'bg-orange-100 text-orange-800 active:bg-orange-200'
-                  }`}
+                  } ${canChangePayment ? 'cursor-pointer active:scale-95' : 'opacity-50 cursor-not-allowed'}`}
                 >
                   {person.paid ? 'Paid' : 'Unpaid'}
                 </button>

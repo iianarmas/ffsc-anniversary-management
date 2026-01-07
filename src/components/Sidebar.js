@@ -14,7 +14,7 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, badge: taskStats?.incomplete || 0 },
     ...(userProfile?.role === 'admin' ? [
       { id: 'users', label: 'Manage Users', icon: Shield },
-      { id: 'system-settings', label: 'System Settings', icon: Settings }
+      ...(userProfile?.role !== 'viewer' ? [{ id: 'add-person', label: 'Add Person', icon: Plus, isAction: true }] : [])
     ] : []),
   ].filter(item => item.id || item.showDividerAfter); // Filter out empty objects
 
@@ -55,9 +55,14 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
                 <div className="relative">
                   <button
                     onClick={() => {
-                      setCurrentView(item.id);
-                      sessionStorage.setItem('currentView', item.id);
-                      setIsMobileMenuOpen(false);
+                      if (item.isAction && item.id === 'add-person') {
+                        onAddPersonClick();
+                        setIsMobileMenuOpen(false);
+                      } else {
+                        setCurrentView(item.id);
+                        sessionStorage.setItem('currentView', item.id);
+                        setIsMobileMenuOpen(false);
+                      }
                     }}
                     onMouseEnter={() => setHoveredItem(item.id)}
                     onMouseLeave={() => setHoveredItem(null)}
@@ -91,35 +96,41 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
           })}
         </nav>
 
-        {/* Add Person Button - Hidden for Viewers */}
-        {userProfile?.role !== 'viewer' && (
+        {/* System Settings Button - Admin Only */}
+        {userProfile?.role === 'admin' && (
           <div className="absolute bottom-4 w-full px-2">
             <div className="relative">
               <button
                 onClick={() => {
-                  onAddPersonClick();
+                  setCurrentView('system-settings');
+                  sessionStorage.setItem('currentView', 'system-settings');
+                  setIsMobileMenuOpen(false);
                 }}
-              onMouseEnter={() => setHoveredItem('add-person')}
-              onMouseLeave={() => setHoveredItem(null)}
-              className="w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 text-gray-500 hover:bg-[#e2e8f8]"
-            >
-              <Plus size={18} />
-            </button>
-            
-            {/* Modern Tooltip */}
-            {hoveredItem === 'add-person' && (
-              <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
-                <div className="bg-[#001740] text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap shadow-lg animate-slide-in">
-                  Add Person
-                  {/* Tooltip arrow */}
-                  <div className="absolute right-full top-1/2 -translate-y-1/2">
-                    <div className="w-0 h-0 border-t-4 border-t-transparent border-r-4 border-r-[#001740] border-b-4 border-b-transparent"></div>
+                onMouseEnter={() => setHoveredItem('system-settings-bottom')}
+                onMouseLeave={() => setHoveredItem(null)}
+                className={`w-full flex items-center justify-center rounded-lg mb-2 transition-all duration-200 px-1 py-3 ${
+                  currentView === 'system-settings'
+                    ? 'bg-[#e2e8f8] text-[#0f204e]'
+                    : 'text-gray-500 hover:bg-[#e2e8f8]'
+                }`}
+              >
+                <Settings size={18} />
+              </button>
+
+              {/* Modern Tooltip */}
+              {hoveredItem === 'system-settings-bottom' && (
+                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
+                  <div className="bg-[#001740] text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap shadow-lg animate-slide-in">
+                    System Settings
+                    {/* Tooltip arrow */}
+                    <div className="absolute right-full top-1/2 -translate-y-1/2">
+                      <div className="w-0 h-0 border-t-4 border-t-transparent border-r-4 border-r-[#001740] border-b-4 border-b-transparent"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
         )}
       </div>
 

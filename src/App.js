@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './components/auth/AuthProvider';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { SystemSettingsProvider } from './components/SystemSettingsProvider';
+import { SystemSettingsProvider, useSystemSettings } from './components/SystemSettingsProvider';
 import LoginPage from './components/auth/LoginPage';
 import RegisterPage from './components/auth/RegisterPage';
 import Header from './components/Header';
@@ -59,6 +59,7 @@ if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
 
 function AppContent() {
   const { profile } = useAuth();
+  const { settings } = useSystemSettings();
   const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
@@ -666,6 +667,9 @@ useEffect(() => {
   };
 
   const toggleShirtPayment = async (id) => {
+    if (!settings.allowPaymentChange) {
+      return; // Silently ignore if payment changes are disabled
+    }
     setPeople(prev =>
       prev.map(p => p.id === id ? { ...p, paid: !p.paid } : p)
     );
@@ -676,6 +680,9 @@ useEffect(() => {
   };
 
   const toggleShirtGiven = async (id) => {
+    if (!settings.allowDistributionChange) {
+      return; // Silently ignore if distribution changes are disabled
+    }
     setPeople(prev =>
       prev.map(p => p.id === id ? { ...p, shirtGiven: !p.shirtGiven } : p)
     );
@@ -686,6 +693,9 @@ useEffect(() => {
   };
 
   const toggleShirtPrint = async (id) => {
+    if (!settings.allowPrintChange) {
+      return; // Silently ignore if print changes are disabled
+    }
     setPeople(prev =>
       prev.map(p => p.id === id ? { ...p, hasPrint: !p.hasPrint } : p)
     );
@@ -696,6 +706,9 @@ useEffect(() => {
   };
 
   const updateShirtSize = async (id, size) => {
+    if (!settings.allowShirtSizeChange) {
+      return; // Silently ignore if shirt size changes are disabled
+    }
     setPeople(prev =>
       prev.map(p => p.id === id ? { ...p, shirtSize: size } : p)
     );
@@ -749,7 +762,7 @@ useEffect(() => {
           userProfile={profile}
         />
       )}
-      <div className={`flex-1 ${isMobile ? 'px-0 pt-0' : 'px-6 pt-16 ml-0 md:ml-16'} transition-all duration-300`} style={{ background: 'transparent' }}>
+      <div className={`flex-1 ${isMobile ? 'px-0 pt-0' : 'px-6 pt-16 ml-0 md:ml-16'} transition-all duration-300 overflow-y-auto`} style={{ background: 'transparent' }}>
         <div className="w-full">
 
         {currentView === 'home' && (
@@ -817,6 +830,7 @@ useEffect(() => {
             <MobileShirtManagementView
               people={filteredAndSortedShirts}
               stats={stats}
+              systemSettings={settings}
               updateShirtSize={updateShirtSize}
               toggleShirtPayment={toggleShirtPayment}
               toggleShirtGiven={toggleShirtGiven}
@@ -844,6 +858,7 @@ useEffect(() => {
             <ShirtManagementView
               people={filteredAndSortedShirts}
               stats={stats}
+              systemSettings={settings}
               updateShirtSize={updateShirtSize}
               toggleShirtPayment={toggleShirtPayment}
               toggleShirtGiven={toggleShirtGiven}
@@ -896,14 +911,16 @@ useEffect(() => {
 
         {currentView === 'collections' && (
           isMobile ? (
-            <MobileCollectionsView 
-              people={people} 
+            <MobileCollectionsView
+              people={people}
+              systemSettings={settings}
               toggleShirtPayment={toggleShirtPayment}
               peopleTaskInfo={peopleTaskInfo}
             />
           ) : (
-            <CollectionsView 
-              people={people} 
+            <CollectionsView
+              people={people}
+              systemSettings={settings}
               toggleShirtPayment={toggleShirtPayment}
               peopleTaskInfo={peopleTaskInfo}
             />

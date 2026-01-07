@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { X, Check } from 'lucide-react';
 import { useBackHandler } from '../hooks/useBackButton';
 import { capitalizeWords, formatPhoneInput, extractPhoneNumber } from '../utils/formatters';
+import { useSystemSettings } from './SystemSettingsProvider';
+import FeatureDisabledMessage from './FeatureDisabledMessage';
 
 const customSelectStyles = `
   select.custom-select {
@@ -63,6 +65,7 @@ function SuccessToast({ message, subMessage, show, onClose }) {
 export default function AddPersonSidebar({ isOpen, onClose, onPersonAdded }) {
   // Handle back button
   useBackHandler(isOpen, onClose);
+  const { settings } = useSystemSettings();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -193,6 +196,14 @@ export default function AddPersonSidebar({ isOpen, onClose, onPersonAdded }) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 overflow-auto h-full">
+          {!settings.allowAddPerson && (
+            <div className="mb-6">
+              <FeatureDisabledMessage
+                featureName="adding new people"
+                variant="full"
+              />
+            </div>
+          )}
           <div className="space-y-6">
           {/* Personal Information */}
           <div>
@@ -451,7 +462,7 @@ export default function AddPersonSidebar({ isOpen, onClose, onPersonAdded }) {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !settings.allowAddPerson}
             className="w-full bg-[#001740] hover:bg-[#0f2a71] text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
