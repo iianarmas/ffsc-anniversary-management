@@ -314,6 +314,17 @@ export const SHIRT_FILTER_FIELDS = {
  * Registration view filter fields
  */
 export const REGISTRATION_FILTER_FIELDS = {
+  age: {
+    label: 'Age',
+    type: FIELD_TYPES.RANGE,
+    category: FILTER_CATEGORIES.LOCATION,
+    min: 0,
+    max: 100,
+    step: 1,
+    defaultOperator: OPERATORS.BETWEEN,
+    availableOperators: [OPERATORS.BETWEEN, OPERATORS.GREATER_THAN, OPERATORS.LESS_THAN, OPERATORS.EQUALS],
+  },
+
   ageBracket: {
     label: 'Age Bracket',
     type: FIELD_TYPES.MULTI_SELECT,

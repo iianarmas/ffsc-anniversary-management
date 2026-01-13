@@ -313,9 +313,9 @@ useEffect(() => {
           <p className="mb-6 text-sm">
             <strong>Total Records:</strong> {advancedFilteredPeople.length} {advancedFilteredPeople.length === 1 ? 'person' : 'people'}<br/>
             <span className="text-xs text-gray-600">
-              Capacity: {stats.registeredCapacity || 0} / {stats.maxCapacity || 230}
-              {stats.registered !== stats.registeredCapacity && (
-                <> ({stats.registered} total including {stats.toddlersCount} {stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})</>
+              Checked In: {stats.registeredCapacity || 0} / {stats.attendingCountedTowardCapacity || 0}
+              {stats.toddlersCount > 0 && (
+                <> (+{stats.toddlersCount} {stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})</>
               )}
             </span>
           </p>
@@ -363,9 +363,9 @@ useEffect(() => {
       </div>
 
       {/* Screen content */}
-      <div className="no-print">
+      <div className="screen-only">
         {/* Header */}
-        <Header 
+        <Header
           viewTitle="Registration Management"
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
@@ -378,8 +378,9 @@ useEffect(() => {
           }}
         />
 
-        <div className="p-4">
-            <div className="py-2 border-b border-gray-100 mb-3">
+        <div className="p-4 bg-white">
+          <div className="screen-only">
+            <div className="sticky top-16 z-20 py-2 border-b border-gray-100 mb-3 bg-white">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">Registration Management</h2>
@@ -392,18 +393,17 @@ useEffect(() => {
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Table area (fixed height) — scrollable content inside */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-              <div
-                className="relative overflow-y-auto overflow-x-hidden"
-                ref={tableContainerRef}
-                style={{
-                  maxHeight: `calc(100vh - 12.7rem)`
-                }}
-              >
+          {/* Table area (fixed height) — scrollable content inside */}
+          <div className="bg-white rounded-lg overflow-hidden">
+            <div
+              className="relative overflow-y-auto overflow-x-hidden"
+              ref={tableContainerRef}
+              style={{ maxHeight: 'calc(100vh - 12.7rem)' }}
+            >
               <div ref={actionBarRef} className="sticky top-0 z-20 bg-white border-b-2 border-gray-200" style={{ paddingBottom: '1px' }}>
-                <ActionButtons
+              <ActionButtons
                   handleSelectAll={handleSelectAll}
                   selectedPeople={selectedPeople}
                   filteredPeopleLength={advancedFilteredPeople.length}
@@ -423,8 +423,8 @@ useEffect(() => {
                     {
                       Icon: CheckCircle,
                       label: 'Checked In',
-                      value: `${stats.registeredCapacity || 0} / ${stats.maxCapacity || 230}`,
-                      subtitle: stats.registered !== stats.registeredCapacity ? `(${stats.registered} total, ${stats.toddlersCount} ${stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})` : null
+                      value: `${stats.registeredCapacity || 0} / ${stats.attendingCountedTowardCapacity || 0}`,
+                      subtitle: stats.toddlersCount > 0 ? `(+${stats.toddlersCount} ${stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})` : null
                     },
                     { Icon: Clock, label: 'Pending', value: stats.preRegistered || 0 },
                     {
@@ -485,36 +485,23 @@ useEffect(() => {
               />
             </div>
           )}
-
-          {/* Back to Top Button */}
-          {showBackToTop && (
-            <button
-              onClick={scrollToTop}
-              className="fixed bottom-20 right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all duration-300 z-50"
-              aria-label="Back to top"
-            >
-              <ChevronUp size={24} />
-            </button>
-          )}
-          
-          {/* Bottom padding for pagination visibility */}
-          {!useFixedPagination && <div className="h-16"></div>}
         </div>
+      </div>
 
-        {/* Account details sidebar */}
-      <AccountSidebar 
-        person={selectedPerson} 
-        open={sidebarOpen} 
+      {/* Account details sidebar */}
+      <AccountSidebar
+        person={selectedPerson}
+        open={sidebarOpen}
         onClose={handleCloseSidebar}
         onNotesUpdate={loadPeopleTaskInfo}
         onBlockClose={(blocked) => setAllowSidebarClose(!blocked)}
       />
-        
-        {/* Notes Dialog */}
-      <NotesDialog 
-        person={notesDialogPerson} 
-        isOpen={notesDialogOpen} 
-        onClose={handleCloseNotes} 
+
+      {/* Notes Dialog */}
+      <NotesDialog
+        person={notesDialogPerson}
+        isOpen={notesDialogOpen}
+        onClose={handleCloseNotes}
       />
 
       <AdvancedFilterDialog
@@ -531,8 +518,6 @@ useEffect(() => {
         peopleTaskInfo={peopleTaskInfo}
         initialFilters={advancedFilters}
       />
-
-      </div>
     </>
   );
 }

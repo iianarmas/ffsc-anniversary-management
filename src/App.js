@@ -547,57 +547,63 @@ useEffect(() => {
     // Filter people attending the event (not shirt-only)
     const attendingPeople = people.filter(p => p.attendanceStatus === 'attending');
     const shirtOnlyPeople = people.filter(p => p.attendanceStatus === 'shirt_only');
-    
-    // Registered attendees (checked in, attending event)
+
+    // Toddlers in the attending list (excluded from capacity calculations)
+    const toddlersInAttending = attendingPeople.filter(p => p.ageBracket === 'Toddler');
+    const totalToddlersOnList = toddlersInAttending.length;
+
+    // Attending people who count toward capacity (non-toddlers)
+    const attendingNonToddlers = attendingPeople.filter(p => p.ageBracket !== 'Toddler');
+
+    // Registered/checked-in attendees (attending event, not shirt-only)
     const registeredAll = attendingPeople.filter(p => p.registered);
-    const registeredCounted = registeredAll.filter(p => p.ageBracket !== 'Toddler'); // Exclude toddlers from capacity count
-    const toddlersCount = registeredAll.filter(p => p.ageBracket === 'Toddler').length;
-    
-    const registered = registeredAll.length;
-    const registeredCapacity = registeredCounted.length; // Count toward venue capacity
-    // Pending = Total on list - Toddlers - Shirt Only
-    const preRegistered = people.length - attendingPeople.filter(p => p.ageBracket === 'Toddler').length - shirtOnlyPeople.length;
-    
+    const registeredNonToddlers = registeredAll.filter(p => p.ageBracket !== 'Toddler');
+    const toddlersCheckedIn = registeredAll.filter(p => p.ageBracket === 'Toddler').length;
+
+    const registered = registeredAll.length; // Total checked in (including toddlers)
+    const registeredCapacity = registeredNonToddlers.length; // Checked in that count toward capacity
+
+    // Pending = attending people (non-toddlers) who are NOT checked in
+    // Formula: (attending with "attending event" status) - toddlers - checked-in people
+    const preRegistered = attendingNonToddlers.filter(p => !p.registered).length;
+
     // Shirt counts (only those with actual shirt orders)
-    // People with shirt orders = has size AND size is not "No shirt" AND size is not empty/Select Size
-    const peopleWithShirtOrders = people.filter(p => 
-      p.shirtSize && 
-      p.shirtSize !== 'No shirt' && 
-      p.shirtSize !== 'Select Size' && 
+    const peopleWithShirtOrders = people.filter(p =>
+      p.shirtSize &&
+      p.shirtSize !== 'No shirt' &&
+      p.shirtSize !== 'Select Size' &&
       p.shirtSize !== ''
     );
-    
+
     const paid = peopleWithShirtOrders.filter(p => p.paid).length;
     const unpaid = peopleWithShirtOrders.filter(p => !p.paid).length;
     const shirtsGiven = peopleWithShirtOrders.filter(p => p.shirtGiven).length;
     const shirtsPending = peopleWithShirtOrders.filter(p => !p.shirtGiven).length;
     const maxCapacity = 230;
-    
-    // Capacity calculation - based on people on the list (not checked in)
-    // Count all attending people except toddlers
-    const attendingCountedTowardCapacity = attendingPeople.filter(p => p.ageBracket !== 'Toddler').length;
-    const totalToddlersOnList = attendingPeople.filter(p => p.ageBracket === 'Toddler').length;
-    
+
+    // Capacity calculation - based on attending non-toddlers
+    const attendingCountedTowardCapacity = attendingNonToddlers.length;
+
     const slotsRemaining = maxCapacity - attendingCountedTowardCapacity;
     const capacityPercentage = Math.round((attendingCountedTowardCapacity / maxCapacity) * 100);
-    
-    return { 
-      registered, 
-      registeredCapacity, 
-      toddlersCount,
+
+    return {
+      registered,
+      registeredCapacity,
+      toddlersCount: toddlersCheckedIn, // Toddlers who are checked in
       totalToddlersOnList,
       maxCapacity,
       slotsRemaining,
       capacityPercentage,
       attendingCountedTowardCapacity,
-      preRegistered, 
+      preRegistered, // Pending check-in (non-toddlers who haven't checked in)
       total: people.length,
       attendingCount: attendingPeople.length,
       shirtOnlyCount: shirtOnlyPeople.length,
-      paid, 
-      unpaid, 
-      shirtsGiven, 
-      shirtsPending 
+      paid,
+      unpaid,
+      shirtsGiven,
+      shirtsPending
     };
   }, [people]);
 

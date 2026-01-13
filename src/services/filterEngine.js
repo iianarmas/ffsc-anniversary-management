@@ -193,10 +193,14 @@ export function getFieldValue(person, field, peopleTaskInfo = {}) {
     case 'ageBracket':
       return person.ageBracket;
 
+    case 'age':
+      // Parse age as number for range comparisons
+      const ageNum = parseInt(person.age, 10);
+      return isNaN(ageNum) ? 0 : ageNum;
+
     // Registration fields
     case 'registrationStatus':
-      const hasRegistration = person.registrationStatus === 'Registered' || person.checkInStatus === 'Checked In';
-      return hasRegistration ? 'registered' : 'notRegistered';
+      return person.registered ? 'registered' : 'notRegistered';
 
     case 'checkInStatus':
       return person.checkInStatus === 'Checked In' ? 'checkedIn' : 'notCheckedIn';

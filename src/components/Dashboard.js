@@ -271,11 +271,11 @@ export default function Dashboard({ people = [], stats = {} }) {
             color="blue"
             variant="expanded"
           />
-          <StatCard 
-            title="Checked In" 
-            value={`${stats.registeredCapacity || 0} / ${stats.maxCapacity || 230}`}
-            subtitle={stats.registered !== stats.registeredCapacity ? `(${stats.registered} total, ${stats.toddlersCount} ${stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})` : null}
-            Icon={CheckCircle} 
+          <StatCard
+            title="Checked In"
+            value={`${stats.registeredCapacity || 0} / ${stats.attendingCountedTowardCapacity || 0}`}
+            subtitle={stats.toddlersCount > 0 ? `(+${stats.toddlersCount} ${stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})` : null}
+            Icon={CheckCircle}
             color="green"
             variant="expanded"
           />

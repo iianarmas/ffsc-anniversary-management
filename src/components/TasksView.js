@@ -560,7 +560,7 @@ export default function TasksView({ onTaskUpdate }) {
       />
 
       <div className="p-4 bg-white">
-        <div className="sticky top-16 z-20 py-2 border-b border-gray-100 mb-3">
+        <div className="sticky top-8 z-20 py-2 border-b border-gray-100 mb-3">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Task Management</h2>
