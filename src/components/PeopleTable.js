@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { formatFullName } from '../utils/formatters';
 import { createPortal } from 'react-dom';
-import { Filter, StickyNote, CheckSquare, CheckCircle, Lock, RotateCcw } from 'lucide-react';
+import { Filter, StickyNote, CheckSquare, Lock } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 
 const formatPhilippineTime = (utcTimestamp) => {
@@ -424,21 +424,9 @@ export default function PeopleTable({
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center border-r">
-                    <div className="flex items-center justify-center gap-2">
-                      {/* Status Badge (visual indicator only) */}
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full ${
-                        person.registered
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${
-                          person.registered ? 'bg-green-600' : 'bg-yellow-600'
-                        }`} />
-                        {person.registered ? 'Checked In' : 'Pending'}
-                      </span>
-
-                      {/* Action Button (toggle status) */}
-                      {profile?.role !== 'viewer' && (
+                    <div className="flex items-center justify-center">
+                      {/* Clickable Status Badge */}
+                      {profile?.role !== 'viewer' ? (
                         <button
                           onClick={async () => {
                             if (person.registered) {
@@ -449,11 +437,23 @@ export default function PeopleTable({
                               await checkInPerson(person.id, profile?.id);
                             }
                           }}
-                          className="p-1 hover:bg-gray-100 rounded transition active:scale-95"
-                          title={person.registered ? 'Remove check-in' : 'Check in'}
+                          className={`inline-flex items-center px-4 py-1 text-xs font-semibold rounded-full transition cursor-pointer active:scale-95 ${
+                            person.registered
+                              ? 'bg-green-600 text-white hover:bg-green-500'
+                              : 'bg-yellow-500 text-white hover:bg-yellow-400'
+                          }`}
+                          title={person.registered ? 'Click to remove check-in' : 'Click to check in'}
                         >
-                          <RotateCcw size={14} className="text-gray-600" />
+                          {person.registered ? 'Checked In' : 'Pending'}
                         </button>
+                      ) : (
+                        <span className={`inline-flex items-center px-4 py-1 text-xs font-semibold rounded-full ${
+                          person.registered
+                            ? 'bg-green-600 text-white'
+                            : 'bg-yellow-500 text-white'
+                        }`}>
+                          {person.registered ? 'Checked In' : 'Pending'}
+                        </span>
                       )}
                     </div>
                   </td>

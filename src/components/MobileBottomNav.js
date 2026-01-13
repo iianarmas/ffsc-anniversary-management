@@ -17,11 +17,14 @@ export default function MobileBottomNav({
   roleRequestCount = 0,
 }) {
   const { profile } = useAuth();
+  const isViewer = profile?.role === 'viewer';
+
+  // Base navigation items - Tasks is hidden for viewers
   const baseNavItems = [
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'registration', icon: Users, label: 'Registration' },
     { id: 'shirts', icon: ShoppingBag, label: 'Shirts' },
-    { id: 'tasks', icon: CheckSquare, label: 'Tasks', badge: taskCount },
+    ...(!isViewer ? [{ id: 'tasks', icon: CheckSquare, label: 'Tasks', badge: taskCount }] : []),
     { id: 'profile', icon: UserCircle, label: 'Profile' }
   ];
 

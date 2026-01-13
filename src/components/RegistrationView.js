@@ -380,7 +380,7 @@ useEffect(() => {
 
         <div className="p-4 bg-white">
           <div className="screen-only">
-            <div className="sticky top-16 z-20 py-2 border-b border-gray-100 mb-3 bg-white">
+            <div className="sticky top-16 z-20 py-2 border-b border-gray-100 mb-3">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">Registration Management</h2>
