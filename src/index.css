@@ -1,3 +1,80 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Print styles - must come after Tailwind utilities to override them */
+@media print {
+  /* Force show print content - override Tailwind's hidden utility */
+  .print-content {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    overflow: visible !important;
+    height: auto !important;
+    width: auto !important;
+    opacity: 1 !important;
+    clip: auto !important;
+    clip-path: none !important;
+  }
+
+  /* Hide screen-only content during print */
+  .no-print,
+  .screen-only {
+    display: none !important;
+  }
+
+  /* Reset container constraints during print */
+  .overflow-hidden,
+  .overflow-y-auto,
+  .overflow-x-hidden {
+    overflow: visible !important;
+  }
+
+  .h-screen {
+    height: auto !important;
+  }
+
+  /* Hide fixed elements (sidebars, headers) */
+  .fixed {
+    display: none !important;
+  }
+
+  /* Clean background and shadows */
+  body,
+  html {
+    background: white !important;
+  }
+
+  * {
+    box-shadow: none !important;
+    background-image: none !important;
+  }
+
+  *::before,
+  *::after {
+    box-shadow: none !important;
+    background: none !important;
+  }
+
+  /* Table printing */
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  div,
+  section,
+  main {
+    box-shadow: none !important;
+  }
+}
+
+@media screen {
+  .print-content {
+    display: none !important;
+  }
+}

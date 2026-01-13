@@ -446,7 +446,7 @@ export default function ShirtManagementView({
   return (
     <>
       {/* Print-only content */}
-      <div className="print-content hidden" style={{ boxShadow: 'none', background: 'white' }}>
+      <div className="print-content" style={{ boxShadow: 'none', background: 'white' }}>
         <div className="p-8" style={{ boxShadow: 'none', background: 'white' }}>
           <h1 className="text-3xl font-bold mb-2">FFSC Anniversary Management</h1>
           <h2 className="text-xl font-semibold mb-1">Shirt Management View</h2>
@@ -462,10 +462,11 @@ export default function ShirtManagementView({
             {shirtFilterPayment !== 'All' && ` | Payment: ${shirtFilterPayment}`}
             {shirtFilterDistribution !== 'All' && ` | Distribution: ${shirtFilterDistribution}`}
             {shirtFilterAttendance !== 'All' && ` | Attendance: ${shirtFilterAttendance === 'attending' ? 'Attending Event' : 'Shirt Only'}`}
-            {!shirtSearchTerm && shirtFilterAge === 'All' && shirtFilterLocation === 'All' && shirtFilterSize === 'All' && shirtFilterPrint === 'All' && shirtFilterPayment === 'All' && shirtFilterDistribution === 'All' && shirtFilterAttendance === 'All' && ' None'}
+            {advancedFilters && ' | Advanced Filters Applied'}
+            {!shirtSearchTerm && shirtFilterAge === 'All' && shirtFilterLocation === 'All' && shirtFilterSize === 'All' && shirtFilterPrint === 'All' && shirtFilterPayment === 'All' && shirtFilterDistribution === 'All' && shirtFilterAttendance === 'All' && !advancedFilters && ' None'}
           </div>
-          
-          <p className="mb-6 text-sm">Total: {people.length} {people.length === 1 ? 'person' : 'people'}</p>
+
+          <p className="mb-6 text-sm">Total: {filteredPeople.length} {filteredPeople.length === 1 ? 'person' : 'people'}</p>
           
           <table className="w-full border-collapse border border-gray-300">
             <thead>
@@ -481,7 +482,7 @@ export default function ShirtManagementView({
               </tr>
             </thead>
             <tbody>
-              {people.map((person) => (
+              {filteredPeople.map((person) => (
                 <tr key={person.id}>
                   <td className="border border-gray-300 px-4 py-2">{person.firstName} {person.lastName}</td>
                   <td className="border border-gray-300 px-4 py-2">{person.age}</td>

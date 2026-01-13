@@ -658,7 +658,100 @@ useEffect(() => {
   };
 
   const handlePrint = () => {
-    window.print();
+    // Find the print content element
+    const printContent = document.querySelector('.print-content');
+    if (!printContent) {
+      console.error('No print content found');
+      return;
+    }
+
+    // Open a new window for printing
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) {
+      alert('Please allow popups for this site to print');
+      return;
+    }
+
+    // Write the print content to the new window
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>FFSC Anniversary Management - Print</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              padding: 20px;
+              margin: 0;
+              background: white;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 16px;
+            }
+            th, td {
+              border: 1px solid #d1d5db;
+              padding: 8px 16px;
+              text-align: left;
+              font-size: 12px;
+            }
+            th {
+              background-color: #f3f4f6;
+              font-weight: 600;
+            }
+            tr:nth-child(even) {
+              background-color: #f9fafb;
+            }
+            h1 {
+              font-size: 24px;
+              font-weight: bold;
+              margin-bottom: 8px;
+            }
+            h2 {
+              font-size: 18px;
+              font-weight: 600;
+              margin-bottom: 4px;
+            }
+            .filters {
+              margin-bottom: 16px;
+              font-size: 14px;
+              color: #4b5563;
+            }
+            .stats {
+              margin-bottom: 24px;
+              font-size: 14px;
+            }
+            @media print {
+              body {
+                padding: 0;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+
+    // Wait for content to load, then print
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    };
+
+    // Fallback in case onload doesn't fire
+    setTimeout(() => {
+      if (!printWindow.closed) {
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+      }
+    }, 500);
   };
 
   const handleStatCardClick = (status) => {
@@ -994,45 +1087,6 @@ useEffect(() => {
           }
           *::-webkit-scrollbar {
             display: none; /* Chrome, Safari, Opera */
-          }
-        }
-      `}</style>
-      <style>{`
-        @media print {
-          .print-content {
-            display: block !important;
-          }
-          body {
-            background: white !important;
-            box-shadow: none !important;
-          }
-          * {
-            box-shadow: none !important;
-            background-image: none !important;
-          }
-          *::before, *::after {
-            box-shadow: none !important;
-            background: none !important;
-          }
-          /* Hide all fixed positioned elements (sidebars) in print */
-          .fixed {
-            display: none !important;
-          }
-          table {
-            page-break-inside: auto;
-            box-shadow: none !important;
-          }
-          tr {
-            page-break-inside: avoid;
-            page-break-after: auto;
-          }
-          div, section, main {
-            box-shadow: none !important;
-          }
-        }
-        @media screen {
-          .print-content {
-            display: none;
           }
         }
       `}</style>

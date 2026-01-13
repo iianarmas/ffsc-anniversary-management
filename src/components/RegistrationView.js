@@ -290,7 +290,7 @@ useEffect(() => {
   return (
     <>
       {/* Print-only content */}
-      <div className="print-content hidden">
+      <div className="print-content">
         <div className="p-8">
           <h1 className="text-3xl font-bold mb-2">FFSC Anniversary Management</h1>
           <h2 className="text-xl font-semibold mb-1">Registration View</h2>
@@ -303,7 +303,8 @@ useEffect(() => {
             {filterLocation !== 'All' && ` | Location: ${filterLocation}`}
             {filterStatus !== 'All' && ` | Status: ${filterStatus === 'Registered' ? 'Checked In' : 'Pending'}`}
             {filterAttendance !== 'All' && ` | Attendance: ${filterAttendance === 'attending' ? 'Attending Event' : 'Shirt Only'}`}
-            {!searchTerm && filterAge === 'All' && filterLocation === 'All' && filterStatus === 'All' && filterAttendance === 'All' && ' None'}
+            {advancedFilters && ' | Advanced Filters Applied'}
+            {!searchTerm && filterAge === 'All' && filterLocation === 'All' && filterStatus === 'All' && filterAttendance === 'All' && !advancedFilters && ' None'}
           </div>
           
           <p className="mb-6 text-sm">
@@ -329,7 +330,7 @@ useEffect(() => {
               </tr>
             </thead>
             <tbody>
-              {filteredAndSortedPeople.map((person) => (
+              {advancedFilteredPeople.map((person) => (
                 <tr key={person.id}>
                   <td className="border border-gray-300 px-4 py-2">{person.firstName} {person.lastName}</td>
                   <td className="border border-gray-300 px-4 py-2">{person.age}</td>
@@ -339,7 +340,7 @@ useEffect(() => {
                   <td className="border border-gray-300 px-4 py-2">{person.location}</td>
                   <td className="border border-gray-300 px-4 py-2">{person.registered ? 'Checked In' : 'Pending'}</td>
                   <td className="border border-gray-300 px-4 py-2">
-                    {person.registered && person.registeredAt 
+                    {person.registered && person.registeredAt
                       ? new Date(person.registeredAt).toLocaleString('en-US', {
                           month: 'short',
                           day: 'numeric',
