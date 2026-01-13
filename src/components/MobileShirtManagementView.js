@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { formatFullName } from '../utils/formatters';
 import { Search, Filter, X, ChevronRight, ChevronUp, Shirt, DollarSign, Package, AlertCircle, StickyNote, CheckSquare, CheckCircle, Lock, Plus } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
@@ -103,6 +103,10 @@ export default function MobileShirtManagementView({
   const [longPressTimer, setLongPressTimer] = useState(null);
   const [longPressTriggered, setLongPressTriggered] = useState(false);
 
+  // Ref for measuring fixed header height dynamically
+  const headerRef = useRef(null);
+  const [headerHeight, setHeaderHeight] = useState(200);
+
   // Handle back button for filters and edit modal
   useBackHandler(showFilters, () => setShowFilters(false));
   // Don't use back handler for editing person modal - it interferes with interactions
@@ -121,6 +125,23 @@ export default function MobileShirtManagementView({
   const hasAnyActiveFilter = activeFiltersCount > 0 || hasActiveSearch;
 
   const shirtSizes = ['#4 (XS) 1-2', '#6 (S) 3-4', '#8 (M) 5-6', '#10 (L) 7-8', '#12 (XL) 9-10', '#14 (2XL) 11-12', 'TS', 'XS', 'S', 'M', 'L', 'XL', '2XL', 'No shirt', 'None yet'];
+
+  // Measure header height dynamically when filters change
+  useEffect(() => {
+    const measureHeader = () => {
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight);
+      }
+    };
+
+    // Measure immediately
+    measureHeader();
+
+    // Also measure after a short delay to catch any render updates
+    const timer = setTimeout(measureHeader, 100);
+
+    return () => clearTimeout(timer);
+  }, [hasAnyActiveFilter, activeFiltersCount, shirtSearchTerm]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -157,7 +178,7 @@ export default function MobileShirtManagementView({
   return (
     <div className="pb-24 bg-[#f9fafa]">
       {/* Fixed Header with Branding, Search, Filters, and Stats */}
-      <div className="fixed top-0 left-0 right-0 bg-[#f9fafa] z-mobile-header">
+      <div ref={headerRef} className="fixed top-0 left-0 right-0 bg-[#f9fafa] z-mobile-header">
         {/* Logo and Brand Section */}
         <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-gray-200">
           <div className="flex items-center gap-3">
@@ -386,8 +407,8 @@ export default function MobileShirtManagementView({
         </div>
       </div>
 
-      {/* Spacer for fixed header */}
-      <div style={{ height: 'var(--header-height, 240px)' }}></div>
+      {/* Spacer for fixed header - dynamically measured */}
+      <div style={{ height: `${headerHeight}px` }}></div>
 
       {/* Filter Modal */}
       {showFilters && (

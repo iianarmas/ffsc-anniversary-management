@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { formatFullName } from '../utils/formatters';
 import { Search, Filter, X, ChevronRight, Check, ChevronUp, Users, CheckCircle, Clock, StickyNote, CheckSquare, Lock, Plus } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
@@ -58,6 +58,10 @@ export default function MobileRegistrationView({
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [notesDialogPerson, setNotesDialogPerson] = useState(null);
 
+  // Ref for measuring fixed header height dynamically
+  const headerRef = useRef(null);
+  const [headerHeight, setHeaderHeight] = useState(200);
+
   const [editDialogPerson, setEditDialogPerson] = useState(null);
   const [longPressTimer, setLongPressTimer] = useState(null);
   const [longPressTriggered, setLongPressTriggered] = useState(false);
@@ -66,6 +70,23 @@ export default function MobileRegistrationView({
   const activeFiltersCount = [filterAge, filterLocation, filterStatus, filterAttendance].filter(f => f !== 'All').length;
   const hasActiveSearch = searchTerm.trim() !== '';
   const hasAnyActiveFilter = activeFiltersCount > 0 || hasActiveSearch;
+
+  // Measure header height dynamically when filters change
+  useEffect(() => {
+    const measureHeader = () => {
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight);
+      }
+    };
+
+    // Measure immediately
+    measureHeader();
+
+    // Also measure after a short delay to catch any render updates
+    const timer = setTimeout(measureHeader, 100);
+
+    return () => clearTimeout(timer);
+  }, [hasAnyActiveFilter, activeFiltersCount, searchTerm]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -83,7 +104,7 @@ export default function MobileRegistrationView({
   return (
     <div className="pb-24 bg-[#f9fafa]">
       {/* Fixed Header with Branding, Search, Filters, and Stats */}
-      <div className="fixed top-0 left-0 right-0 bg-[#f9fafa] z-mobile-header">
+      <div ref={headerRef} className="fixed top-0 left-0 right-0 bg-[#f9fafa] z-mobile-header">
         {/* Logo and Brand Section */}
         <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-gray-200">
           <div className="flex items-center gap-3">
@@ -294,8 +315,8 @@ export default function MobileRegistrationView({
         </div>
       </div>
 
-      {/* Spacer for fixed header */}
-      <div style={{ height: 'var(--header-height, 240px)' }}></div>
+      {/* Spacer for fixed header - dynamically measured */}
+      <div style={{ height: `${headerHeight}px` }}></div>
 
       {/* Filter Modal */}
       {showFilters && (

@@ -601,7 +601,7 @@ React.useEffect(() => {
 
         {/* Sign Out Button - Mobile Only */}
         {isMobile && (
-          <div className="mt-6 mb-6">
+          <div className="mt-6 mb-24">
             <button
               onClick={() => setShowSignOutDialog(true)}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
