@@ -17,8 +17,8 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, badge: taskStats?.incomplete || 0 },
     ...(userProfile?.role === 'admin' ? [
       { id: 'users', label: 'Manage Users', icon: Shield },
-      ...(userProfile?.role !== 'viewer' ? [{ id: 'add-person', label: 'Add Person', icon: Plus, isAction: true }] : [])
     ] : []),
+    ...(userProfile?.role !== 'viewer' ? [{ id: 'add-person', label: 'Add Person', icon: Plus, isAction: true }] : []),
   ].filter(item => item.id || item.showDividerAfter); // Filter out empty objects
 
   return (
