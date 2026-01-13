@@ -426,7 +426,6 @@ useEffect(() => {
                       value: `${stats.registeredCapacity || 0} / ${stats.attendingCountedTowardCapacity || 0}`,
                       subtitle: stats.toddlersCount > 0 ? `(+${stats.toddlersCount} ${stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})` : null
                     },
-                    { Icon: Clock, label: 'Pending', value: stats.preRegistered || 0 },
                     {
                       Icon: Users,
                       label: 'Slots Remaining',
