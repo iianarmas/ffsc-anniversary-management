@@ -658,15 +658,52 @@ useEffect(() => {
   };
 
   const handlePrint = () => {
-    // Find the print content element
-    const printContent = document.querySelector('.print-content');
+    // Find the print content element for the current view
+    const viewSelector = currentView === 'shirts' ? '[data-print-view="shirts"]' : '[data-print-view="registration"]';
+    let printContent = document.querySelector(viewSelector);
+
+    // Fallback to any print-content if view-specific not found
+    if (!printContent) {
+      printContent = document.querySelector('.print-content');
+    }
+
     if (!printContent) {
       console.error('No print content found');
+      alert('Print content not available for this view');
+      return;
+    }
+
+    // Temporarily make print content visible to capture innerHTML
+    const originalDisplay = printContent.style.display;
+    const originalPosition = printContent.style.position;
+    const originalVisibility = printContent.style.visibility;
+
+    printContent.style.display = 'block';
+    printContent.style.position = 'absolute';
+    printContent.style.visibility = 'hidden';
+    printContent.style.left = '-9999px';
+
+    // Force a reflow to ensure content is rendered
+    // eslint-disable-next-line no-unused-expressions
+    printContent.offsetHeight;
+
+    // Capture the innerHTML
+    const htmlContent = printContent.innerHTML;
+
+    // Restore original styles
+    printContent.style.display = originalDisplay;
+    printContent.style.position = originalPosition;
+    printContent.style.visibility = originalVisibility;
+    printContent.style.left = '';
+
+    if (!htmlContent || htmlContent.trim() === '') {
+      console.error('Print content is empty');
+      alert('No data to print. Please check your filters.');
       return;
     }
 
     // Open a new window for printing
-    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
     if (!printWindow) {
       alert('Please allow popups for this site to print');
       return;
@@ -684,6 +721,7 @@ useEffect(() => {
               padding: 20px;
               margin: 0;
               background: white;
+              color: #111;
             }
             table {
               width: 100%;
@@ -692,9 +730,9 @@ useEffect(() => {
             }
             th, td {
               border: 1px solid #d1d5db;
-              padding: 8px 16px;
+              padding: 8px 12px;
               text-align: left;
-              font-size: 12px;
+              font-size: 11px;
             }
             th {
               background-color: #f3f4f6;
@@ -704,33 +742,50 @@ useEffect(() => {
               background-color: #f9fafb;
             }
             h1 {
-              font-size: 24px;
+              font-size: 22px;
               font-weight: bold;
-              margin-bottom: 8px;
+              margin-bottom: 4px;
+              color: #111;
             }
             h2 {
-              font-size: 18px;
+              font-size: 16px;
               font-weight: 600;
-              margin-bottom: 4px;
+              margin-bottom: 8px;
+              color: #333;
             }
-            .filters {
-              margin-bottom: 16px;
-              font-size: 14px;
+            p, div {
+              color: #333;
+            }
+            strong {
+              color: #111;
+            }
+            .text-gray-600 {
               color: #4b5563;
             }
-            .stats {
+            .text-xs {
+              font-size: 11px;
+            }
+            .mb-4 {
+              margin-bottom: 16px;
+            }
+            .mb-6 {
               margin-bottom: 24px;
-              font-size: 14px;
+            }
+            .text-sm {
+              font-size: 13px;
             }
             @media print {
               body {
                 padding: 0;
               }
+              @page {
+                margin: 0.5in;
+              }
             }
           </style>
         </head>
         <body>
-          ${printContent.innerHTML}
+          ${htmlContent}
         </body>
       </html>
     `);
@@ -974,6 +1029,7 @@ useEffect(() => {
               setShirtFilterPrint={setShirtFilterPrint}
               onResetFilters={handleResetShirtFilters}
               peopleTaskInfo={peopleTaskInfo}
+              handlePrint={handlePrint}
             />
           )
         )}

@@ -38,7 +38,8 @@ export default function ShirtManagementView({
   setShirtFilterAttendance,
   onResetFilters,
   shirtFilterPrint,
-  setShirtFilterPrint
+  setShirtFilterPrint,
+  handlePrint
 }) {
 
   const { profile } = useAuth();
@@ -446,27 +447,30 @@ export default function ShirtManagementView({
   return (
     <>
       {/* Print-only content */}
-      <div className="print-content" style={{ boxShadow: 'none', background: 'white' }}>
+      <div className="print-content" data-print-view="shirts" style={{ boxShadow: 'none', background: 'white' }}>
         <div className="p-8" style={{ boxShadow: 'none', background: 'white' }}>
           <h1 className="text-3xl font-bold mb-2">FFSC Anniversary Management</h1>
-          <h2 className="text-xl font-semibold mb-1">Shirt Management View</h2>
-          
+          <h2 className="text-xl font-semibold mb-1">Shirt Management</h2>
+
           {/* Active Filters */}
           <div className="mb-4 text-sm text-gray-600">
-            <strong>Active Filters:</strong>
-            {shirtSearchTerm && ` Search: "${shirtSearchTerm}"`}
-            {shirtFilterAge !== 'All' && ` | Age: ${shirtFilterAge}`}
-            {shirtFilterLocation !== 'All' && ` | Location: ${shirtFilterLocation}`}
-            {shirtFilterSize !== 'All' && ` | Size: ${shirtFilterSize}`}
-            {shirtFilterPrint !== 'All' && ` | Print: ${shirtFilterPrint}`}
-            {shirtFilterPayment !== 'All' && ` | Payment: ${shirtFilterPayment}`}
-            {shirtFilterDistribution !== 'All' && ` | Distribution: ${shirtFilterDistribution}`}
-            {shirtFilterAttendance !== 'All' && ` | Attendance: ${shirtFilterAttendance === 'attending' ? 'Attending Event' : 'Shirt Only'}`}
-            {advancedFilters && ' | Advanced Filters Applied'}
-            {!shirtSearchTerm && shirtFilterAge === 'All' && shirtFilterLocation === 'All' && shirtFilterSize === 'All' && shirtFilterPrint === 'All' && shirtFilterPayment === 'All' && shirtFilterDistribution === 'All' && shirtFilterAttendance === 'All' && !advancedFilters && ' None'}
+            <strong>Filters Applied:</strong>
+            {(() => {
+              const filters = [];
+              if (shirtSearchTerm) filters.push(`Search: "${shirtSearchTerm}"`);
+              if (shirtFilterAge !== 'All') filters.push(`Age Bracket: ${shirtFilterAge}`);
+              if (shirtFilterLocation !== 'All') filters.push(`Location: ${shirtFilterLocation}`);
+              if (shirtFilterSize !== 'All') filters.push(`Shirt Size: ${shirtFilterSize}`);
+              if (shirtFilterPrint !== 'All') filters.push(`Print Option: ${shirtFilterPrint === 'with-print' ? 'With Print' : 'Plain'}`);
+              if (shirtFilterPayment !== 'All') filters.push(`Payment: ${shirtFilterPayment === 'paid' ? 'Paid' : 'Unpaid'}`);
+              if (shirtFilterDistribution !== 'All') filters.push(`Distribution: ${shirtFilterDistribution === 'given' ? 'Given' : 'Pending'}`);
+              if (shirtFilterAttendance !== 'All') filters.push(`Attendance: ${shirtFilterAttendance === 'attending' ? 'Attending Event' : 'Shirt Only'}`);
+              if (advancedFilters) filters.push('Advanced Filters Applied');
+              return filters.length > 0 ? ' ' + filters.join(' → ') : ' None';
+            })()}
           </div>
 
-          <p className="mb-6 text-sm">Total: {filteredPeople.length} {filteredPeople.length === 1 ? 'person' : 'people'}</p>
+          <p className="mb-6 text-sm"><strong>Total Records:</strong> {filteredPeople.length} {filteredPeople.length === 1 ? 'person' : 'people'}</p>
           
           <table className="w-full border-collapse border border-gray-300">
             <thead>
@@ -550,10 +554,10 @@ export default function ShirtManagementView({
               <ShirtActionButtons
                 hasActiveFilters={
                   shirtSearchTerm !== '' ||
-                  shirtFilterAge !== 'All' || 
-                  shirtFilterLocation !== 'All' || 
-                  shirtFilterPayment !== 'All' || 
-                  shirtFilterDistribution !== 'All' || 
+                  shirtFilterAge !== 'All' ||
+                  shirtFilterLocation !== 'All' ||
+                  shirtFilterPayment !== 'All' ||
+                  shirtFilterDistribution !== 'All' ||
                   shirtFilterSize !== 'All' ||
                   shirtFilterPrint !== 'All' ||
                   shirtFilterAttendance !== 'All' ||
@@ -571,6 +575,7 @@ export default function ShirtManagementView({
                 ]}
                 advancedFilters={advancedFilters}
                 onOpenAdvancedFilters={() => setIsAdvancedFilterOpen(true)}
+                handlePrint={handlePrint}
               />
             </div>
 

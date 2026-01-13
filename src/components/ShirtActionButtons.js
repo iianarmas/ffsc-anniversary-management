@@ -3,12 +3,13 @@ import { createPortal } from 'react-dom';
 import { Printer, RotateCcw, Lock } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 
-export default function ShirtActionButtons({ 
+export default function ShirtActionButtons({
   hasActiveFilters,
   onResetFilters,
   stats = [],
   advancedFilters,
-  onOpenAdvancedFilters
+  onOpenAdvancedFilters,
+  handlePrint
 }) {
   const { profile } = useAuth();
   const [showPrintTooltip, setShowPrintTooltip] = useState(false);
@@ -65,7 +66,7 @@ export default function ShirtActionButtons({
 
         {profile?.role !== 'viewer' ? (
           <button
-            onClick={() => window.print()}
+            onClick={handlePrint || (() => window.print())}
             className="flex items-center gap-2 px-4 py-2 bg-[#0f2a71] hover:bg-[#1c3b8d] text-white rounded-lg font-medium transition text-sm"
           >
             <Printer size={16} />

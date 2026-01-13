@@ -290,30 +290,34 @@ useEffect(() => {
   return (
     <>
       {/* Print-only content */}
-      <div className="print-content">
+      <div className="print-content" data-print-view="registration">
         <div className="p-8">
           <h1 className="text-3xl font-bold mb-2">FFSC Anniversary Management</h1>
-          <h2 className="text-xl font-semibold mb-1">Registration View</h2>
-          
+          <h2 className="text-xl font-semibold mb-1">Registration</h2>
+
           {/* Active Filters */}
           <div className="mb-4 text-sm text-gray-600">
-            <strong>Active Filters:</strong>
-            {searchTerm && ` Search: "${searchTerm}"`}
-            {filterAge !== 'All' && ` | Age: ${filterAge}`}
-            {filterLocation !== 'All' && ` | Location: ${filterLocation}`}
-            {filterStatus !== 'All' && ` | Status: ${filterStatus === 'Registered' ? 'Checked In' : 'Pending'}`}
-            {filterAttendance !== 'All' && ` | Attendance: ${filterAttendance === 'attending' ? 'Attending Event' : 'Shirt Only'}`}
-            {advancedFilters && ' | Advanced Filters Applied'}
-            {!searchTerm && filterAge === 'All' && filterLocation === 'All' && filterStatus === 'All' && filterAttendance === 'All' && !advancedFilters && ' None'}
+            <strong>Filters Applied:</strong>
+            {(() => {
+              const filters = [];
+              if (searchTerm) filters.push(`Search: "${searchTerm}"`);
+              if (filterAge !== 'All') filters.push(`Age Bracket: ${filterAge}`);
+              if (filterLocation !== 'All') filters.push(`Location: ${filterLocation}`);
+              if (filterStatus !== 'All') filters.push(`Status: ${filterStatus === 'Registered' ? 'Checked In' : 'Pending'}`);
+              if (filterAttendance !== 'All') filters.push(`Attendance: ${filterAttendance === 'attending' ? 'Attending Event' : 'Shirt Only'}`);
+              if (advancedFilters) filters.push('Advanced Filters Applied');
+              return filters.length > 0 ? ' ' + filters.join(' → ') : ' None';
+            })()}
           </div>
-          
+
           <p className="mb-6 text-sm">
-            Capacity Count: {stats.registeredCapacity || 0} / {stats.maxCapacity || 230}<br/>
-            {stats.registered !== stats.registeredCapacity && (
-              <span className="text-xs text-gray-600">
-                ({stats.registered} total including {stats.toddlersCount} {stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})
-              </span>
-            )}
+            <strong>Total Records:</strong> {advancedFilteredPeople.length} {advancedFilteredPeople.length === 1 ? 'person' : 'people'}<br/>
+            <span className="text-xs text-gray-600">
+              Capacity: {stats.registeredCapacity || 0} / {stats.maxCapacity || 230}
+              {stats.registered !== stats.registeredCapacity && (
+                <> ({stats.registered} total including {stats.toddlersCount} {stats.toddlersCount === 1 ? 'toddler' : 'toddlers'})</>
+              )}
+            </span>
           </p>
           
           <table className="w-full border-collapse border border-gray-300">
