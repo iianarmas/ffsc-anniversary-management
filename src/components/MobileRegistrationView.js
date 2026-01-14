@@ -295,7 +295,7 @@ export default function MobileRegistrationView({
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-yellow-600">
-                {people.length - people.filter(p => p.ageBracket === 'Toddler').length - people.filter(p => p.attendanceStatus === 'shirt_only').length}
+                {people.filter(p => p.attendanceStatus === 'attending' && p.ageBracket !== 'Toddler' && !p.registered).length}
               </div>
               <div className="text-xs text-gray-500">Pending</div>
             </div>
