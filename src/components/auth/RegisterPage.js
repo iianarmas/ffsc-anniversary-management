@@ -80,7 +80,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 py-12 px-4">
+    <div className="min-h-screen flex items-start sm:items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 py-8 sm:py-12 px-4 overflow-y-auto">
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
         <div className="text-center mb-8">
           <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center">
