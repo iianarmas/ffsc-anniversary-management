@@ -102,7 +102,7 @@ export default function MobileRegistrationView({
   };
 
   return (
-    <div className="pb-24 bg-[#f9fafa]">
+    <div className="pb-44 bg-[#f9fafa]">
       {/* Fixed Header with Branding, Search, Filters, and Stats */}
       <div ref={headerRef} className="fixed top-0 left-0 right-0 bg-[#f9fafa] z-mobile-header">
         {/* Logo and Brand Section */}
