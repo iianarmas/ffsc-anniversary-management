@@ -102,7 +102,7 @@ export default function MobileRegistrationView({
   };
 
   return (
-    <div className="pb-56 min-h-[100dvh] bg-[#f9fafa]">
+    <div className="pb-64 min-h-[100dvh] bg-[#f9fafa]">
       {/* Fixed Header with Branding, Search, Filters, and Stats */}
       <div ref={headerRef} className="fixed top-0 left-0 right-0 bg-[#f9fafa] z-mobile-header">
         {/* Logo and Brand Section */}
@@ -634,8 +634,11 @@ export default function MobileRegistrationView({
 
       {/* Fixed Bottom Actions - Hidden for viewers */}
       {profile?.role !== 'viewer' && (
-        <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl z-40">
-          <div className="px-4 pt-3 pb-4">
+        <div
+          className="fixed left-0 right-0 bg-white border-t border-gray-200 shadow-2xl z-40"
+          style={{ bottom: 'max(64px, calc(64px + env(safe-area-inset-bottom, 0px)))' }}
+        >
+          <div className="px-4 pt-3 pb-5">
             {selectedPeople.length === 0 ? (
               <button
                 onClick={() => {
