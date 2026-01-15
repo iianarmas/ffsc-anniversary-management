@@ -231,7 +231,7 @@ export default function MobileTasksView({ onTaskUpdate }) {
 
   return (
     <>
-      <div className="pb-24 bg-[#f9fafa]">
+      <div className="pb-40 min-h-[100dvh] bg-[#f9fafa]">
         {/* Fixed Header with Branding */}
         <div className="fixed top-0 left-0 right-0 bg-[#f9fafa] border-b border-gray-200 shadow-sm z-20">
           {/* Logo and Brand Section */}

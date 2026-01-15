@@ -102,7 +102,7 @@ export default function MobileRegistrationView({
   };
 
   return (
-    <div className={`min-h-[100dvh] bg-[#f9fafa] ${selectedPeople.length > 0 ? 'pb-80' : 'pb-64'}`}>
+    <div className={`min-h-[100dvh] bg-[#f9fafa] ${selectedPeople.length > 0 ? 'pb-96' : 'pb-40'}`}>
       {/* Fixed Header with Branding, Search, Filters, and Stats */}
       <div ref={headerRef} className="fixed top-0 left-0 right-0 bg-[#f9fafa] z-mobile-header">
         {/* Logo and Brand Section */}

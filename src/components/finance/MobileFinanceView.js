@@ -201,7 +201,7 @@ export default function MobileFinanceView({ people = [] }) {
   ];
 
   return (
-    <div className="min-h-[100dvh] bg-[#f9fafa] pb-32">
+    <div className="min-h-[100dvh] bg-[#f9fafa] pb-40">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
         <h1 className="text-lg font-bold text-[#001740]">Finance</h1>
