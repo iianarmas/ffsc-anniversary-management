@@ -176,7 +176,7 @@ export default function MobileShirtManagementView({
   }, [editingPerson]);
 
   return (
-    <div className="pb-32 bg-[#f9fafa]">
+    <div className="pb-32 min-h-[100dvh] bg-[#f9fafa]">
       {/* Fixed Header with Branding, Search, Filters, and Stats */}
       <div ref={headerRef} className="fixed top-0 left-0 right-0 bg-[#f9fafa] z-mobile-header">
         {/* Logo and Brand Section */}
