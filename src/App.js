@@ -24,7 +24,10 @@ import WelcomeModal from './components/WelcomeModal';
 import MobileBottomNav from './components/MobileBottomNav';
 import CollectionsView from './components/CollectionsView';
 import MobileCollectionsView from './components/MobileCollectionsView';
+import FinanceView from './components/finance/FinanceView';
+import MobileFinanceView from './components/finance/MobileFinanceView';
 import TaskAssignmentNotification from './components/TaskAssignmentNotification';
+import RestrictedAccessMessage from './components/RestrictedAccessMessage';
 import { Plus } from 'lucide-react';
 import RoleRequestDialog from './components/RoleRequestDialog';
 
@@ -1041,7 +1044,12 @@ useEffect(() => {
         )}
 
         {currentView === 'tasks' && (
-          isMobile ? (
+          profile?.role === 'viewer' ? (
+            <RestrictedAccessMessage
+              title="Tasks - Restricted Access"
+              message="You don't have permission to manage tasks. Please contact an administrator if you need access to this feature."
+            />
+          ) : isMobile ? (
             <MobileTasksView onTaskUpdate={() => { loadTaskStats(); loadPeopleTaskInfo(); }} />
           ) : (
             <TasksView onTaskUpdate={() => { loadTaskStats(); loadPeopleTaskInfo(); }} />
@@ -1065,7 +1073,12 @@ useEffect(() => {
         )}
 
         {currentView === 'collections' && (
-          isMobile ? (
+          profile?.role === 'viewer' ? (
+            <RestrictedAccessMessage
+              title="Collections - Restricted Access"
+              message="You don't have permission to view payment collections. Please contact an administrator if you need access to this feature."
+            />
+          ) : isMobile ? (
             <MobileCollectionsView
               people={people}
               systemSettings={settings}
@@ -1079,6 +1092,19 @@ useEffect(() => {
               toggleShirtPayment={toggleShirtPayment}
               peopleTaskInfo={peopleTaskInfo}
             />
+          )
+        )}
+
+        {currentView === 'finance' && (
+          profile?.role === 'viewer' ? (
+            <RestrictedAccessMessage
+              title="Finance - Restricted Access"
+              message="You don't have permission to view financial information. Please contact an administrator if you need access to this feature."
+            />
+          ) : isMobile ? (
+            <MobileFinanceView people={people} />
+          ) : (
+            <FinanceView people={people} />
           )
         )}
 

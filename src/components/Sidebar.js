@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Users, Shirt, Menu, X, BarChart3, Plus, CheckSquare, Shield, Home, DollarSign, Settings, Lock } from 'lucide-react';
+import { Users, Shirt, Menu, X, BarChart3, Plus, CheckSquare, Shield, Home, DollarSign, Settings, Lock, Wallet } from 'lucide-react';
 
 export default function Sidebar({ currentView, setCurrentView, onAddPersonClick, taskStats, userProfile }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -9,18 +9,24 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
   const [showRestrictedMessage, setShowRestrictedMessage] = useState(false);
   const buttonRefs = useRef({});
 
+  const isAdmin = userProfile?.role === 'admin';
+  const isCommitteeOrAdmin = userProfile?.role === 'committee' || userProfile?.role === 'admin';
+  const isViewer = userProfile?.role === 'viewer';
+
   const menuItems = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     // Show collections to admin, committee, and viewer (viewer gets restricted access)
-    { id: 'collections', label: 'Payment Collections', icon: DollarSign, showDividerAfter: true, restricted: userProfile?.role === 'viewer' },
+    { id: 'collections', label: 'Payment Collections', icon: DollarSign, restricted: isViewer },
+    // Finance - only visible to admin and committee (hidden from viewer)
+    ...(isCommitteeOrAdmin ? [{ id: 'finance', label: 'Finance', icon: Wallet, showDividerAfter: true }] : []),
     { id: 'registration', label: 'Registration', icon: Users },
     { id: 'shirts', label: 'Shirt Management', icon: Shirt },
-    { id: 'tasks', label: 'Tasks', icon: CheckSquare, badge: taskStats?.incomplete || 0 },
-    ...(userProfile?.role === 'admin' ? [
-      { id: 'users', label: 'Manage Users', icon: Shield },
-    ] : []),
-    ...(userProfile?.role !== 'viewer' ? [{ id: 'add-person', label: 'Add Person', icon: Plus, isAction: true }] : []),
+    { id: 'tasks', label: 'Tasks', icon: CheckSquare, badge: taskStats?.incomplete || 0, restricted: isViewer },
+    // Manage Users - admin only
+    ...(isAdmin ? [{ id: 'users', label: 'Manage Users', icon: Shield }] : []),
+    // Add Person - not for viewers
+    ...(!isViewer ? [{ id: 'add-person', label: 'Add Person', icon: Plus, isAction: true }] : []),
   ].filter(item => item.id || item.showDividerAfter); // Filter out empty objects
 
   return (

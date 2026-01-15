@@ -468,6 +468,8 @@ export default function MobileRegistrationView({
                     : 'border-transparent'
                 }`}
                 onClick={() => {
+                  // Prevent viewers from selecting/checking in people
+                  if (profile?.role === 'viewer') return;
                   if (!longPressTriggered) {
                     handleSelectPerson(person.id);
                   }
@@ -503,20 +505,22 @@ export default function MobileRegistrationView({
                 style={{ minHeight: '44px' }}
               >
                 <div className="flex items-start gap-3">
-                  {/* Selection Checkbox */}
-                  <div 
-                    className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                      isSelected 
-                        ? 'bg-[#001740] border-[#001740]' 
-                        : 'border-gray-300'
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSelectPerson(person.id);
-                    }}
-                  >
-                    {isSelected && <Check size={16} className="text-white" strokeWidth={3} />}
-                  </div>
+                  {/* Selection Checkbox - Hidden for viewers */}
+                  {profile?.role !== 'viewer' && (
+                    <div
+                      className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        isSelected
+                          ? 'bg-[#001740] border-[#001740]'
+                          : 'border-gray-300'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectPerson(person.id);
+                      }}
+                    >
+                      {isSelected && <Check size={16} className="text-white" strokeWidth={3} />}
+                    </div>
+                  )}
                   
                   {/* Content */}
                   <div className="flex-1 min-w-0">
@@ -628,61 +632,63 @@ export default function MobileRegistrationView({
         )}
       </div>
 
-      {/* Fixed Bottom Actions */}
-      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl z-20">
-        <div className="p-4">
-          {selectedPeople.length === 0 ? (
-            <button
-              onClick={() => {
-                const allIds = filteredAndSortedPeople.map(p => p.id);
-                allIds.forEach(id => handleSelectPerson(id));
-              }}
-              className="w-full py-3.5 bg-[#001740] text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-[#002255] transition-colors"
-              style={{ minHeight: '48px' }}
-            >
-              <Users size={20} />
-              <span>Select All ({filteredAndSortedPeople.length})</span>
-            </button>
-          ) : (
-            <div className="space-y-2">
-              {/* Selection Count */}
-              <div className="text-center pb-2">
-                <span className="text-sm font-semibold text-gray-900">
-                  {selectedPeople.length} {selectedPeople.length === 1 ? 'person' : 'people'} selected
-                </span>
-              </div>
-              
-              {/* Action Buttons */}
-              <div className="flex gap-2">
-                <button
-                  onClick={handleBulkRegister}
-                  className="flex-1 py-3.5 bg-green-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition-colors"
-                  style={{ minHeight: '48px' }}
-                >
-                  <CheckCircle size={20} />
-                  <span>Check In</span>
-                </button>
-                <button
-                  onClick={handleBulkRemove}
-                  className="flex-1 py-3.5 bg-red-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors"
-                  style={{ minHeight: '48px' }}
-                >
-                  <X size={20} />
-                  <span>Remove</span>
-                </button>
-              </div>
-              
-              {/* Deselect Button */}
+      {/* Fixed Bottom Actions - Hidden for viewers */}
+      {profile?.role !== 'viewer' && (
+        <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl z-20">
+          <div className="p-4">
+            {selectedPeople.length === 0 ? (
               <button
-                onClick={() => selectedPeople.forEach(id => handleSelectPerson(id))}
-                className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium text-sm hover:bg-gray-200 transition-colors"
+                onClick={() => {
+                  const allIds = filteredAndSortedPeople.map(p => p.id);
+                  allIds.forEach(id => handleSelectPerson(id));
+                }}
+                className="w-full py-3.5 bg-[#001740] text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-[#002255] transition-colors"
+                style={{ minHeight: '48px' }}
               >
-                Deselect All
+                <Users size={20} />
+                <span>Select All ({filteredAndSortedPeople.length})</span>
               </button>
-            </div>
-          )}
+            ) : (
+              <div className="space-y-2">
+                {/* Selection Count */}
+                <div className="text-center pb-2">
+                  <span className="text-sm font-semibold text-gray-900">
+                    {selectedPeople.length} {selectedPeople.length === 1 ? 'person' : 'people'} selected
+                  </span>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleBulkRegister}
+                    className="flex-1 py-3.5 bg-green-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition-colors"
+                    style={{ minHeight: '48px' }}
+                  >
+                    <CheckCircle size={20} />
+                    <span>Check In</span>
+                  </button>
+                  <button
+                    onClick={handleBulkRemove}
+                    className="flex-1 py-3.5 bg-red-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors"
+                    style={{ minHeight: '48px' }}
+                  >
+                    <X size={20} />
+                    <span>Remove</span>
+                  </button>
+                </div>
+
+                {/* Deselect Button */}
+                <button
+                  onClick={() => selectedPeople.forEach(id => handleSelectPerson(id))}
+                  className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium text-sm hover:bg-gray-200 transition-colors"
+                >
+                  Deselect All
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Back to Top Button */}
       {showBackToTop && selectedPeople.length === 0 && (

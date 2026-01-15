@@ -412,11 +412,11 @@ export default function MobileShirtManagementView({
 
       {/* Filter Modal */}
       {showFilters && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 animate-fade-in" 
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-modal-backdrop animate-fade-in"
           onClick={() => setShowFilters(false)}
         >
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-slide-up z-modal" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 rounded-t-3xl">
               <div className="flex justify-between items-center">
@@ -578,8 +578,8 @@ export default function MobileShirtManagementView({
 
       {/* Edit Person Modal */}
       {editingPerson && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 animate-fade-in" 
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-modal-backdrop animate-fade-in"
           onMouseDown={(e) => {
             // Only close if clicking the backdrop
             if (e.target === e.currentTarget) {
@@ -587,7 +587,7 @@ export default function MobileShirtManagementView({
             }
           }}
         >
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-slide-up">
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-slide-up z-modal">
             {/* Header */}
             <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 rounded-t-3xl">
               <div className="flex justify-between items-center">
@@ -779,6 +779,10 @@ export default function MobileShirtManagementView({
                   e.stopPropagation();
                   return;
                 }
+                // Viewers cannot edit - they are read-only
+                if (profile?.role === 'viewer') {
+                  return;
+                }
                 if (!longPressTriggered) {
                   setEditingPerson(person);
                 }
@@ -941,8 +945,10 @@ export default function MobileShirtManagementView({
                   </div>
                 </div>
                 
-                {/* Chevron Icon */}
-                <ChevronRight size={20} className="text-gray-400 flex-shrink-0 ml-3" />
+                {/* Chevron Icon - Hidden for viewers */}
+                {profile?.role !== 'viewer' && (
+                  <ChevronRight size={20} className="text-gray-400 flex-shrink-0 ml-3" />
+                )}
               </div>
             </div>
           ))
