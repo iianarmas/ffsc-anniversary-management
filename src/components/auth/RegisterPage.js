@@ -80,8 +80,9 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-6 px-4 flex flex-col items-center justify-start sm:justify-center">
-      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg max-w-md w-full">
+    <div className="h-dvh bg-gradient-to-br from-blue-50 to-blue-100 overflow-y-auto">
+      <div className="min-h-full py-8 px-4 flex flex-col items-center">
+        <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg max-w-md w-full my-auto">
         <div className="text-center mb-6">
           <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 flex items-center justify-center">
             <img 
@@ -223,6 +224,7 @@ export default function RegisterPage() {
               Sign in here
             </button>
           </p>
+        </div>
         </div>
       </div>
       {/* Success Dialog */}

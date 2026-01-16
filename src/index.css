@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ensure scrolling works properly */
+html {
+  overflow-y: auto;
+}
+
+body {
+  overflow-y: auto;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
 /* Print styles - must come after Tailwind utilities to override them */
 @media print {
   /* Force show print content - override Tailwind's hidden utility */

@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getSystemSettings, subscribeToSettings, unsubscribeFromSettings } from '../services/systemSettings';
-import Header from './Header';
 
 const SystemSettingsContext = createContext();
 
@@ -48,20 +47,10 @@ export function SystemSettingsProvider({ children }) {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-[#f9fafa] border-b border-gray-200 shadow-sm z-20">
-      <Header 
-                viewTitle="Home" 
-                showSearch={false}
-                showBell={true}
-                onOpenPersonNotes={(personId) => {
-                }}
-              />
-      <SystemSettingsContext.Provider value={value}>
-        {children}
-      </SystemSettingsContext.Provider>
-    </div>
+    <SystemSettingsContext.Provider value={value}>
+      {children}
+    </SystemSettingsContext.Provider>
   );
-  
 }
 
 /**
