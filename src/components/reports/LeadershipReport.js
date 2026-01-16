@@ -70,7 +70,7 @@ export default function LeadershipReport({ data, stats }) {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-          <p className="text-sm text-gray-600">Total Registered</p>
+          <p className="text-sm text-gray-600">Total Pre-registered</p>
           <p className="text-2xl font-bold text-gray-900">{totalPeople}</p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">

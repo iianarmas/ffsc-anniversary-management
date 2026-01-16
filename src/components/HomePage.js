@@ -252,7 +252,7 @@ export default function HomePage({
                   }}
                   capacity={{ 
                     current: stats?.attendingCountedTowardCapacity || 0, 
-                    max: 230,
+                    max: 220,
                     slotsRemaining: stats?.slotsRemaining || 0
                   }}
                 />
@@ -293,7 +293,7 @@ export default function HomePage({
             }}
             capacity={{ 
               current: stats?.attendingCountedTowardCapacity || 0, 
-              max: 230,
+              max: 220,
               slotsRemaining: stats?.slotsRemaining || 0
             }}
           />

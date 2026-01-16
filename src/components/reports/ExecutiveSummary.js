@@ -35,7 +35,7 @@ export default function ExecutiveSummary({ data, stats, financeData }) {
           </div>
           <p className="text-sm text-gray-600 mb-1">Attendance</p>
           <p className="text-2xl font-bold text-gray-900">
-            {stats.registered} / {stats.maxCapacity}
+            {stats.registered} / {stats.preRegistered}
           </p>
           <p className="text-xs text-gray-500 mt-1">
             {stats.preRegistered} pending check-in

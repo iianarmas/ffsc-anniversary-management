@@ -584,7 +584,7 @@ useEffect(() => {
     const unpaid = peopleWithShirtOrders.filter(p => !p.paid).length;
     const shirtsGiven = peopleWithShirtOrders.filter(p => p.shirtGiven).length;
     const shirtsPending = peopleWithShirtOrders.filter(p => !p.shirtGiven).length;
-    const maxCapacity = 230;
+    const maxCapacity = 220;
 
     // Capacity calculation - based on attending non-toddlers
     const attendingCountedTowardCapacity = attendingNonToddlers.length;

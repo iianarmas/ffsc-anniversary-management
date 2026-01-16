@@ -42,7 +42,7 @@ export default function MobileReportsView({ people = [] }) {
     const attendingNonToddlers = attendingPeople.filter(p => p.ageBracket !== 'Toddler');
     const registeredAll = attendingPeople.filter(p => p.registered);
     const registeredNonToddlers = registeredAll.filter(p => p.ageBracket !== 'Toddler');
-    const maxCapacity = 230;
+    const maxCapacity = 220;
 
     return {
       total: people.length,

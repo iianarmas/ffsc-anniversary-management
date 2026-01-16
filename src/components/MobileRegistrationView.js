@@ -301,13 +301,13 @@ export default function MobileRegistrationView({
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-blue-600">
-                {Math.round((people.filter(p => p.attendanceStatus === 'attending' && p.ageBracket !== 'Toddler').length / 230) * 100)}%
+                {Math.round((people.filter(p => p.attendanceStatus === 'attending' && p.ageBracket !== 'Toddler').length / 220) * 100)}%
               </div>
               <div className="text-xs text-gray-500">Full</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-purple-600">
-                {230 - people.filter(p => p.attendanceStatus === 'attending' && p.ageBracket !== 'Toddler').length}
+                {220 - people.filter(p => p.attendanceStatus === 'attending' && p.ageBracket !== 'Toddler').length}
               </div>
               <div className="text-xs text-gray-500">Slots</div>
             </div>

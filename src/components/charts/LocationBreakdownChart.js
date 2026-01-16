@@ -63,7 +63,7 @@ const CustomLegend = ({ payload }) => {
   );
 };
 
-export default function LocationBreakdownChart({ data = [], height = 280, maxCapacity = 230 }) {
+export default function LocationBreakdownChart({ data = [], height = 280, maxCapacity = 220 }) {
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-400">

@@ -11,8 +11,8 @@ import LocationBreakdownChart from './charts/LocationBreakdownChart';
 
 export default function Dashboard({ people = [], stats = {} }) {
   
-  // Limit to first 230 people
-  const limitedPeople = useMemo(() => people.slice(0, 230), [people]);
+  // Limit to first 220 people
+  const limitedPeople = useMemo(() => people.slice(0, 220), [people]);
 
   // State for selected date - use Philippine time
   const [selectedDate, setSelectedDate] = React.useState(() => {
@@ -421,7 +421,7 @@ export default function Dashboard({ people = [], stats = {} }) {
                 </svg>
               </button>
             </div>
-            <LocationBreakdownChart data={locationBreakdownData} height={280} maxCapacity={230} />
+            <LocationBreakdownChart data={locationBreakdownData} height={280} maxCapacity={220} />
           </div>
         </div>
       </div>

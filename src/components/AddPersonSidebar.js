@@ -380,7 +380,7 @@ export default function AddPersonSidebar({ isOpen, onClose, onPersonAdded }) {
                 {formData.attendanceStatus === 'shirt_only' && (
                   <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
                     <p className="text-xs text-purple-800">
-                      <span className="font-semibold">Note:</span> This person won't be counted toward the 230 event capacity but will be included in shirt order counts.
+                      <span className="font-semibold">Note:</span> This person won't be counted toward the 220 event capacity but will be included in shirt order counts.
                     </p>
                   </div>
                 )}

@@ -339,7 +339,7 @@ export const getExecutiveSummary = async (people = [], stats = {}) => {
   // Attendance stats
   const attendingPeople = people.filter(p => p.attendanceStatus === 'attending');
   const registeredCount = attendingPeople.filter(p => p.registered).length;
-  const maxCapacity = 230;
+  const maxCapacity = 220;
 
   return {
     attendance: {
@@ -389,7 +389,7 @@ export const generateReportCSV = async (people, stats) => {
     ['Metric', 'Value'],
     ['Total Attendance', people.filter(p => p.attendanceStatus === 'attending').length],
     ['Checked In', people.filter(p => p.registered && p.attendanceStatus === 'attending').length],
-    ['Capacity', 230],
+    ['Capacity', 220],
     ['Total Funds', `PHP ${financeData.income.totalReceived.toLocaleString()}`],
     ['Total Expenses', `PHP ${financeData.expenses.total.toLocaleString()}`],
     ['Net Balance', `PHP ${financeData.netBalance.toLocaleString()}`],
