@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { UserPlus, UserMinus, Printer, RotateCcw, Lock } from 'lucide-react';
+import { UserPlus, UserMinus, Printer, RotateCcw, Lock, XCircle } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 
 export default function ActionButtons({
@@ -52,7 +52,7 @@ export default function ActionButtons({
 
         {selectedPeople.length > 0 && (
           <>
-            {/* Select/Deselect Links */}
+            {/* Select All / Deselect */}
             <div className="flex items-center gap-2 text-sm">
               <button
                 onClick={handleSelectAll}
@@ -60,12 +60,12 @@ export default function ActionButtons({
               >
                 Select All
               </button>
-              <span className="text-gray-300">•</span>
               <button
                 onClick={handleDeselectAll}
-                className="text-primary-main hover:text-primary-hover font-medium transition-colors"
+                className="p-1 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-red-50"
+                title="Deselect all"
               >
-                Deselect
+                <XCircle size={18} />
               </button>
             </div>
 

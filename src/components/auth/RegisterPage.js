@@ -80,10 +80,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-start sm:items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 py-8 sm:py-12 px-4 overflow-y-auto">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-6 px-4 flex flex-col items-center justify-start sm:justify-center">
+      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg max-w-md w-full">
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 flex items-center justify-center">
             <img 
               src="/church-logo.svg" 
               alt="FFSC Logo" 
@@ -100,7 +100,7 @@ export default function RegisterPage() {
           </div>
         )}
 
-        <form onSubmit={handleRegister} className="space-y-4">
+        <form onSubmit={handleRegister} className="space-y-3 sm:space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -213,7 +213,7 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-4 sm:mt-6 text-center">
           <p className="text-sm text-gray-600">
             Already have an account?{' '}
             <button

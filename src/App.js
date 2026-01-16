@@ -26,6 +26,8 @@ import CollectionsView from './components/CollectionsView';
 import MobileCollectionsView from './components/MobileCollectionsView';
 import FinanceView from './components/finance/FinanceView';
 import MobileFinanceView from './components/finance/MobileFinanceView';
+import ReportsView from './components/reports/ReportsView';
+import MobileReportsView from './components/reports/MobileReportsView';
 import TaskAssignmentNotification from './components/TaskAssignmentNotification';
 import RestrictedAccessMessage from './components/RestrictedAccessMessage';
 import { Plus } from 'lucide-react';
@@ -1105,6 +1107,19 @@ useEffect(() => {
             <MobileFinanceView people={people} />
           ) : (
             <FinanceView people={people} />
+          )
+        )}
+
+        {currentView === 'reports' && (
+          profile?.role === 'viewer' ? (
+            <RestrictedAccessMessage
+              title="Reports - Restricted Access"
+              message="You don't have permission to view reports. Please contact an administrator if you need access to this feature."
+            />
+          ) : isMobile ? (
+            <MobileReportsView people={people} />
+          ) : (
+            <ReportsView people={people} />
           )
         )}
 

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Users, Shirt, Menu, X, BarChart3, Plus, CheckSquare, Shield, Home, DollarSign, Settings, Lock, Wallet } from 'lucide-react';
+import { Users, Shirt, Menu, X, BarChart3, Plus, CheckSquare, Shield, Home, DollarSign, Settings, Lock, Wallet, FileText } from 'lucide-react';
 
 export default function Sidebar({ currentView, setCurrentView, onAddPersonClick, taskStats, userProfile }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -19,7 +19,9 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
     // Show collections to admin, committee, and viewer (viewer gets restricted access)
     { id: 'collections', label: 'Payment Collections', icon: DollarSign, restricted: isViewer },
     // Finance - only visible to admin and committee (hidden from viewer)
-    ...(isCommitteeOrAdmin ? [{ id: 'finance', label: 'Finance', icon: Wallet, showDividerAfter: true }] : []),
+    ...(isCommitteeOrAdmin ? [{ id: 'finance', label: 'Finance', icon: Wallet }] : []),
+    // Reports - only visible to admin and committee (hidden from viewer)
+    ...(isCommitteeOrAdmin ? [{ id: 'reports', label: 'Reports', icon: FileText, showDividerAfter: true }] : []),
     { id: 'registration', label: 'Registration', icon: Users },
     { id: 'shirts', label: 'Shirt Management', icon: Shirt },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, badge: taskStats?.incomplete || 0, restricted: isViewer },
