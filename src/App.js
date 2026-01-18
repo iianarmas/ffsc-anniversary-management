@@ -29,6 +29,7 @@ import MobileFinanceView from './components/finance/MobileFinanceView';
 import ReportsView from './components/reports/ReportsView';
 import MobileReportsView from './components/reports/MobileReportsView';
 import TaskAssignmentNotification from './components/TaskAssignmentNotification';
+import RaffleDraw from './components/RaffleDraw';
 import RestrictedAccessMessage from './components/RestrictedAccessMessage';
 import { Plus } from 'lucide-react';
 import RoleRequestDialog from './components/RoleRequestDialog';
@@ -1120,6 +1121,17 @@ useEffect(() => {
             <MobileReportsView people={people} />
           ) : (
             <ReportsView people={people} />
+          )
+        )}
+
+        {currentView === 'raffle' && (
+          profile?.role === 'viewer' ? (
+            <RestrictedAccessMessage
+              title="Raffle Draw - Restricted Access"
+              message="You don't have permission to access raffle draw. Please contact an administrator if you need access to this feature."
+            />
+          ) : (
+            <RaffleDraw people={people} />
           )
         )}
 

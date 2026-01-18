@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Users, Shirt, Menu, X, BarChart3, Plus, CheckSquare, Shield, Home, DollarSign, Settings, Lock, Wallet, FileText } from 'lucide-react';
+import { Users, Shirt, Menu, X, BarChart3, Plus, CheckSquare, Shield, Home, DollarSign, Settings, Lock, Wallet, FileText, Sparkles } from 'lucide-react';
 
 export default function Sidebar({ currentView, setCurrentView, onAddPersonClick, taskStats, userProfile }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -25,6 +25,8 @@ export default function Sidebar({ currentView, setCurrentView, onAddPersonClick,
     { id: 'registration', label: 'Registration', icon: Users },
     { id: 'shirts', label: 'Shirt Management', icon: Shirt },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, badge: taskStats?.incomplete || 0, restricted: isViewer },
+    // Raffle Draw - only visible to committee and admin
+    ...(isCommitteeOrAdmin ? [{ id: 'raffle', label: 'Raffle Draw', icon: Sparkles }] : []),
     // Manage Users - admin only
     ...(isAdmin ? [{ id: 'users', label: 'Manage Users', icon: Shield }] : []),
     // Add Person - not for viewers
